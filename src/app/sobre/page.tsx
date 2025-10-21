@@ -44,7 +44,7 @@ export default function SobrePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-white rounded-lg border border-blue-200 shadow-md">
-                  <div className="text-2xl font-bold text-[#1E90FF] mb-1">5+</div>
+                  <div className="text-2xl font-bold text-[#1E90FF] mb-1">10+</div>
                   <div className="text-gray-600 text-sm font-medium">Anos de Experiência</div>
                 </div>
                 <div className="text-center p-4 bg-white rounded-lg border border-orange-200 shadow-md">
