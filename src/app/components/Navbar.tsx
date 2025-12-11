@@ -103,6 +103,22 @@ export default function Navbar() {
               </svg>
             </a>
           </div>
+
+          {/* Login and Register Buttons */}
+          <div className="flex items-center gap-3 ml-6">
+            <Link
+              href="/login"
+              className="bg-white hover:bg-gray-100 text-gray-800 font-semibold px-4 py-2 rounded-lg transition-all duration-300 text-sm"
+            >
+              Login
+            </Link>
+            <Link
+              href="/registar"
+              className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 text-sm"
+            >
+              Registar
+            </Link>
+          </div>
         </div>
       </nav>
     </header>
