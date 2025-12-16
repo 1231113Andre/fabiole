@@ -146,9 +146,29 @@ export default function ServicosPage() {
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       {/* Hero Section */}
       <section className="pt-32 pb-20 bg-gradient-to-br from-blue-100 to-white">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-800 mb-6">
+            {/* Logo */}
+            <div className="mb-6 flex justify-center">
+              <Image
+                src="/images/logo.png"
+                alt="Fábio Lé Logo"
+                width={120}
+                height={120}
+                className="drop-shadow-lg"
+                priority
+              />
+            </div>
+            {/* Brand Name */}
+            <div className="mb-6">
+              <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-800 mb-2">
+                FÁBIO LÉ
+              </h2>
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-gray-700">
+                PERSONAL TRAINER
+              </h3>
+            </div>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-800 mb-6">
               Os Meus <span className="text-[#1E90FF]">Serviços</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -156,74 +176,68 @@ export default function ServicosPage() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-4">
             {services.map((service, index) => (
-              <div 
-                key={service.title}
-                className={`relative bg-white rounded-2xl p-8 border transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl cursor-pointer ${
-                  service.popular 
-                    ? 'border-[#FF6B35] shadow-lg shadow-[#FF6B35]/20' 
-                    : 'border-blue-200 hover:border-[#1E90FF]/50'
-                }`}
-                onClick={() => handleServiceClick(service.title)}
-              >
-                {service.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-[#FF6B35] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+              <div key={service.title} className="lg:col-span-1">
+                <div 
+                  className={`bg-white shadow-lg border-0 rounded-2xl h-full relative cursor-pointer ${service.popular ? 'border-2 border-secondary' : ''}`}
+                  onClick={() => handleServiceClick(service.title)}
+                >
+                  {service.popular && (
+                    <span className="bg-secondary text-white absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3 py-2 rounded-full shadow-lg text-sm font-semibold">
                       MAIS POPULAR
                     </span>
-                  </div>
-                )}
-
-                <div className="mb-6">
-                  <div className="w-full h-48 rounded-lg overflow-hidden mb-4 shadow-lg">
-                    <Image
-                      src={service.icon}
-                      alt={service.title}
-                      width={400}
-                      height={192}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">{service.title}</h3>
-                    <p className="text-gray-600 mb-4">{service.desc}</p>
-                    <div className="text-2xl font-bold text-[#1E90FF] mb-6">{service.price}</div>
-                  </div>
-                </div>
-
-                {service.pdf ? (
-                  <div className="mb-8 text-center">
-                    <a
-                      href={service.pdf}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block text-[#1E90FF] font-bold underline text-lg"
-                    >
-                      Informação detalhada (PDF)
-                    </a>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-3 mb-8">
-                    {service.features && service.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center text-gray-600 text-sm">
-                        <span className="text-green-500 mr-2">✓</span>
-                        <span className="truncate">{feature}</span>
+                  )}
+                  
+                  <div className="p-4">
+                    <div className="mb-4">
+                      <div className="w-full" style={{ height: '192px' }}>
+                        <Image
+                          src={service.icon}
+                          alt={service.title}
+                          width={400}
+                          height={192}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-center mb-2">{service.title}</h3>
+                    <p className="text-gray-600 text-center mb-3">{service.desc}</p>
+                    <div className="text-center mb-4">
+                      <div className="text-2xl font-bold text-primary">{service.price}</div>
+                    </div>
+
+                    {service.pdf ? (
+                      <div className="mb-4 text-center">
+                        <a
+                          href={service.pdf}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary font-bold no-underline p-0 hover:text-primary/80 transition-colors"
+                        >
+                          Informação detalhada (PDF)
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                        {service.features && service.features.map((feature, featureIndex) => (
+                          <div key={featureIndex} className="flex items-center text-gray-600 text-sm">
+                            <i className="fas fa-check-circle text-success mr-2"></i>
+                            <span className="truncate">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                 <div className="text-center">
                   <button 
-                    className={`inline-block w-full py-3 px-6 rounded-lg font-bold transition-all duration-300 shadow-lg ${
-                      service.popular
-                        ? 'bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white'
-                        : 'bg-[#1E90FF] hover:bg-[#1E90FF]/90 text-white'
-                    }`}
+                    className={`w-full modern-btn-service ${service.popular ? 'modern-btn-service-popular' : 'modern-btn-service-standard'}`}
                   >
                     {service.title === "Ginástica Laboral / Teambuilding para Empresas" || service.title === "Acompanhamento Online" ? "Contactar Para Informações" : "Escolher Plano"}
                   </button>
+                </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -255,11 +269,7 @@ export default function ServicosPage() {
                     <button
                       key={freq}
                       onClick={() => setTrainingFrequency(freq)}
-                      className={`py-3 px-2 rounded-lg font-bold transition-all duration-300 ${
-                        trainingFrequency === freq
-                          ? 'bg-[#1E90FF] text-white shadow-lg'
-                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-[#1E90FF] hover:text-[#1E90FF]'
-                      }`}
+                      className={`modern-btn-option ${trainingFrequency === freq ? 'modern-btn-option-active' : 'modern-btn-option-inactive'}`}
                     >
                       {freq}x
                     </button>
@@ -277,11 +287,7 @@ export default function ServicosPage() {
                     <button
                       key={duration}
                       onClick={() => setTrainingDuration(duration)}
-                      className={`w-full py-3 px-4 rounded-lg font-bold transition-all duration-300 ${
-                        trainingDuration === duration
-                          ? 'bg-[#FF6B35] text-white shadow-lg'
-                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-[#FF6B35] hover:text-[#FF6B35]'
-                      }`}
+                      className={`w-full modern-btn-option ${trainingDuration === duration ? 'modern-btn-option-active-secondary' : 'modern-btn-option-inactive'}`}
                     >
                       {duration}
                     </button>
@@ -303,15 +309,11 @@ export default function ServicosPage() {
                     <button
                       key={type.value}
                       onClick={() => setTrainingType(type.value)}
-                      className={`w-full py-3 px-4 rounded-lg font-bold transition-all duration-300 text-left ${
-                        trainingType === type.value
-                          ? 'bg-green-500 text-white shadow-lg'
-                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-green-500 hover:text-green-500'
-                      }`}
+                      className={`w-full text-left modern-btn-option ${trainingType === type.value ? 'modern-btn-option-active-success' : 'modern-btn-option-inactive'}`}
                     >
                       <div className="flex justify-between items-center">
                         <span>{type.label}</span>
-                        <span className="text-sm opacity-75">{type.desc}</span>
+                        <small className="opacity-75">{type.desc}</small>
                       </div>
                     </button>
                   ))}
@@ -333,13 +335,13 @@ export default function ServicosPage() {
                <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleCloseModal}
-                  className="flex-1 py-3 px-4 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition-all duration-300"
+                  className="modern-btn-cancel flex-1"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={handleContinue}
-                  className="flex-1 py-3 px-4 bg-gradient-to-r from-[#1E90FF] to-blue-600 text-white rounded-lg font-bold hover:from-[#1E90FF]/90 hover:to-blue-600/90 transition-all duration-300 shadow-lg"
+                  className="modern-btn-submit flex-1"
                 >
                   Continuar
                 </button>
@@ -351,7 +353,7 @@ export default function ServicosPage() {
 
       {/* Additional Info */}
       <section className="py-20 bg-gradient-to-br from-orange-50 to-white">
-        <div className="container">
+        <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
               Porque Escolher os <span className="text-[#1E90FF]">Meus Serviços</span>
@@ -409,7 +411,7 @@ export default function ServicosPage() {
           </p>
           <button 
             onClick={() => router.push('/contacto')}
-            className="inline-block bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-bold text-lg px-10 py-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+            className="inline-block bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-bold text-xl px-12 py-5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
             Marca Avaliação Gratuita
           </button>

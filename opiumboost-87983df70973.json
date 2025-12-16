@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "opiumboost",
+  "private_key_id": "87983df7097381be0d99a212ca618661a46ee98d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDEYJVcfDCuTeNY\nhBXrBx/enmxOgrFkeSzk71ZrrmNywp22YE8yD5E7d1NIQBBkWhY7vDPv0Gp7EcK2\nBiHglqAoY2mTb3kpF12Oi0YBfGdfy4hTwDbq7UiM2XQya6ZViNlAuS6WszFYiBwM\nHf7ceWwVos4i4dFOKNSmS6gJaDn1ZrNrDoJHYITFXfhTSCUEsrQzI4FsetGJo3j+\nzOxSWz3sO44ukuyw/E9hQh1B4Xdo8PUFLw3t7Gc3XHFJYndtjlXxPFfEIMz1KNlB\n3qt6CmxWew7ovGZ504/vTNivnrF8eSw6IJq//Bnr/TSGqdbKKx65pfLYCtJUOYy9\n0falXFvNAgMBAAECggEADWi26jDEtjI1Uub6BClhYLcamCXObRjlGuDI2uN2gPCP\nClP7NGThutjEBAvz0pZgLEYGmdp2Wt70l69FgutmFjvripizAj5JMiGKbzGKcX0Z\nWvamCVaYfJ2glIzLN833X7cFWl70AKKSn7UwoOddnQCX6MPYoeih1JUX7USDqKDz\nAm/Xza9CMuCe72aOKs9Nrf+yKHmWxnFtJ85qa2s22A0To1X4Rwv1hfmlSfkwM2Z8\nBqJy5VfMAT48/139A3FkuQjXmJhTRvy+3HTG9yDFBmDiLkQNEyQ2fV9gdHT2J9cN\nYq3dFKNx8p1v2xR5F8y7VKJl2Yu8HvcVNScgo29XoQKBgQDhlJu9Hn72m3g4dCSj\nTE+5WCJhsZ8E/z1GHMRlt/U1/ZZouYZEB8W+feUoeTjz8tbALgJaFbgPu+OfGrY9\nRYCJXNLHHh0FDS5vKlmxdy1euFV+ZHN1e6YgjkYuBSopRaJHofcpET+AfWC5diGk\nKE8rOrTjkmqBw29VqVp1Rlh/2QKBgQDe29WNaQGZBnCLLttWKkIdgWWvMc5IrWXv\niY8eyEydvcuMv7oEa2qXadit3oqG+XeLGfcDJRubyOp6G0fOwTrs/c/fKxUB5Vhp\n6KFxAa1kKbyAQvENaeGZnwu18fCUET4jXZFnA24FYLAiBXjp6C0euSLqjGoota0z\nk6zkIox3FQKBgDRFTTkrYdwe9mKOdxbnzelyxLTChciQpFAkxlWTpNxX4IxvwO7u\npiGX5ovUWyAb+ysY/i6FrdrnfL0XYXcdLcWmnqjJD4xmG4Zi19nJddfm+tiIykBE\n4J/Wl+h+BeD+Y7YZj74SYxaQ9uLCvtTdCktIFTZObSOYd6nvzigynrsxAoGASpfq\nctqi3kV5hhy47a5XUujs0CcrlMf1RqgUb4k7m9DbQNErwi7yDpwvGoNSersleDnI\npBTXmN03HofjESE8R/bsjRYugePyJADpiJm3H7+YiJXfeU3nZTQHB29jxyu+ULgQ\n4xoSyVoDml+aiTBdadsuBLPbFKU6w/i59eJagcECgYEAo0fQWfAKHgcCxvRWOHrm\nw4ZEAzVfUIPCls4xeDlpgv5D5v9Z5ZyfPiMx1JiwVmIRqenjweitOLLrr2q5lF1B\n6egRsFTNpcMagq+o3D2gCdUyWTUYuZaFolRStIdxSSWDmVV9sdXlVUPN6SkcwI7o\nyl2DsaY2vYeyYu4xIQREY9U=\n-----END PRIVATE KEY-----\n",
+  "client_email": "fabiole-sheets-access@opiumboost.iam.gserviceaccount.com",
+  "client_id": "101969751363352940179",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/fabiole-sheets-access%40opiumboost.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

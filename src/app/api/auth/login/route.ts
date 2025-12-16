@@ -1,58 +1,76 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getUserByEmail, initializeSheet } from '@/lib/googleSheets';
-import { LoginData } from '@/types/user';
+import { BaseRouteHandler } from '@/lib/api/core/BaseRouteHandler';
+import { ApiResponse } from '@/lib/api/core/ApiResponse';
+import { requestIdMiddleware } from '@/lib/api/middleware/RequestIdMiddleware';
+import { timeoutMiddleware } from '@/lib/api/middleware/TimeoutMiddleware';
+import { compressionMiddleware } from '@/lib/api/middleware/CompressionMiddleware';
+import { csrfMiddleware } from '@/lib/api/middleware/CsrfMiddleware';
+import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware';
+import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddleware';
+import { loginSchema } from '@/lib/api/validators/auth.validator';
+import { AuthService } from '@/lib/api/services/AuthService';
+import {
+  checkAccountLockout,
+  recordFailedAttempt,
+  clearFailedAttempts,
+  getClientIp,
+} from '@/lib/security/accountLockout';
 
-export async function POST(request: NextRequest) {
-  try {
-    // Initialize sheet headers if needed
-    await initializeSheet();
+const loginHandler = new BaseRouteHandler()
+  .use(requestIdMiddleware)
+  .use(timeoutMiddleware(30000))
+  .use(compressionMiddleware)
+  .use(csrfMiddleware)
+  .use(validationMiddleware(loginSchema))
+  .use(sanitizationMiddleware)
+  .handle(async (context) => {
+    try {
+      const { email, password } = context.validatedData as { email: string; password: string };
+      const ip = getClientIp(context.request);
 
-    const body: LoginData = await request.json();
-    const { email, password } = body;
+      // Check if account is locked
+      const lockoutCheck = checkAccountLockout(email, ip);
+      if (lockoutCheck.isLocked) {
+        return ApiResponse.unauthorized(
+          `Account temporarily locked due to too many failed login attempts. Please try again in ${lockoutCheck.remainingSeconds} seconds.`
+        );
+      }
 
-    // Validate input
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      );
+      try {
+        const user = await AuthService.login(email, password);
+
+        // Clear failed attempts on successful login
+        clearFailedAttempts(email, ip);
+
+        const sessionCookie = await AuthService.createSessionCookie(user);
+
+        const response = ApiResponse.success(
+          {
+            message: 'Login successful',
+            user,
+          },
+          200
+        );
+
+        // Add session cookie
+        response.cookies = [sessionCookie];
+
+        return response;
+      } catch (loginError) {
+        // Record failed attempt
+        const lockoutResult = recordFailedAttempt(email, ip);
+
+        if (lockoutResult.isLocked) {
+          return ApiResponse.unauthorized(
+            `Too many failed login attempts. Account locked for ${lockoutResult.remainingSeconds} seconds.`
+          );
+        }
+
+        // Return generic error to prevent user enumeration
+        return ApiResponse.unauthorized('Invalid email or password');
+      }
+    } catch (error) {
+      throw error; // Re-throw to be handled by BaseRouteHandler
     }
+  });
 
-    // Find user by email
-    const user = await getUserByEmail(email);
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
-    }
-
-    // Verify password (in production, compare hashed passwords)
-    // For now, simple comparison - TODO: Implement bcrypt comparison
-    if (user.password !== password) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
-    }
-
-    // Don't send password back in response
-    const { password: _, ...userResponse } = user;
-
-    return NextResponse.json(
-      { 
-        message: 'Login successful',
-        user: userResponse 
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
+export const POST = loginHandler.toNextHandler();

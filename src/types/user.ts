@@ -1,22 +1,29 @@
 export interface User {
-  id?: string;
+  name: string;
+  surname: string;
   email: string;
   password: string; // Will be hashed before storing
-  name: string;
-  phone?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  birth: string;
 }
 
 export interface RegisterData {
+  name: string;
+  surname: string;
   email: string;
   password: string;
-  name: string;
-  phone?: string;
+  birth: string;
 }
 
 export interface LoginData {
   email: string;
   password: string;
+}
+
+export interface InfoDataRow {
+  name: string;
+  surname: string;
+  email: string;
+  password: string;
+  birth: string;
 }
 

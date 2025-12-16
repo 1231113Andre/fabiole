@@ -1,11 +1,10 @@
 "use client";
 import { useState } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRegister } from "@/lib/react-query/hooks/useAuth";
 
 export default function RegisterPage() {
-  const router = useRouter();
+  const registerMutation = useRegister();
   const [step, setStep] = useState<"form" | "verify">("form");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -16,7 +15,6 @@ export default function RegisterPage() {
   });
   const [verificationCode, setVerificationCode] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,6 +25,10 @@ export default function RegisterPage() {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
     setEmailExists(false);
+    // Clear mutation error when user starts typing
+    if (registerMutation.error) {
+      registerMutation.reset();
+    }
   };
 
   const validateForm = () => {
@@ -67,58 +69,38 @@ export default function RegisterPage() {
       return;
     }
 
-    setIsLoading(true);
+    setEmailExists(false);
+    setErrors({});
 
-    // Simular verificação de email existente
-    // TODO: Backend vai implementar verificação real na coluna C do Google Sheets
-    setTimeout(() => {
-      // Simular que email já existe (pode remover/alterar depois)
-      // const emailExistsInDB = false; // Simulação
-      
-      // Por agora, vamos assumir que o email não existe e passar para verificação
-      // Se o backend retornar erro de email existente, mostrar mensagem
-      
-      // Simulação: se quiseres testar o erro de email existente, descomenta:
-      // if (formData.email === "teste@teste.com") {
-      //   setEmailExists(true);
-      //   setIsLoading(false);
-      //   return;
-      // }
-
-      // Continuar para verificação de email
-      setStep("verify");
-      setIsLoading(false);
-      // TODO: Backend vai enviar email com código de 6 dígitos
-      // Por agora, simulação - código gerado: 123456
-    }, 1500);
+    // Use TanStack Query mutation
+    registerMutation.mutate(
+      {
+        name: formData.firstName,
+        surname: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+        birth: formData.birthDate,
+      },
+      {
+        onError: (error: Error & { status?: number }) => {
+          if (error.status === 409) {
+            setEmailExists(true);
+          } else {
+            setErrors({ general: error.message || "Erro ao criar conta" });
+          }
+        },
+      }
+    );
   };
+
+  // Get general error from mutation
+  const generalError = registerMutation.error && !emailExists 
+    ? registerMutation.error.message 
+    : errors.general;
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (verificationCode.length !== 6) {
-      setErrors({ verificationCode: "Código deve ter 6 dígitos" });
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Simular verificação do código
-    // TODO: Backend vai verificar o código enviado por email
-    setTimeout(() => {
-      // Por agora, qualquer código funciona (pode remover depois)
-      // if (verificationCode !== "123456") {
-      //   setErrors({ verificationCode: "Código inválido" });
-      //   setIsLoading(false);
-      //   return;
-      // }
-
-      // Simular sucesso - registrar na sheet
-      // TODO: Backend vai criar nova linha na sheet com os dados
-      
-      // Redirecionar para login após sucesso
-      router.push("/login?registered=true");
-    }, 1000);
+    // This step is now skipped - registration happens directly
   };
 
   const resendCode = () => {
@@ -130,13 +112,8 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 pt-32 pb-20">
-      <div className="container max-w-2xl">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="bg-white rounded-2xl p-8 border border-blue-200 shadow-lg"
-        >
+      <div className="container mx-auto px-4 max-w-2xl">
+        <div className="bg-white rounded-2xl p-8 border border-blue-200 shadow-lg animate-fade-in-up">
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
               Criar <span className="text-[#1E90FF]">Conta</span>
@@ -149,109 +126,87 @@ export default function RegisterPage() {
           </div>
 
           {step === "form" ? (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit}>
               {/* Email Exists Alert */}
               {emailExists && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                  <div className="flex">
-                    <div className="ml-3">
-                      <p className="text-sm text-red-700">
-                        Este email já está registado.{" "}
-                        <Link href="/login" className="font-semibold underline">
-                          Inicia sessão aqui
-                        </Link>
-                      </p>
-                    </div>
-                  </div>
+                <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-4" role="alert">
+                  Este email já está registado.{" "}
+                  <Link href="/login" className="font-semibold underline hover:text-red-900">
+                    Inicia sessão aqui
+                  </Link>
                 </div>
               )}
 
               {/* Nome Próprio */}
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Nome Próprio *
-                </label>
+              <div className="mb-3">
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">Nome Próprio *</label>
                 <input
                   id="firstName"
                   name="firstName"
                   type="text"
                   value={formData.firstName}
                   onChange={handleInputChange}
-                  className={`w-full rounded-lg bg-gray-50 border ${
-                    errors.firstName ? "border-red-500" : "border-gray-300"
-                  } px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent transition-all duration-300`}
+                  className={`w-full rounded-lg bg-gray-50 border ${errors.firstName ? "border-red-500" : "border-gray-300"} px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300`}
                   placeholder="João"
                 />
                 {errors.firstName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                  <div className="mt-1 text-sm text-red-600">{errors.firstName}</div>
                 )}
               </div>
 
               {/* Apelido */}
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Apelido *
-                </label>
+              <div className="mb-3">
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">Apelido *</label>
                 <input
                   id="lastName"
                   name="lastName"
                   type="text"
                   value={formData.lastName}
                   onChange={handleInputChange}
-                  className={`w-full rounded-lg bg-gray-50 border ${
-                    errors.lastName ? "border-red-500" : "border-gray-300"
-                  } px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent transition-all duration-300`}
+                  className={`w-full rounded-lg bg-gray-50 border ${errors.lastName ? "border-red-500" : "border-gray-300"} px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300`}
                   placeholder="Silva"
                 />
                 {errors.lastName && (
-                  <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                  <div className="mt-1 text-sm text-red-600">{errors.lastName}</div>
                 )}
               </div>
 
               {/* Email */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email *
-                </label>
+              <div className="mb-3">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`w-full rounded-lg bg-gray-50 border ${
-                    errors.email ? "border-red-500" : "border-gray-300"
-                  } px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent transition-all duration-300`}
+                  className={`w-full rounded-lg bg-gray-50 border ${errors.email ? "border-red-500" : "border-gray-300"} px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300`}
                   placeholder="joao.silva@email.com"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  <div className="mt-1 text-sm text-red-600">{errors.email}</div>
                 )}
               </div>
 
               {/* Password */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Password *
-                </label>
+              <div className="mb-3">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full rounded-lg bg-gray-50 border ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  } px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent transition-all duration-300`}
+                  className={`w-full rounded-lg bg-gray-50 border ${errors.password ? "border-red-500" : "border-gray-300"} px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300`}
                   placeholder="••••••••"
                 />
                 {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                  <div className="mt-1 text-sm text-red-600">{errors.password}</div>
                 )}
               </div>
 
               {/* Data de Nascimento */}
-              <div>
+              <div className="mb-3">
                 <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-2">
                   Data de Nascimento *
                 </label>
@@ -261,22 +216,27 @@ export default function RegisterPage() {
                   type="date"
                   value={formData.birthDate}
                   onChange={handleInputChange}
-                  className={`w-full rounded-lg bg-gray-50 border ${
-                    errors.birthDate ? "border-red-500" : "border-gray-300"
-                  } px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent transition-all duration-300`}
+                  className={`w-full rounded-lg bg-gray-50 border ${errors.birthDate ? "border-red-500" : "border-gray-300"} px-4 py-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300`}
                 />
                 {errors.birthDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.birthDate}</p>
+                  <div className="mt-1 text-sm text-red-600">{errors.birthDate}</div>
                 )}
               </div>
+
+              {/* General Error */}
+              {generalError && (
+                <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-4" role="alert">
+                  {generalError}
+                </div>
+              )}
 
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-[#1E90FF] to-blue-600 hover:from-[#1E90FF]/90 hover:to-blue-600/90 text-white font-bold text-lg py-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                disabled={registerMutation.isPending}
+                className="modern-btn-submit w-full"
               >
-                {isLoading ? "A processar..." : "Continuar"}
+                {registerMutation.isPending ? "A processar..." : "Continuar"}
               </button>
 
               {/* Login Link */}
@@ -292,10 +252,8 @@ export default function RegisterPage() {
           ) : (
             <form onSubmit={handleVerifyCode} className="space-y-6">
               {/* Info Message */}
-              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                <p className="text-sm text-blue-700">
-                  Enviámos um código de verificação para <strong>{formData.email}</strong>
-                </p>
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-4 mb-4" role="alert">
+                Enviámos um código de verificação para <strong>{formData.email}</strong>
               </div>
 
               {/* Verification Code */}
@@ -331,7 +289,7 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={resendCode}
-                  className="text-[#1E90FF] hover:text-[#1E90FF]/80 font-semibold text-sm"
+                  className="text-primary no-underline font-semibold hover:text-primary/80 transition-colors bg-transparent border-0 cursor-pointer"
                 >
                   Reenviar código
                 </button>
@@ -340,10 +298,10 @@ export default function RegisterPage() {
               {/* Verify Button */}
               <button
                 type="submit"
-                disabled={isLoading || verificationCode.length !== 6}
-                className="w-full bg-gradient-to-r from-[#FF6B35] to-orange-600 hover:from-[#FF6B35]/90 hover:to-orange-600/90 text-white font-bold text-lg py-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                disabled={registerMutation.isPending || verificationCode.length !== 6}
+                className="modern-btn-submit w-full"
               >
-                {isLoading ? "A verificar..." : "Verificar e Criar Conta"}
+                {registerMutation.isPending ? "A verificar..." : "Verificar e Criar Conta"}
               </button>
 
               {/* Back Button */}
@@ -355,14 +313,15 @@ export default function RegisterPage() {
                     setVerificationCode("");
                     setErrors({});
                   }}
-                  className="text-gray-600 hover:text-gray-800 font-semibold text-sm"
+                  className="text-gray-600 no-underline font-semibold inline-flex items-center gap-2 bg-transparent border-0 cursor-pointer hover:text-gray-800 transition-colors"
                 >
-                  ← Voltar
+                  <i className="fas fa-arrow-left"></i>
+                  Voltar
                 </button>
               </div>
             </form>
           )}
-        </motion.div>
+        </div>
       </div>
     </main>
   );
