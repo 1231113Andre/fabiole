@@ -5,7 +5,7 @@ import { timeoutMiddleware } from '@/lib/api/middleware/TimeoutMiddleware';
 import { compressionMiddleware } from '@/lib/api/middleware/CompressionMiddleware';
 import { csrfMiddleware } from '@/lib/api/middleware/CsrfMiddleware';
 import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware';
-import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddleware';
+// import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddleware'; // Removed - causes jsdom issue on Vercel
 import { loginSchema } from '@/lib/api/validators/auth.validator';
 import { AuthService } from '@/lib/api/services/AuthService';
 import {
@@ -21,7 +21,7 @@ const loginHandler = new BaseRouteHandler()
   .use(compressionMiddleware)
   // .use(csrfMiddleware) // Temporarily disabled for debugging 405 on Vercel
   .use(validationMiddleware(loginSchema))
-  .use(sanitizationMiddleware)
+  // .use(sanitizationMiddleware) // Removed - causes jsdom issue on Vercel
   .handle(async (context) => {
     try {
       const { email, password } = context.validatedData as { email: string; password: string };
