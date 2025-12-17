@@ -10,7 +10,7 @@ import { useRegister } from '@/lib/react-query/hooks/useAuth';
 import NewButton from '@/app/components/newButton';
 import { cn } from '@/lib/utils';
 import { Input } from './Input';
-import { InfoBox } from '@/components/ui/infobox';
+// import { InfoBox } from '@/components/ui/infobox'; // Removed unused import
 import { LoadingSpinner } from '@/components/ui/spinner';
 
 // Adapted Schema for Fabiole: firstName, lastName, email, password, birthDate
@@ -120,12 +120,9 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                 {errors.terms && <p className="mt-1 text-xs text-destructive">{errors.terms.message}</p>}
             </div>
             {errors.root?.serverError && (
-                <InfoBox variant="destructive" className="text-sm text-center">
-                    <div className="flex items-center justify-center gap-2">
-                        <i className="fa-solid fa-circle-exclamation" style={{ fontSize: 14 }}></i>
-                        <span>{errors.root.serverError.message}</span>
-                    </div>
-                </InfoBox>
+                <p className="text-sm text-center text-destructive font-medium">
+                    {errors.root.serverError.message}
+                </p>
             )}
             <NewButton type="submit" h='12' variant='new_primary_rounded' className="w-full !py-3 !text-base !font-semibold" disabled={isSubmitting}>
                 {isSubmitting ? (

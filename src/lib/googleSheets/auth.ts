@@ -41,17 +41,29 @@ export async function getAuthClient(): Promise<Auth.GoogleAuth> {
   console.log('🔐 [Google Sheets] Initializing authorization client...');
   const credentialsPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
   const credentialsString = process.env.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS;
-  
+
   console.log('📋 [Google Sheets] Environment variables:');
   console.log(`   - GOOGLE_SHEET_ID: ${process.env.GOOGLE_SHEET_ID ? '✅ Set' : '❌ Missing'}`);
   console.log(`   - GOOGLE_SHEET_NAME: ${process.env.GOOGLE_SHEET_NAME ? '✅ Set' : '❌ Missing'}`);
   console.log(`   - GOOGLE_SERVICE_ACCOUNT_KEY_PATH: ${credentialsPath ? `✅ ${credentialsPath}` : '❌ Missing'}`);
   console.log(`   - GOOGLE_SERVICE_ACCOUNT_CREDENTIALS: ${credentialsString ? '✅ Set (string)' : 'ℹ️ Not set (using file path instead)'}`);
-  
+
   let credentialsObj: any;
 
-  // Try to read from file path first (more secure for production)
-  if (credentialsPath) {
+  // 1. Try to use environment variable credentials (preferred for Vercel/Cloud)
+  if (credentialsString) {
+    try {
+      console.log('📝 [Google Sheets] Attempting to parse JSON from environment variable');
+      credentialsObj = JSON.parse(credentialsString);
+      console.log('✅ [Google Sheets] JSON credentials parsed successfully');
+      console.log(`   - Service account email: ${credentialsObj.client_email || 'Not found'}`);
+    } catch (error) {
+      console.error('❌ [Google Sheets] Error parsing JSON:', error);
+      throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_CREDENTIALS JSON format');
+    }
+  }
+  // 2. Fallback to file path (preferred for local development)
+  else if (credentialsPath) {
     try {
       console.log(`📁 [Google Sheets] Attempting to read file: ${credentialsPath}`);
       const fs = await import('fs/promises');
@@ -62,24 +74,27 @@ export async function getAuthClient(): Promise<Auth.GoogleAuth> {
       console.log(`   - Project ID: ${credentialsObj.project_id || 'Not found'}`);
     } catch (error) {
       console.error('❌ [Google Sheets] Error reading credentials file:', error);
+      // If file fails and we don't have env string, we can't proceed
       throw new Error(`Failed to read credentials file at ${credentialsPath}: ${error}`);
     }
-  } 
-  // Otherwise, try to parse from environment variable
-  else if (credentialsString) {
-    try {
-      console.log('📝 [Google Sheets] Attempting to parse JSON from environment variable');
-      credentialsObj = JSON.parse(credentialsString);
-      console.log('✅ [Google Sheets] JSON credentials parsed successfully');
-      console.log(`   - Service account email: ${credentialsObj.client_email || 'Not found'}`);
-    } catch (error) {
-      console.error('❌ [Google Sheets] Error parsing JSON:', error);
-      throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_CREDENTIALS JSON format');
-    }
-  } 
+  }
   else {
     console.error('❌ [Google Sheets] No service account key configuration found');
     throw new Error('Either GOOGLE_SERVICE_ACCOUNT_KEY_PATH or GOOGLE_SERVICE_ACCOUNT_CREDENTIALS must be set');
+  }
+
+  // Optimize usage of private_key (handle potential escaping issues from env vars or JSON)
+  if (credentialsObj && credentialsObj.private_key) {
+    // Check if key contains literal "\n" strings that need to be converted to actual newlines
+    // This often happens when pasting JSON into environment variables or specific file encodings
+    const key = credentialsObj.private_key;
+    if (typeof key === 'string') {
+      // If we find literal "\n" sequence, replace with actual newline character
+      if (key.indexOf('\\n') !== -1) {
+        console.log('🔧 [Google Sheets] Normalizing private_key format (unescaping newlines)');
+        credentialsObj.private_key = key.replace(/\\n/g, '\n');
+      }
+    }
   }
 
   console.log('🔑 [Google Sheets] Creating Google authorization client...');

@@ -11,7 +11,7 @@ import { useLogin } from '@/lib/react-query/hooks/useAuth';
 import NewButton from '@/app/components/newButton';
 import { cn } from '@/lib/utils';
 import { Input } from './Input';
-import { InfoBox } from '@/components/ui/infobox';
+// import { InfoBox } from '@/components/ui/infobox'; // Removed unused import
 import { LoadingSpinner } from '@/components/ui/spinner';
 
 const loginSchema = z.object({
@@ -88,12 +88,9 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
                 <a href="/forgot-password" className="font-medium text-[var(--primary)] hover:underline cursor-pointer">Forgot password?</a>
             </div>
             {errors.root?.serverError && (
-                <InfoBox variant="destructive" className="text-sm text-center">
-                    <div className="flex items-center justify-center gap-2">
-                        <i className="fa-solid fa-circle-exclamation" style={{ fontSize: 14 }}></i>
-                        <span>{errors.root.serverError.message}</span>
-                    </div>
-                </InfoBox>
+                <p className="text-sm text-center text-destructive font-medium">
+                    {errors.root.serverError.message}
+                </p>
             )}
             <NewButton type="submit" className="w-full !py-3 !text-base !font-semibold" h='12' variant='new_primary_rounded' disabled={isSubmitting}>
                 {isSubmitting ? (

@@ -40,7 +40,7 @@ export async function initializeInfoDataSheet(): Promise<void> {
 
     console.log(`🔧 [Google Sheets] Initializing infoData sheet: ${ACCOUNT_DATA_SHEET_ID}, tab: ${INFO_DATA_SHEET_NAME}`);
     const sheets = await getSheetsAPI();
-    
+
     // Check if headers exist
     console.log('🔍 [Google Sheets] Checking if headers exist...');
     const response = await sheets.spreadsheets.values.get({
@@ -63,7 +63,7 @@ export async function initializeInfoDataSheet(): Promise<void> {
     } else {
       console.log('✅ [Google Sheets] Headers already exist');
     }
-    
+
     // Cache initialization status with 1 hour TTL (headers don't change)
     apiCache.set(cacheKey, true, 60 * 60 * 1000);
   } catch (error) {
@@ -118,20 +118,20 @@ export async function getAllInfoDataUsers(): Promise<InfoDataRow[]> {
     // A valid user row must have at least an email (column C, index 2)
     const users = rows.slice(1)
       .map((row: any[]) => ({
-        name: row[0] || '',
-        surname: row[1] || '',
-        email: row[2] || '',
-        password: row[3] || '',
-        birth: row[4] || '',
+        name: (row[0] || '').trim(),
+        surname: (row[1] || '').trim(),
+        email: (row[2] || '').trim(),
+        password: (row[3] || '').trim(),
+        birth: (row[4] || '').trim(),
       }))
       .filter((user: InfoDataRow) => user.email.trim() !== ''); // Only count rows with email
 
     console.log(`📊 [Google Sheets] Found ${users.length} valid users (excluding empty rows)`);
     console.log('✅ [Google Sheets] Users mapped successfully');
-    
+
     // Cache with 2 minutes TTL
     apiCache.set(cacheKey, users, 2 * 60 * 1000);
-    
+
     return users;
   } catch (error) {
     console.error('❌ [Google Sheets] Error reading from infoData:', error);
@@ -166,7 +166,7 @@ export async function findUserInInfoData(email: string, password: string): Promi
     const user = users.find(
       (user) => user.email.toLowerCase() === email.toLowerCase()
     ) || null;
-    
+
     if (!user) {
       console.log(`ℹ️ [Google Sheets] User not found: ${email}`);
       return null;
@@ -174,14 +174,14 @@ export async function findUserInInfoData(email: string, password: string): Promi
 
     // Import password comparison function
     const { comparePassword } = await import('@/lib/security/password');
-    
+
     // Check if password is hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
-    const isHashed = user.password.startsWith('$2a$') || 
-                     user.password.startsWith('$2b$') || 
-                     user.password.startsWith('$2y$');
-    
+    const isHashed = user.password.startsWith('$2a$') ||
+      user.password.startsWith('$2b$') ||
+      user.password.startsWith('$2y$');
+
     let passwordMatches = false;
-    
+
     if (isHashed) {
       // Compare with hashed password
       passwordMatches = await comparePassword(password, user.password);
@@ -192,7 +192,7 @@ export async function findUserInInfoData(email: string, password: string): Promi
         console.log(`⚠️ [Google Sheets] Using plain text password comparison (legacy) for: ${email}`);
       }
     }
-    
+
     if (passwordMatches) {
       console.log(`✅ [Google Sheets] User found: ${user.name} ${user.surname} (${user.email})`);
       return user;
@@ -238,10 +238,10 @@ export async function userExistsInInfoData(email: string): Promise<boolean> {
     const users = await getAllInfoDataUsers();
     const exists = users.some((user) => user.email.toLowerCase() === email.toLowerCase());
     console.log(`${exists ? '✅' : 'ℹ️'} [Google Sheets] User ${exists ? 'exists' : 'does not exist'}: ${email}`);
-    
+
     // Cache result with 30 seconds TTL
     apiCache.set(cacheKey, exists, 30 * 1000);
-    
+
     return exists;
   } catch (error) {
     console.error('❌ [Google Sheets] Error checking if user exists:', error);
@@ -275,7 +275,7 @@ export async function addUserToInfoData(userData: InfoDataRow): Promise<InfoData
   try {
     console.log(`➕ [Google Sheets] Adding new user to infoData: ${userData.email}`);
     const sheets = await getSheetsAPI();
-    
+
     // Check if user already exists
     const exists = await userExistsInInfoData(userData.email);
     if (exists) {
@@ -303,12 +303,12 @@ export async function addUserToInfoData(userData: InfoDataRow): Promise<InfoData
     });
 
     console.log(`✅ [Google Sheets] User added to infoData successfully: ${userData.name} ${userData.surname} (${userData.email})`);
-    
+
     // Clear cache since we added a new user
     clearInfoDataCache();
     // Also clear userExists cache for this specific email
     apiCache.delete(CacheKeys.userExists(userData.email.toLowerCase()));
-    
+
     return {
       name: userData.name,
       surname: userData.surname,

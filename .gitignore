@@ -30,9 +30,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
+
+# local env files
+.env
+.env*.local
+
+# secrets
+service-account.json
