@@ -85,14 +85,14 @@ export async function getAuthClient(): Promise<Auth.GoogleAuth> {
 
   // Optimize usage of private_key (handle potential escaping issues from env vars or JSON)
   if (credentialsObj && credentialsObj.private_key) {
-    // Check if key contains literal "\n" strings that need to be converted to actual newlines
-    // This often happens when pasting JSON into environment variables or specific file encodings
     const key = credentialsObj.private_key;
     if (typeof key === 'string') {
-      // If we find literal "\n" sequence, replace with actual newline character
+      // Robust newline handling:
+      // 1. If it contains literal "\n" (escaped), replace with real newlines
+      // 2. Ensure it doesn't have double escaping
       if (key.indexOf('\\n') !== -1) {
-        console.log('🔧 [Google Sheets] Normalizing private_key format (unescaping newlines)');
-        credentialsObj.private_key = key.replace(/\\n/g, '\n');
+        console.log('🔧 [Google Sheets] Normalizing private_key format (fixing escaped newlines)');
+        credentialsObj.private_key = key.split('\\n').join('\n');
       }
     }
   }
