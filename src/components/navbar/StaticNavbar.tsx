@@ -2,8 +2,6 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { validateAuth } from '@/lib/auth/validate';
-import { getServerPathname } from '@/lib/utils/pathname';
 import InteractiveAuthButtons from './InteractiveAuthButtons';
 
 // Nav items for fabiole
@@ -14,21 +12,20 @@ const navItems = [
   { href: "/contacto", label: "Contacto", icon: "fa-duotone fa-envelope-open-text" },
 ] as const;
 
-export default async function StaticNavbar() {
-  const authResult = await validateAuth();
-  const isAuthenticated = authResult.authenticated && !!authResult.user;
-  const userName = authResult.user?.name || '';
-  const userSurname = authResult.user?.surname || '';
-  const pathname = await getServerPathname();
-
-  const hasBanner = pathname === '/';
-
+/**
+ * Static Navbar component - fully static, no server-side auth/cookies
+ * - Auth is handled client-side by InteractiveAuthButtons
+ * - Position (absolute/relative) is handled client-side by NavbarPositionHandler
+ * This allows all pages to be statically generated
+ */
+export default function StaticNavbar() {
+  // Default to relative positioning - NavbarPositionHandler will adjust on client
   return (
     <header
       id="main-header"
-      className={`${hasBanner ? 'absolute left-0 right-0 top-[19px]' : 'relative mt-[19px]'} z-[1000] w-full bg-transparent flex justify-center px-4 ui-flex-center`}
+      className="relative mt-[19px] z-[1000] w-full bg-transparent flex justify-center px-4 ui-flex-center"
       suppressHydrationWarning
-      data-is-home={hasBanner.toString()}
+      data-is-home="false"
     >
       <div className="ui-container relative mx-auto flex h-[var(--navbar-height)] w-full max-w-7xl items-center justify-center px-4 sm:px-8 lg:px-12">
         {/* Mobile Menu Button - positioned absolutely on mobile */}
@@ -74,8 +71,8 @@ export default async function StaticNavbar() {
             ))}
           </nav>
 
-          {/* Desktop Login Button */}
-          <InteractiveAuthButtons isAuthenticated={isAuthenticated} userName={userName} userSurname={userSurname} />
+          {/* Desktop Login Button - Client component handles auth state */}
+          <InteractiveAuthButtons />
         </div>
 
         {/* Mobile: Centered logo */}
@@ -139,9 +136,9 @@ export default async function StaticNavbar() {
 
           {/* Mobile Menu Footer */}
           <div className="space-y-3 border-t border-[var(--border)] bg-[color-mix(in oklab, var(--muted) 20%, transparent)] p-4">
-            {/* Auth Button */}
-            <div id="mobile-auth-btn" data-authenticated={String(isAuthenticated)} suppressHydrationWarning>
-              <InteractiveAuthButtons isAuthenticated={isAuthenticated} userName={userName} userSurname={userSurname} mobile={true} />
+            {/* Auth Button - Client component handles auth state */}
+            <div id="mobile-auth-btn" suppressHydrationWarning>
+              <InteractiveAuthButtons mobile={true} />
             </div>
 
             {/* Separator */}

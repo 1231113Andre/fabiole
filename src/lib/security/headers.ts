@@ -45,14 +45,17 @@ function getContentSecurityPolicy(): string {
     ...(isDevelopment ? ["http://localhost:*", "http://127.0.0.1:*"] : []), // Allow localhost in development for debugging
     ...CSP_CONFIG.additionalDomains,
   ].filter(Boolean).join(' ');
-  
+
   // Build script-src with allowed CDNs
+  // Note: Next.js requires 'unsafe-inline' for hydration scripts
+  // In production, ideally use nonce-based CSP, but for now unsafe-inline is needed
   const scriptSrc = [
     "'self'",
-    ...(isDevelopment ? ["'unsafe-eval'", "'unsafe-inline'"] : []), // Next.js dev mode
+    "'unsafe-inline'", // Required for Next.js hydration
+    ...(isDevelopment ? ["'unsafe-eval'"] : []), // Only eval in dev mode
     "https://cdn.jsdelivr.net", // Bootstrap CDN
   ].filter(Boolean).join(' ');
-  
+
   return [
     "default-src 'self'",
     // Scripts: allow self, CDNs, and Next.js dev mode requirements
@@ -143,19 +146,19 @@ export function getSecurityHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     // Prevent clickjacking attacks
     'X-Frame-Options': 'DENY',
-    
+
     // Prevent MIME type sniffing (prevents XSS via MIME confusion)
     'X-Content-Type-Options': 'nosniff',
-    
+
     // Enable XSS protection (legacy, but still useful for older browsers)
     'X-XSS-Protection': '1; mode=block',
-    
+
     // Control referrer information (privacy + security)
     'Referrer-Policy': 'strict-origin-when-cross-origin',
-    
+
     // Permissions Policy (cached constant)
     'Permissions-Policy': PERMISSIONS_POLICY,
-    
+
     // Content Security Policy (computed once per environment)
     'Content-Security-Policy': getContentSecurityPolicy(),
   };
@@ -180,11 +183,11 @@ export function getSecurityHeaders(): Record<string, string> {
  */
 export function applySecurityHeaders(response: NextResponse): NextResponse {
   const securityHeaders = getSecurityHeaders();
-  
+
   // Use forEach for better performance (native method)
   for (const [key, value] of Object.entries(securityHeaders)) {
     response.headers.set(key, value);
   }
-  
+
   return response;
 }
