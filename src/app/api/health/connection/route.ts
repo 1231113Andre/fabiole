@@ -17,7 +17,7 @@ const healthCheckHandler = new BaseRouteHandler()
   .use(authMiddleware({ required: true }))
   .handle(async (context) => {
     const result = await HealthService.testConnection();
-    
+
     if (result.success) {
       return ApiResponse.success(result, 200);
     } else {
@@ -30,3 +30,15 @@ const healthCheckHandler = new BaseRouteHandler()
   });
 
 export const GET = healthCheckHandler.toNextHandler();
+
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}

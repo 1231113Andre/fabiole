@@ -48,3 +48,15 @@ const getUserDataHandler = new BaseRouteHandler()
   });
 
 export const GET = getUserDataHandler.toNextHandler();
+
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}

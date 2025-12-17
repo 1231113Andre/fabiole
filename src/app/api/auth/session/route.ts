@@ -18,7 +18,7 @@ const getSessionHandler = new BaseRouteHandler()
   .handle(async (context) => {
     const cookieStore = await cookies();
     const session = cookieStore.get('auth_session');
-    
+
     if (!session) {
       return ApiResponse.custom(
         401,
@@ -32,7 +32,7 @@ const getSessionHandler = new BaseRouteHandler()
     try {
       // Try to verify as JWT (new format)
       const payload = await verifySession(session.value);
-      
+
       if (payload) {
         // Check if session is expired
         if (isSessionExpired(payload)) {
@@ -116,3 +116,15 @@ const deleteSessionHandler = new BaseRouteHandler()
 
 export const GET = getSessionHandler.toNextHandler();
 export const DELETE = deleteSessionHandler.toNextHandler();
+
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Methods': 'GET, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Token',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}

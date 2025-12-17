@@ -74,3 +74,15 @@ const loginHandler = new BaseRouteHandler()
   });
 
 export const POST = loginHandler.toNextHandler();
+
+// Handle CORS preflight requests
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Token',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
