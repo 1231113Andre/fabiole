@@ -4,22 +4,17 @@
  */
 
 import { Middleware } from '../core/types';
-import DOMPurify from 'isomorphic-dompurify';
 
 /**
- * Sanitize a string value
+ * Sanitize a string value (Simple Regex version to avoid jsdom/Vercel issues)
  */
 function sanitizeString(value: unknown): string {
   if (typeof value !== 'string') {
     return String(value);
   }
 
-  // Remove HTML tags and dangerous content
-  return DOMPurify.sanitize(value, {
-    ALLOWED_TAGS: [], // No HTML tags allowed
-    ALLOWED_ATTR: [], // No attributes allowed
-    KEEP_CONTENT: true, // Keep text content but strip tags
-  });
+  // Remove HTML tags (basic sanitization)
+  return value.replace(/<[^>]*>?/gm, '');
 }
 
 /**
