@@ -19,7 +19,7 @@ const loginHandler = new BaseRouteHandler()
   .use(requestIdMiddleware)
   .use(timeoutMiddleware(30000))
   .use(compressionMiddleware)
-  .use(csrfMiddleware)
+  // .use(csrfMiddleware) // Temporarily disabled for debugging 405 on Vercel
   .use(validationMiddleware(loginSchema))
   .use(sanitizationMiddleware)
   .handle(async (context) => {
