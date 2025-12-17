@@ -15,12 +15,14 @@ import MobileMenuToggle from './MobileMenuToggle';
 import MobileMenuThemeSwitcher from './MobileMenuThemeSwitcher';
 import MobileMenuLogoAnimation from './MobileMenuLogoAnimation';
 import NavbarAuthButton from './NavbarAuthButton';
+import NavbarPositionHandler from './NavbarPositionHandler';
 
 export default function NavbarClientScripts() {
   return (
     <>
       <NavbarScrollHandler />
       <NavbarVisibilityController />
+      <NavbarPositionHandler />
       <NavbarAnimations />
       <MobileMenuToggle />
       <MobileMenuThemeSwitcher />

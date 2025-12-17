@@ -1,21 +1,18 @@
-import { getServerPathname } from "@/lib/utils/pathname";
+"use client";
+import { usePathname } from "next/navigation";
 import Footer from "./Footer";
 
 /**
- * Conditional Layout Wrapper - Server Component
- * Handles layout conditionally based on route (SSR)
- * Note: Navbar is now rendered directly in layout.tsx for proper fixed positioning
+ * Conditional Layout Wrapper - Client Component
+ * Handles layout conditionally based on route (CSR) to ensure updates on navigation
  */
-export const dynamic = 'force-dynamic';
-
-export default async function ConditionalLayoutWrapper({
+export default function ConditionalLayoutWrapper({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Get pathname from headers (server-side)
-  const pathname = await getServerPathname();
-  const isDashboard = pathname.startsWith("/dashboard");
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith("/dashboard");
 
   if (isDashboard) {
     return <>{children}</>;

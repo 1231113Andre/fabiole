@@ -23,8 +23,8 @@ export default function NavbarAnimations() {
       logo.style.transform = 'translateY(0) scale(1)';
     });
 
-    // Hover effect jest teraz obsługiwany przez CSS klasę .navbar-logo-link:hover
-    // Usunięto duplikację - nie manipulujemy już transformem przez JS
+    // Hover effect is handled via Tailwind hover classes on the logo link
+    // No JS transform manipulation needed here
 
     return () => {
       cleanupFnsRef.current.forEach((fn) => fn());

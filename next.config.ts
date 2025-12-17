@@ -46,6 +46,14 @@ const nextConfig: NextConfig = {
   // Security headers (additional layer - middleware also handles this)
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
+    const htmlCacheHeader = {
+      key: 'Cache-Control',
+      value: 'no-cache, no-store, must-revalidate, max-age=0',
+    };
+    const htmlExpiresPragma = [
+      { key: 'Pragma', value: 'no-cache' },
+      { key: 'Expires', value: '0' },
+    ];
     
     return [
       {
@@ -71,21 +79,7 @@ const nextConfig: NextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          // Disable caching in development mode
-          ...(isDev ? [
-            {
-              key: 'Cache-Control',
-              value: 'no-cache, no-store, must-revalidate, max-age=0',
-            },
-            {
-              key: 'Pragma',
-              value: 'no-cache',
-            },
-            {
-              key: 'Expires',
-              value: '0',
-            },
-          ] : []),
+          ...(isDev ? [htmlCacheHeader, ...htmlExpiresPragma] : [htmlCacheHeader]),
         ],
       },
       // Performance headers for static assets

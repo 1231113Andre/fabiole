@@ -24,14 +24,14 @@ function requiresAuth(pathname: string): boolean {
   if (pathname === '/' || pathname.startsWith('/_next/') || pathname.startsWith('/api/auth/')) {
     return false;
   }
-  
+
   // Check against protected routes
   for (const route of PROTECTED_ROUTES) {
     if (pathname.startsWith(route)) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -61,7 +61,7 @@ function isPublicAuthRoute(pathname: string): boolean {
 function validateAuthEdge(request: NextRequest): boolean {
   // Fast path: check cookie existence first
   const sessionCookie = request.cookies.get(AUTH_SESSION_COOKIE_NAME);
-  
+
   if (!sessionCookie?.value) {
     return false;
   }
@@ -126,7 +126,7 @@ export function middleware(request: NextRequest) {
     // Stricter rate limits for auth endpoints
     const isAuthEndpoint = pathname.startsWith('/api/auth/');
     const rateLimitConfig = isAuthEndpoint ? RATE_LIMITS.AUTH : RATE_LIMITS.API;
-    
+
     const rateLimitResult = checkRateLimit(request, rateLimitConfig);
     if (!rateLimitResult.allowed) {
       const response = NextResponse.json(
@@ -149,10 +149,10 @@ export function middleware(request: NextRequest) {
 
   // Create response early (needed for CSRF token cookie)
   const response = NextResponse.next();
-  
+
   // Add pathname to headers for server components (SSR)
   response.headers.set('x-pathname', pathname);
-  
+
   // Disable caching in development mode
   if (process.env.NODE_ENV === 'development') {
     response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
@@ -163,9 +163,9 @@ export function middleware(request: NextRequest) {
   // PERFORMANCE: CSRF Token Management (Session-based, optimized)
   // Strategy: Generate token once, reuse for entire session (24 hours)
   // Token validation uses Double Submit Cookie pattern
-  
+
   let csrfToken = request.cookies.get(CSRF_TOKEN_COOKIE_NAME)?.value;
-  
+
   // Only generate new token if needed (optimized check)
   if (!csrfToken || !isValidTokenFormat(csrfToken)) {
     csrfToken = generateCsrfTokenSync();
@@ -187,24 +187,24 @@ export function middleware(request: NextRequest) {
   // PERFORMANCE: Authentication check only for protected routes
   if (requiresAuth(pathname) && !isPublicAuthRoute(pathname)) {
     const isAuthenticated = validateAuthEdge(request);
-    
+
     if (!isAuthenticated) {
       // For API routes, return 401 Unauthorized
       if (pathname.startsWith('/api/')) {
         const apiResponse = NextResponse.json(
           { error: 'Unauthorized', message: 'Authentication required' },
-          { 
+          {
             status: 401,
             headers: { 'Content-Type': 'application/json' }
           }
         );
         return applySecurityHeaders(applyCorsHeaders(apiResponse, request, false));
       }
-      
-      // For page routes, redirect to login
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
+
+      // For page routes, redirect to home
+      const homeUrl = new URL('/', request.url);
+      homeUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(homeUrl);
     }
   }
 

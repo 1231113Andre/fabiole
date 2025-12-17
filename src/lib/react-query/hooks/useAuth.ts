@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { getCsrfToken, waitForCsrfToken } from "./useCsrfToken";
+import { useNotification } from "@/components/NotificationContext";
 
 interface User {
   name: string;
@@ -68,6 +69,7 @@ export function useSession(initialData?: SessionResponse) {
  */
 export function useLogin() {
   const queryClient = useQueryClient();
+  const { notify } = useNotification();
 
   return useMutation<LoginResponse, Error, LoginData>({
     mutationFn: async (credentials: LoginData) => {
@@ -113,6 +115,8 @@ export function useLogin() {
     onSuccess: () => {
       // Invalidate session query to refetch with new auth state
       queryClient.invalidateQueries({ queryKey: ["session"] });
+      // Show success notification
+      notify("Login efetuado com sucesso!", "success");
       // Note: Redirect is handled in the component to ensure cookie is set
     },
   });
@@ -125,6 +129,7 @@ export function useLogin() {
 export function useRegister() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { notify } = useNotification();
 
   return useMutation<RegisterResponse, Error, RegisterData>({
     mutationFn: async (registerData: RegisterData) => {
@@ -167,6 +172,7 @@ export function useRegister() {
     onSuccess: () => {
       // Invalidate session query to refetch with new auth state
       queryClient.invalidateQueries({ queryKey: ["session"] });
+      notify("Conta criada com sucesso!", "success");
       // Redirect to dashboard (auto-login after registration)
       router.push("/dashboard");
     },
@@ -180,6 +186,7 @@ export function useRegister() {
 export function useLogout() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { notify } = useNotification();
 
   return useMutation<void, Error, void>({
     mutationFn: async () => {
@@ -212,13 +219,15 @@ export function useLogout() {
     onSuccess: () => {
       // Invalidate all queries to clear cache
       queryClient.clear();
-      // Redirect to login
-      router.push("/login");
+      notify("Sessão terminada com sucesso", "info");
+      // Redirect to home page
+      router.push("/");
     },
     onError: () => {
-      // Even on error, clear cache and redirect
+      // Even on error, clear cache and redirect to home
       queryClient.clear();
-      router.push("/login");
+      notify("Sessão terminada", "info");
+      router.push("/");
     },
   });
 }

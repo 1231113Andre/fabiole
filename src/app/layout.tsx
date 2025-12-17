@@ -1,10 +1,13 @@
+
 import type { Metadata } from "next";
-import "./globals.css";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import ConditionalLayoutWrapper from "./components/ConditionalLayoutWrapper";
 import MainLayout from "@/components/MainLayout";
 import { ThemeProvider } from "./components/ThemeProvider";
 import ServiceWorkerUnregister from "./components/ServiceWorkerUnregister";
+import StaticNavbar from "@/components/navbar/StaticNavbar";
+import { NotificationProvider } from "@/components/NotificationContext";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
@@ -14,10 +17,6 @@ export const metadata: Metadata = {
   description: "Personal training presencial e online. Marca já a tua sessão.",
 };
 
-// Force dynamic rendering to prevent caching issues with HMR during development
-// In production, you can remove this or change to 'auto'
-export const dynamic = 'force-dynamic';
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,14 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Disable caching in development mode */}
-        {process.env.NODE_ENV === 'development' && (
-          <>
-            <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-            <meta httpEquiv="Pragma" content="no-cache" />
-            <meta httpEquiv="Expires" content="0" />
-          </>
-        )}
+        {/* Critical inline CSS to prevent Font Awesome icon flash */}
+
+
         {/* Preload Font Awesome CSS for immediate rendering - prevents icon flickering */}
         <link
           rel="preload"
@@ -52,11 +46,13 @@ export default function RootLayout({
         <ServiceWorkerUnregister />
         <ThemeProvider>
           <QueryProvider>
-            <MainLayout>
-              <ConditionalLayoutWrapper>
-                {children}
-              </ConditionalLayoutWrapper>
-            </MainLayout>
+            <NotificationProvider>
+              <MainLayout navbar={<StaticNavbar />}>
+                <ConditionalLayoutWrapper>
+                  {children}
+                </ConditionalLayoutWrapper>
+              </MainLayout>
+            </NotificationProvider>
           </QueryProvider>
         </ThemeProvider>
       </body>

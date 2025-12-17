@@ -45,6 +45,7 @@ This project uses Google Sheets as the database for user registration and login.
 
 Create a `.env.local` file in the project root with the following variables:
 
+
 **Option 1: Using File Path (Recommended for local development)**
 ```env
 GOOGLE_SHEET_ID=1xO9PkY4dV5PLndq5I686hL5rY4TftVtN1LvO-8Ay0YM

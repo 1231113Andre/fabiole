@@ -132,6 +132,7 @@ export default function MobileMenuToggle() {
     elements.closeBtn?.addEventListener('click', closeMenu);
     elements.backdrop?.addEventListener('click', handleBackdropClick);
     document.addEventListener('keydown', handleEscape);
+    window.addEventListener('close-mobile-menu', closeMenu);
     elements.navLinks.forEach(link => link.addEventListener('click', linkClickHandler));
 
     return () => {
@@ -139,6 +140,7 @@ export default function MobileMenuToggle() {
       elements.closeBtn?.removeEventListener('click', closeMenu);
       elements.backdrop?.removeEventListener('click', handleBackdropClick);
       document.removeEventListener('keydown', handleEscape);
+      window.removeEventListener('close-mobile-menu', closeMenu);
       elements.navLinks?.forEach(link => link.removeEventListener('click', linkClickHandler));
       document.body.style.overflow = '';
     };
@@ -149,7 +151,7 @@ export default function MobileMenuToggle() {
 
     const mobileMenu = document.getElementById('mobile-menu');
     const menuIcon = document.getElementById('mobile-menu-icon');
-    
+
     if (mobileMenu && menuIcon) {
       requestAnimationFrame(() => {
         mobileMenu.classList.add('hidden');

@@ -1,42 +1,40 @@
+"use client";
+
 import React from 'react';
-import { headers } from 'next/headers';
+import { usePathname } from 'next/navigation';
 import MainContent from './MainContent';
-import StaticNavbar from '@/components/navbar/StaticNavbar';
 import NavbarClientScripts from '@/components/navbar/NavbarClientScripts';
 
 interface MainLayoutProps {
   children: React.ReactNode;
+  navbar: React.ReactNode;
 }
 
 /**
- * Server Component dla głównego layoutu stron
+ * Client Component for main layout to handle route changes correctly
+ * Accepts navbar as a prop (Slot Pattern) to allow Server Component navbar usage
  */
-export default async function MainLayout({ children }: MainLayoutProps) {
-  const headersList = await headers();
-  const pathname = headersList.get('x-pathname') || '/';
-  const isHomePage = pathname === '/';
-  const isDashboard = pathname.startsWith('/dashboard');
-  const hasBanner = isHomePage;
+export default function MainLayout({ children, navbar }: MainLayoutProps) {
+  const pathname = usePathname();
+  const isDashboard = pathname?.startsWith('/dashboard');
 
-  // Don't render navbar on dashboard pages (like pairly)
+  // Don't render navbar on dashboard pages
   if (isDashboard) {
     return <>{children}</>;
   }
 
   return (
-    <>
-      <div className={`main-layout ${hasBanner ? 'has-banner' : ''}`}>
-        {/* SSR: Statyczna struktura navbaru */}
-        <StaticNavbar />
-        
-        {/* CSR: Wszystkie interaktywne funkcje navbaru w jednym komponencie */}
-        <NavbarClientScripts />
-        
-        <MainContent>
-          {children}
-        </MainContent>
-      </div>
-    </>
+    <div className="flex min-h-screen w-full flex-col bg-[var(--background)]">
+      {/* SSR: Static structure of navbar passed as prop */}
+      {navbar}
+
+      {/* CSR: All interactive navbar functions */}
+      <NavbarClientScripts />
+
+      <MainContent>
+        {children}
+      </MainContent>
+    </div>
   );
 }
 
