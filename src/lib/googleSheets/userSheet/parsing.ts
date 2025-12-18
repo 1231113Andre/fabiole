@@ -80,6 +80,7 @@ export function parsePesagens(rows: any[]): Pesagem[] {
           resultadoIMC: row[9] || '',
           resultadoPercentualMG: row[10] || '',
           notas: row[11] || '',
+          height: row[12] || '',
         });
       } else if (hasDate && !hasWeight) {
         continue; // Empty row with just date - skip

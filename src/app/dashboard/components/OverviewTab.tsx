@@ -24,14 +24,17 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {/* Training Credit */}
                 {personalInfo?.trainingCredit && (
-                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default">
-                        <div className="flex items-center gap-4 mb-6">
+                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                        <div className="flex flex-col items-center text-center gap-4 mb-6">
                             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
                                 <i className="fa-duotone fa-coins text-2xl"></i>
                             </div>
                             <div>
                                 <h4 className="text-lg font-bold text-black">Training Credit</h4>
-                                <span className="text-xs font-medium text-slate-500">Available Balance</span>
+                                <span className="text-xs font-medium text-slate-500 group">
+                                    <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                    Your remaining balance of prepaid training sessions.
+                                </span>
                             </div>
                         </div>
                         <div className="flex items-end justify-between">
@@ -46,14 +49,17 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
 
                 {/* Trainings Scheduled */}
                 {personalInfo?.trainingsScheduled && (
-                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default">
-                        <div className="flex items-center gap-4 mb-6">
+                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                        <div className="flex flex-col items-center text-center gap-4 mb-6">
                             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
                                 <i className="fa-duotone fa-calendar-check text-2xl"></i>
                             </div>
                             <div>
                                 <h4 className="text-lg font-bold text-black">Scheduled</h4>
-                                <span className="text-xs font-medium text-slate-500">Next Trainings</span>
+                                <span className="text-xs font-medium text-slate-500 group">
+                                    <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                    The number of training sessions currently scheduled.
+                                </span>
                             </div>
                         </div>
                         <div className="flex items-end justify-between">
@@ -68,14 +74,17 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
 
                 {/* Debt Value - Highlighted if debt exists */}
                 {personalInfo?.debtValue && (
-                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default">
-                        <div className="flex items-center gap-4 mb-6">
+                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                        <div className="flex flex-col items-center text-center gap-4 mb-6">
                             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
                                 <i className="fa-duotone fa-file-invoice-dollar text-2xl"></i>
                             </div>
                             <div>
                                 <h4 className="text-lg font-bold text-black">Debt Value</h4>
-                                <span className="text-xs font-medium text-slate-500">Outstanding</span>
+                                <span className="text-xs font-medium text-slate-500 group">
+                                    <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                    Total amount currently outstanding on your account.
+                                </span>
                             </div>
                         </div>
                         <div className="flex items-end justify-between">
@@ -89,14 +98,17 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                 )}
 
                 {/* Total Pesagens with Weight Trend */}
-                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default">
-                    <div className="flex items-center gap-4 mb-6">
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
                             <i className="fa-duotone fa-weight-scale text-2xl"></i>
                         </div>
                         <div>
                             <h4 className="text-lg font-bold text-black">Pesagens</h4>
-                            <span className="text-xs font-medium text-slate-500">Total Records</span>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                Total count of weight measurements recorded.
+                            </span>
                         </div>
                     </div>
                     <div className="flex items-end justify-between">
@@ -119,14 +131,17 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                 </div>
 
                 {/* Total Perímetros */}
-                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default">
-                    <div className="flex items-center gap-4 mb-6">
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
                             <i className="fa-duotone fa-ruler-combined text-2xl"></i>
                         </div>
                         <div>
                             <h4 className="text-lg font-bold text-black">Perímetros</h4>
-                            <span className="text-xs font-medium text-slate-500">Total Records</span>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                Total number of body measurements recorded.
+                            </span>
                         </div>
                     </div>
                     <div className="flex items-end justify-between">
@@ -139,14 +154,17 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                 </div>
 
                 {/* Total Avaliações */}
-                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default">
-                    <div className="flex items-center gap-4 mb-6">
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
                             <i className="fa-duotone fa-dumbbell text-2xl"></i>
                         </div>
                         <div>
                             <h4 className="text-lg font-bold text-black">Avaliações</h4>
-                            <span className="text-xs font-medium text-slate-500">Assessments</span>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                Total number of physical assessments completed.
+                            </span>
                         </div>
                     </div>
                     <div className="flex items-end justify-between">
@@ -160,8 +178,8 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
 
                 {/* Paid Status */}
                 {personalInfo?.paid && (
-                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default">
-                        <div className="flex items-center gap-4 mb-6">
+                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                        <div className="flex flex-col items-center text-center gap-4 mb-6">
                             <div className={`flex h-14 w-14 items-center justify-center rounded-full ${personalInfo.paid.toLowerCase() === 'sim' || personalInfo.paid.toLowerCase() === 'yes'
                                 ? 'bg-emerald-50 text-emerald-500'
                                 : 'bg-amber-50 text-amber-500'
@@ -173,7 +191,10 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             </div>
                             <div>
                                 <h4 className="text-lg font-bold text-black">Status</h4>
-                                <span className="text-xs font-medium text-slate-500">Payment</span>
+                                <span className="text-xs font-medium text-slate-500 group">
+                                    <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                    Current status of your account monthly payment.
+                                </span>
                             </div>
                         </div>
                         <div className="flex items-end justify-between">
@@ -196,6 +217,7 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                     </div>
                 )}
+
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -292,6 +314,6 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

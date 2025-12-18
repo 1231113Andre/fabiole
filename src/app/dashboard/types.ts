@@ -16,6 +16,7 @@ export interface PersonalInfo {
     q2?: string;
     q3?: string;
     q4?: string;
+    age?: string;
 }
 
 export interface Pesagem {
@@ -31,6 +32,8 @@ export interface Pesagem {
     resultadoIMC: string;
     resultadoPercentualMG: string;
     notas?: string;
+    id?: string;
+    height?: number;
 }
 
 export interface PerimetroCorporal {
@@ -108,3 +111,7 @@ export interface DashboardStats {
     totalPerimetros: number;
     totalAvaliacoes: number;
 }
+
+// References Tab Types
+export type Gender = "MALE" | "FEMALE";
+export type Category = "massaGorda" | "flexoes" | "abdominais" | "milha";

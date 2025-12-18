@@ -52,7 +52,7 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
                     href="/dashboard"
                     variant="new_primary_rounded"
                     className="w-full uppercase font-bold text-lg"
-                    icon={<i className="fa-duotone fa-user-circle"></i>}
+                    icon={<i className="fa-duotone fa-user-tie"></i>}
                 >
                     {fullName}
                 </NewButton>
@@ -96,7 +96,7 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
                 variant="new_primary_rounded"
                 iconPosition="right"
                 className="min-w-[180px] uppercase font-bold text-lg"
-                icon={<i className="fa-duotone fa-user-circle text-xl"></i>}
+                icon={<i className="fa-duotone fa-user-tie text-xl"></i>}
             >
                 {fullName}
             </NewButton>

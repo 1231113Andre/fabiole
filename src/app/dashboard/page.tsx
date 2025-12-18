@@ -13,7 +13,7 @@ import { PesagensTab } from "./components/PesagensTab";
 import { PerimetrosTab } from "./components/PerimetrosTab";
 import { AvaliacoesTab } from "./components/AvaliacoesTab";
 import { ReferencesTab } from "./components/ReferencesTab";
-import { PersonalInfo, Pesagem, PerimetroCorporal, AvaliacaoFisica, TabType, ReferenceTables } from "./types";
+import { PersonalInfo, Pesagem, PerimetroCorporal, AvaliacaoFisica, TabType, ReferenceTables, Gender, Category } from "./types";
 
 import { useNotification } from "@/components/NotificationContext";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
@@ -25,6 +25,10 @@ export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
   const { notify } = useNotification();
+
+  // State for Reference Tab (lifted up to control from header)
+  const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category>("massaGorda");
 
   // Use TanStack Query hooks - ALL HOOKS MUST BE CALLED UNCONDITIONALLY
   const { data: sessionData, isLoading: isSessionLoading } = useSession();
@@ -94,6 +98,7 @@ export default function DashboardPage() {
       q2: userData.personalInfo.q2 || "",
       q3: userData.personalInfo.q3 || "",
       q4: userData.personalInfo.q4 || "",
+      age: userData.personalInfo.age || "",
     };
 
     // Helper to parse date (assuming DD/MM/YYYY or DD.MM.YYYY format)
@@ -122,6 +127,7 @@ export default function DashboardPage() {
         resultadoIMC: p.resultadoIMC || "",
         resultadoPercentualMG: p.resultadoPercentualMG || "",
         notas: p.notas || "",
+        height: parseFloat(p.height) || 0,
       }))
       .filter((p: Pesagem) => p.peso > 0)
       .sort((a, b) => parseDate(b.data) - parseDate(a.data)); // Sort descending (newest first)
@@ -187,14 +193,17 @@ export default function DashboardPage() {
   }, [logoutMutation]);
 
   // Prepare chart data
-  const chartData = pesagens.map((p) => ({
-    data: p.data,
-    peso: typeof p.peso === 'number' ? p.peso : parseFloat(String(p.peso)) || 0,
-    massaGorda: typeof p.percentualMG === 'number' ? p.percentualMG : parseFloat(String(p.percentualMG)) || 0,
-    massaMuscular: typeof p.MM === 'number' ? p.MM : parseFloat(String(p.MM)) || 0,
-    gorduraVisceral: typeof p.gordVisceral === 'number' ? p.gordVisceral : parseFloat(String(p.gordVisceral)) || 0,
-    IMC: typeof p.IMC === 'number' ? p.IMC : parseFloat(String(p.IMC)) || 0,
-  }));
+  // Prepare chart data - Sort by date ASCENDING for charts (Oldest -> Newest)
+  const chartData = [...pesagens]
+    .reverse() // Reverse to get oldest first
+    .map((p) => ({
+      data: p.data,
+      peso: typeof p.peso === 'number' ? p.peso : parseFloat(String(p.peso)) || 0,
+      massaGorda: typeof p.percentualMG === 'number' ? p.percentualMG : parseFloat(String(p.percentualMG)) || 0,
+      massaMuscular: typeof p.MM === 'number' ? p.MM : parseFloat(String(p.MM)) || 0,
+      gorduraVisceral: typeof p.gordVisceral === 'number' ? p.gordVisceral : parseFloat(String(p.gordVisceral)) || 0,
+      IMC: typeof p.IMC === 'number' ? p.IMC : parseFloat(String(p.IMC)) || 0,
+    }));
 
   // Calculate statistics for overview
   const stats = useMemo(() => {
@@ -274,6 +283,34 @@ export default function DashboardPage() {
         <div className="max-w-screen-2xl mx-auto">
           {/* Page Header */}
           <div className="mb-6 sm:mb-8">
+            <div className="mb-6 flex flex-wrap gap-4">
+              <NewButton
+                href="/"
+                variant="new_primary_rounded"
+                icon={<i className="fa-duotone fa-arrow-left"></i>}
+                iconPosition="left"
+                className="w-full sm:w-auto min-w-[200px] shadow-md uppercase font-bold"
+              >
+                Voltar ao website
+              </NewButton>
+
+              {/* Reset IMC Button - Only visible in Referencias tab when gender is selected */}
+              {activeTab === "referencias" && selectedGender && (
+                <NewButton
+                  onClick={() => {
+                    setSelectedGender(null);
+                    setSelectedCategory("massaGorda");
+                  }}
+                  variant="new_primary_rounded"
+                  icon={<i className="fa-duotone fa-arrow-left"></i>}
+                  iconPosition="left"
+                  className="w-full sm:w-auto min-w-[200px] uppercase font-bold"
+                >
+                  Voltar ao IMC
+                </NewButton>
+              )}
+            </div>
+
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-2 flex items-center gap-3">
@@ -282,9 +319,9 @@ export default function DashboardPage() {
                   </div>
                   <span>Dashboard do Cliente</span>
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-base flex items-center gap-2">
-                  <i className="fa-duotone fa-hand-sparkles text-primary"></i>
-                  Bem-vindo de volta{user ? `, ${user.name} ${user.surname}` : ''}!
+                <p className="text-muted-foreground text-lg sm:text-xl font-medium flex items-center gap-2 mt-1 animate-in fade-in slide-in-from-left-4 duration-700 delay-200">
+                  <span className="text-2xl hover:animate-pulse cursor-default">👋</span>
+                  Bem-vindo de volta, <span className="text-primary font-bold">{user ? `${user.name} ${user.surname}!` : 'Visitante!'}</span>
                 </p>
               </div>
             </div>
@@ -311,22 +348,17 @@ export default function DashboardPage() {
             <AvaliacoesTab avaliacoes={avaliacoes} />
           )}
 
-          {activeTab === "referencias" && (
-            <ReferencesTab referenceTables={referenceTables} />
+          {activeTab === "referencias" && referenceTables && (
+            <ReferencesTab
+              referenceTables={referenceTables}
+              selectedGender={selectedGender}
+              setSelectedGender={setSelectedGender}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+            />
           )}
 
-          {/* Back to Home */}
-          <div className="text-center mt-8 pb-8">
-            <NewButton
-              href="/"
-              variant="new_primary_rounded"
-              icon={<i className="fa-duotone fa-arrow-left"></i>}
-              iconPosition="left"
-              className="!text-black hover:!text-primary"
-            >
-              Voltar ao website
-            </NewButton>
-          </div>
+
         </div>
       </main >
     </div >

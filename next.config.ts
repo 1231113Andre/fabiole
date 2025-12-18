@@ -1,15 +1,41 @@
 import type { NextConfig } from "next";
+import { execSync } from "child_process";
+
+// Get git commit hash at build time
+const getGitCommitHash = (): string => {
+  try {
+    return execSync("git rev-parse --short HEAD").toString().trim();
+  } catch {
+    return "unknown";
+  }
+};
+
+// Get version from package.json
+const getVersion = (): string => {
+  try {
+    const pkg = require("./package.json");
+    return pkg.version || "0.1.0";
+  } catch {
+    return "0.1.0";
+  }
+};
 
 const nextConfig: NextConfig = {
+  // Inject version info at build time
+  env: {
+    NEXT_PUBLIC_VERSION: getVersion(),
+    NEXT_PUBLIC_COMMIT_ID: getGitCommitHash(),
+    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
+  },
   // Performance optimizations
   compress: true,
-  
+
   // Fast Refresh / Hot Module Replacement configuration
   reactStrictMode: true,
-  
+
   // Production optimizations
   poweredByHeader: false,
-  
+
   // Webpack configuration for better HMR and SSR
   webpack: (config, { dev, isServer }) => {
     if (dev) {
@@ -19,7 +45,7 @@ const nextConfig: NextConfig = {
         aggregateTimeout: 100, // Minimal delay before rebuilding
         ignored: ['**/node_modules', '**/.git', '**/.next'],
       };
-      
+
       // Enable caching for faster HMR rebuilds (Next.js handles invalidation properly)
       // Cache helps with faster incremental builds
       if (!config.cache) {
@@ -31,7 +57,7 @@ const nextConfig: NextConfig = {
         };
       }
     }
-    
+
     // Optimize for SSR/CSR consistency
     if (!isServer) {
       config.resolve.fallback = {
@@ -39,10 +65,10 @@ const nextConfig: NextConfig = {
         fs: false,
       };
     }
-    
+
     return config;
   },
-  
+
   // Security headers (additional layer - middleware also handles this)
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
@@ -54,7 +80,7 @@ const nextConfig: NextConfig = {
       { key: 'Pragma', value: 'no-cache' },
       { key: 'Expires', value: '0' },
     ];
-    
+
     return [
       {
         source: '/:path*',
@@ -104,7 +130,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  
+
   // Optimize images
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -115,10 +141,10 @@ const nextConfig: NextConfig = {
 
   // Experimental features disabled for stability
   // optimizePackageImports for recharts conflicts with dynamic imports in dashboard
-  
+
   // Transpile recharts to fix HMR issues with Turbopack
   transpilePackages: ['recharts'],
-  
+
   // Turbopack configuration (Next.js 16 uses Turbopack by default)
   // Disable Turbopack for better compatibility with recharts
   // Use: npm run dev -- --turbo to enable Turbopack

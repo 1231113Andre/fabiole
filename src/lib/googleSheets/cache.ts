@@ -42,6 +42,18 @@ class APICache {
   }
 
   /**
+   * Get cache age as percentage of TTL (0 = fresh, 1 = expired)
+   */
+  getAgePercent(key: string): number {
+    const entry = this.cache.get(key);
+    if (!entry) return 1; // No cache = treat as expired
+
+    const now = Date.now();
+    const age = now - entry.timestamp;
+    return Math.min(age / entry.ttl, 1);
+  }
+
+  /**
    * Set cached data
    */
   set<T>(key: string, data: T, ttl?: number): void {

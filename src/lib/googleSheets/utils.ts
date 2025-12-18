@@ -53,3 +53,45 @@ export function generateUserSheetName(email: string): string {
   return `user_${normalizedEmail}`;
 }
 
+/**
+ * Calculate age from birth date string (supports DD/MM/YYYY, DD.MM.YYYY, YYYY-MM-DD)
+ * @param {string} birthDate - The birth date string
+ * @returns {string} Calculated age or empty string if invalid
+ */
+export function calculateAge(birthDate: string): string {
+  if (!birthDate) return '';
+  try {
+    const parts = birthDate.trim().split(/[./-]/);
+    if (parts.length !== 3) return '';
+
+    let day, month, year;
+    // Check if first part is Year (YYYY)
+    if (parts[0].length === 4) {
+      // Format: YYYY-MM-DD
+      year = parseInt(parts[0]);
+      month = parseInt(parts[1]) - 1; // Month is 0-indexed
+      day = parseInt(parts[2]);
+    } else {
+      // Format: DD/MM/YYYY or DD.MM.YYYY
+      day = parseInt(parts[0]);
+      month = parseInt(parts[1]) - 1;
+      year = parseInt(parts[2]);
+    }
+
+    const birth = new Date(year, month, day);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+
+    // Adjust age if birthday hasn't occurred yet this year
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+
+    return age.toString();
+  } catch (e) {
+    console.error('Error calculating age:', e);
+    return '';
+  }
+}
+

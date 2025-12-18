@@ -55,10 +55,7 @@ export default async function ServerNavbar() {
         <>
             <header
                 id="main-header"
-                className={`absolute top-0 left-0 w-full z-[1000] flex justify-center px-4 ui-flex-center transition-all duration-300 ${isTransparentBase
-                    ? 'bg-transparent'
-                    : 'bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg'
-                    } mt-[19px]`}
+                className="absolute top-0 left-0 w-full z-[1000] flex justify-center px-4 ui-flex-center transition-all duration-300 mt-[19px]"
             >
                 <div className="ui-container relative mx-auto flex h-[var(--navbar-height)] w-full max-w-7xl items-center justify-center px-4 sm:px-8 lg:px-12">
                     {/* Mobile Menu Button - Client Component for interactivity */}

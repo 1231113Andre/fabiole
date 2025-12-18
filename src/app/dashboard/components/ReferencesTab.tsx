@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { ReferenceTables } from "../types";
+import { ReferenceTables, Gender, Category } from "../types";
 import NewButton from "@/app/components/newButton";
 import { cn } from "@/lib/utils";
 
 interface ReferencesTabProps {
     referenceTables: ReferenceTables;
+    selectedGender: Gender | null;
+    setSelectedGender: (gender: Gender | null) => void;
+    selectedCategory: Category;
+    setSelectedCategory: (category: Category) => void;
 }
 
-type Gender = "MALE" | "FEMALE";
-type Category = "massaGorda" | "flexoes" | "abdominais" | "milha";
-
-export function ReferencesTab({ referenceTables }: ReferencesTabProps) {
-    const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
-    const [selectedCategory, setSelectedCategory] = useState<Category>("massaGorda");
+export function ReferencesTab({
+    referenceTables,
+    selectedGender,
+    setSelectedGender,
+    selectedCategory,
+    setSelectedCategory
+}: ReferencesTabProps) {
 
     // Helper to get data based on selection
     const getData = () => {
@@ -23,6 +28,8 @@ export function ReferencesTab({ referenceTables }: ReferencesTabProps) {
 
         switch (selectedCategory) {
             case "massaGorda":
+                // Massa Gorda data is structured differently (Category, Percent, Description)
+                // and needs to be accessed directly from the fetched referenceTables
                 return referenceTables?.[`massaGorda${genderKey}` as keyof ReferenceTables];
             case "flexoes":
                 return referenceTables?.[`flexoes${genderKey}` as keyof ReferenceTables];
@@ -39,31 +46,31 @@ export function ReferencesTab({ referenceTables }: ReferencesTabProps) {
 
     return (
         <div className="space-y-8">
-            {/* Header & Main Navigation */}
-            <div className="flex flex-col items-center gap-6">
-                <div className="flex items-center justify-center gap-4 w-full max-w-lg">
+            {/* Gender Selection - Initial View */}
+            {!selectedGender && (
+                <div className="flex flex-wrap justify-center gap-6 animate-in fade-in zoom-in duration-500">
                     <NewButton
-                        variant={selectedGender === "MALE" ? "primary" : "outline"}
                         onClick={() => setSelectedGender("MALE")}
-                        className="w-full"
-                        icon={<i className="fa-duotone fa-person text-lg"></i>}
+                        variant="new_primary_rounded"
+                        className="w-full sm:w-auto min-w-[200px] uppercase font-bold"
+                        icon={<i className="fa-duotone fa-mars text-lg"></i>}
                     >
-                        MALE
+                        Masculino
                     </NewButton>
                     <NewButton
-                        variant={selectedGender === "FEMALE" ? "primary" : "outline"}
                         onClick={() => setSelectedGender("FEMALE")}
-                        className="w-full"
-                        icon={<i className="fa-duotone fa-person-dress text-lg"></i>}
+                        variant="new_primary_rounded"
+                        className="w-full sm:w-auto min-w-[200px] uppercase font-bold"
+                        icon={<i className="fa-duotone fa-venus text-lg"></i>}
                     >
-                        FEMALE
+                        Feminino
                     </NewButton>
                 </div>
-            </div>
+            )}
 
             {/* Default View: IMC Table */}
             {!selectedGender && (
-                <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden max-w-4xl mx-auto animate-in fade-in duration-500">
+                <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden max-w-7xl mx-auto animate-in fade-in duration-500">
                     <div className="border-b border-gray-100 px-6 py-5 bg-gray-50/50">
                         <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
@@ -115,20 +122,7 @@ export function ReferencesTab({ referenceTables }: ReferencesTabProps) {
             {selectedGender && (
                 <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
 
-                    {/* Back Button */}
-                    <div className="flex justify-start">
-                        <NewButton
-                            variant="ghost"
-                            onClick={() => {
-                                setSelectedGender(null);
-                                setSelectedCategory("massaGorda");
-                            }}
-                            className="text-gray-500 hover:text-gray-900"
-                            icon={<i className="fa-duotone fa-arrow-left"></i>}
-                        >
-                            Voltar
-                        </NewButton>
-                    </div>
+
 
                     {/* Category Navigation */}
                     <div className="flex flex-wrap justify-center gap-3">
@@ -163,7 +157,7 @@ export function ReferencesTab({ referenceTables }: ReferencesTabProps) {
                     </div>
 
                     {/* Data Table */}
-                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden max-w-5xl mx-auto">
+                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden max-w-7xl mx-auto">
                         <div className="border-b border-gray-100 px-6 py-5 bg-gray-50/50 flex items-center justify-between">
                             <h4 className="text-lg font-semibold text-gray-900">
                                 {selectedCategory === "massaGorda" && "Massa Gorda"}
@@ -236,22 +230,7 @@ export function ReferencesTab({ referenceTables }: ReferencesTabProps) {
                         </div>
                     </div>
 
-                    {/* DEBUG SECTION */}
-                    <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs font-mono overflow-auto max-h-60 border border-gray-300">
-                        <p className="font-bold mb-2">Debug Info:</p>
-                        <p>Selected Gender: {selectedGender || 'null'}</p>
-                        <p>Selected Category: {selectedCategory}</p>
-                        <p>Data Keys Available: {referenceTables ? Object.keys(referenceTables).join(', ') : 'None'}</p>
-                        <p>Current Data Entry Count: {currentData ? Object.keys(currentData).length : '0'}</p>
-                        <details>
-                            <summary className="cursor-pointer font-bold text-blue-600">View Raw Current Data</summary>
-                            <pre className="mt-2 text-[10px]">{JSON.stringify(currentData, null, 2)}</pre>
-                        </details>
-                        <details>
-                            <summary className="cursor-pointer font-bold text-blue-600 mt-2">View All Tables Keys</summary>
-                            <pre className="mt-2 text-[10px]">{JSON.stringify(referenceTables ? Object.keys(referenceTables) : {}, null, 2)}</pre>
-                        </details>
-                    </div>
+
                 </div>
             )}
         </div>

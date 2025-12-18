@@ -1,14 +1,24 @@
 import { getSheetsAPI } from '../auth';
 import { ACCOUNT_DATA_SHEET_ID } from '../config';
 import { ReferenceTableData } from '../types';
+import { apiCache, CacheKeys } from '../cache';
 
 const REFERENCES_SHEET_NAME = 'references_data';
+const REFERENCE_CACHE_TTL = 30 * 60 * 1000; // 30 minutes - reference data rarely changes
 
 /**
  * Fetch and parse reference data from the global sheet
+ * Uses aggressive caching since reference data is mostly static
  */
 export async function fetchReferenceData(): Promise<ReferenceTableData> {
-    console.log('📖 [ReferencesSheet] Fetching data...');
+    // Check cache first - reference data rarely changes
+    const cached = apiCache.get<ReferenceTableData>(CacheKeys.referenceTables());
+    if (cached) {
+        console.log('⚡ [ReferencesSheet] Using cached reference data');
+        return cached;
+    }
+
+    console.log('📖 [ReferencesSheet] Fetching fresh data...');
     try {
         const sheets = await getSheetsAPI();
         const response = await sheets.spreadsheets.values.get({
@@ -22,7 +32,13 @@ export async function fetchReferenceData(): Promise<ReferenceTableData> {
             return {};
         }
 
-        return parseReferenceData(rows);
+        const data = parseReferenceData(rows);
+
+        // Cache with 30-minute TTL
+        apiCache.set(CacheKeys.referenceTables(), data, REFERENCE_CACHE_TTL);
+        console.log('✅ [ReferencesSheet] Data cached for 30 minutes');
+
+        return data;
     } catch (error) {
         console.error('❌ [ReferencesSheet] Error fetching data:', error);
         return {};

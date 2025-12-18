@@ -46,6 +46,7 @@ export interface PersonalInfo {
   q3: string;
   q4: string;
   notas: string;
+  age?: string;
 }
 
 /**
@@ -66,6 +67,7 @@ export interface Pesagem {
   resultadoIMC: string;
   resultadoPercentualMG: string;
   notas: string;
+  height: string;
 }
 
 /**
