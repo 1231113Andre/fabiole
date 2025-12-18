@@ -40,12 +40,19 @@ interface RegisterResponse {
   user: User;
 }
 
+interface UseSessionOptions {
+  initialData?: SessionResponse;
+  enabled?: boolean;
+}
+
 /**
  * Query hook to check authentication session
  * - Uses placeholderData for SSR initial render (no loading spinner)
  * - setQueryData still works for instant updates on login/logout
  */
-export function useSession(initialData?: SessionResponse) {
+export function useSession(options: UseSessionOptions = {}) {
+  const { initialData, enabled = true } = options;
+
   return useQuery<SessionResponse>({
     queryKey: ["session"],
     queryFn: async () => {
@@ -57,6 +64,7 @@ export function useSession(initialData?: SessionResponse) {
     },
     // placeholderData allows SSR render but doesn't block cache updates
     placeholderData: initialData,
+    enabled,
     staleTime: 0, // Always refetch to sync with server
     gcTime: 5 * 60 * 1000,
     refetchOnMount: true,

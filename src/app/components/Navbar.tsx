@@ -31,7 +31,7 @@ const Navbar = memo(function Navbar({ initialSession }: NavbarProps) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const { data: session } = useSession(initialSession as any);
+  const { data: session } = useSession({ initialData: initialSession as any });
 
   // Auth Modal State
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);

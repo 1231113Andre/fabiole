@@ -26,9 +26,9 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
     const [authModalView, setAuthModalView] = useState<'login' | 'register'>('login');
 
     // Use reactive session hook with SSR data as placeholder
-    const { data: session } = useSession(
-        initialUser ? { authenticated: true, user: initialUser as any } : { authenticated: false }
-    );
+    const { data: session } = useSession({
+        initialData: initialUser ? { authenticated: true, user: initialUser as any } : { authenticated: false }
+    });
 
     const user = session?.user;
     const isAuthenticated = session?.authenticated && !!user;

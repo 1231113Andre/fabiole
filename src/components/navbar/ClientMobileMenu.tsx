@@ -30,12 +30,12 @@ interface ClientMobileMenuProps {
 export default function ClientMobileMenu({ navItems, initialUser }: ClientMobileMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
 
-    // Use reactive session hook with SSR data as placeholder
-    const { data: session } = useSession(
-        initialUser ? { authenticated: true, user: initialUser as any } : { authenticated: false }
-    );
-    const user = session?.user;
-    const isAuthenticated = session?.authenticated && !!user;
+    // Use TanStack Query hooks - ALL HOOKS MUST BE CALLED UNCONDITIONALLY
+    const { data: sessionData, isLoading: isSessionLoading } = useSession({
+        initialData: initialUser ? { authenticated: true, user: initialUser as any } : { authenticated: false }
+    });
+    const user = sessionData?.user;
+    const isAuthenticated = sessionData?.authenticated && !!user;
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
