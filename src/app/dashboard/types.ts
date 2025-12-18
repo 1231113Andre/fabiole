@@ -34,25 +34,26 @@ export interface Pesagem {
 }
 
 export interface PerimetroCorporal {
-    data: string;
-    msDrt: number;
-    msDrtCon: number;
-    msEsq: number;
-    msEsqCon: number;
-    peito: number;
-    cintura: number;
-    abdominal: number;
-    anca: number;
-    miDrt: number;
-    miEsq: number;
+    date: string;      // DATE 📅
+    msRight: number;   // MS RIGHT
+    msRightFlex: number; // MS RIGHT FLEX
+    msLeft: number;    // MS LEFT
+    msLeftFlex: number;  // MS LEFT FLEX
+    chest: number;     // CHEST
+    waist: number;     // WAIST
+    abdomen: number;   // ABDOMEN
+    hips: number;      // HIPS
+    thighR: number;    // THIGH R
+    thighL: number;    // THIGH L
 }
 
 export interface AvaliacaoFisica {
-    data: string;
-    flexoes1min: number;
-    abdominais1min: number;
-    milha: string;
-    resultadoMilha: string;
+    date: string;
+    pushUps: number;
+    sitUps: number;
+    mile: string;
+    mileResult: string;
+    notes: string;
 }
 
 export type TabType = "overview" | "personal" | "pesagens" | "perimetros" | "avaliacoes" | "referencias";
@@ -62,6 +63,8 @@ export interface ReferenceTableData {
     bom?: string;
     medio?: string;
     mau?: string;
+    percent?: string;
+    description?: string;
 }
 
 export interface ReferenceTableCategory {

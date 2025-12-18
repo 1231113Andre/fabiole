@@ -39,6 +39,14 @@ export { testConnection } from './connection';
 // Cache utilities
 export { apiCache, CacheKeys, clearUserCache, clearInfoDataCache } from './cache';
 
-// Reference tables
+// Reference tables (read-only access)
 export { getReferenceTableData } from './referenceTables';
+
+// References sheet manager (global sheet with fitness benchmarks)
+export {
+  ensureReferencesSheetExists,
+  regenerateReferencesSheet,
+  getReferencesSheetManager,
+  ReferencesSheetManager,
+} from './referencesSheet';
 

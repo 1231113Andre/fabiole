@@ -22,7 +22,7 @@ function ContactoPageInner() {
   const hasSelectedOptions = selectedService && trainingFrequency && trainingDuration;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 pt-36">
       {/* Hero Section */}
       <section className="pt-32 pb-20 bg-gradient-to-br from-blue-100 to-white">
         <div className="container mx-auto px-4">
@@ -74,76 +74,76 @@ function ContactoPageInner() {
                     </div>
                   )}
 
-              {/* FormSubmit Form */}
-              <form
-                action="https://formsubmit.co/fabiole.pt@gmail.com"
-                method="POST"
-              >
-                <div className="mb-3">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    required
-                    className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
-                    placeholder="O teu nome completo"
-                  />
-                </div>
+                  {/* FormSubmit Form */}
+                  <form
+                    action="https://formsubmit.co/fabiole.pt@gmail.com"
+                    method="POST"
+                  >
+                    <div className="mb-3">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        required
+                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                        placeholder="O teu nome completo"
+                      />
+                    </div>
 
-                <div className="mb-3">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
-                    placeholder="nome@email.com"
-                  />
-                </div>
+                    <div className="mb-3">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                      <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                        placeholder="nome@email.com"
+                      />
+                    </div>
 
-                <div className="mb-3">
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                    Mensagem *
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={5}
-                    required
-                    className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
-                    placeholder={
-                      hasSelectedOptions
-                        ? `Olá Fábio! Estou interessado no serviço "${selectedService}" com ${trainingFrequency} treinos por semana de ${trainingDuration}. Conta-me sobre os teus objetivos de fitness e como posso ajudar...`
-                        : "Conta-me sobre os teus objetivos de fitness e como te posso ajudar..."
-                    }
-                    defaultValue={
-                      hasSelectedOptions
-                        ? `Olá Fábio! Estou interessado no serviço "${selectedService}" com ${trainingFrequency} treinos por semana de ${trainingDuration}. Gostaria de saber mais sobre este plano e como podemos começar.`
-                        : ""
-                    }
-                  />
-                </div>
+                    <div className="mb-3">
+                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                        Mensagem *
+                      </label>
+                      <textarea
+                        id="message"
+                        name="message"
+                        rows={5}
+                        required
+                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-3 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                        placeholder={
+                          hasSelectedOptions
+                            ? `Olá Fábio! Estou interessado no serviço "${selectedService}" com ${trainingFrequency} treinos por semana de ${trainingDuration}. Conta-me sobre os teus objetivos de fitness e como posso ajudar...`
+                            : "Conta-me sobre os teus objetivos de fitness e como te posso ajudar..."
+                        }
+                        defaultValue={
+                          hasSelectedOptions
+                            ? `Olá Fábio! Estou interessado no serviço "${selectedService}" com ${trainingFrequency} treinos por semana de ${trainingDuration}. Gostaria de saber mais sobre este plano e como podemos começar.`
+                            : ""
+                        }
+                      />
+                    </div>
 
-                {/* Hidden Fields */}
-                {selectedService && <input type="hidden" name="service" value={selectedService} />}
-                {trainingFrequency && <input type="hidden" name="frequency" value={trainingFrequency} />}
-                {trainingDuration && <input type="hidden" name="duration" value={trainingDuration} />}
-                <input type="hidden" name="_next" value="https://www.fabiole.com/contacto" />
-                <input type="hidden" name="_captcha" value="false" />
+                    {/* Hidden Fields */}
+                    {selectedService && <input type="hidden" name="service" value={selectedService} />}
+                    {trainingFrequency && <input type="hidden" name="frequency" value={trainingFrequency} />}
+                    {trainingDuration && <input type="hidden" name="duration" value={trainingDuration} />}
+                    <input type="hidden" name="_next" value="https://www.fabiole.com/contacto" />
+                    <input type="hidden" name="_captcha" value="false" />
 
-                <button
-                  type="submit"
-                  className="modern-btn-submit w-full"
-                >
-                  Enviar Mensagem
-                </button>
-              </form>
+                    <button
+                      type="submit"
+                      className="modern-btn-submit w-full"
+                    >
+                      Enviar Mensagem
+                    </button>
+                  </form>
                 </div>
               </div>
 
-          </div>
+            </div>
             {/* Contact Info Section */}
             <div className="lg:col-span-1">
               <div className="flex flex-col gap-4 h-full">
@@ -181,56 +181,56 @@ function ContactoPageInner() {
                   <div className="p-4">
                     <h3 className="text-lg font-bold mb-4">Redes Sociais</h3>
                     <div className="flex gap-3">
-                      <a 
-                        href="https://www.instagram.com/pt_fabiole" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform" 
+                      <a
+                        href="https://www.instagram.com/pt_fabiole"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
                         aria-label="Instagram"
                       >
                         <i className="fab fa-instagram text-lg"></i>
                       </a>
-                      <a 
-                        href="https://www.facebook.com/fabiole13" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform" 
+                      <a
+                        href="https://www.facebook.com/fabiole13"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-400 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
                         aria-label="Facebook"
                       >
                         <i className="fab fa-facebook-f text-lg"></i>
                       </a>
-                      <a 
-                        href="https://www.linkedin.com/in/fabio-le" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="w-12 h-12 bg-gradient-to-r from-blue-700 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform" 
+                      <a
+                        href="https://www.linkedin.com/in/fabio-le"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 bg-gradient-to-r from-blue-700 to-blue-500 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
                         aria-label="LinkedIn"
                       >
                         <i className="fab fa-linkedin-in text-lg"></i>
                       </a>
-                      <a 
-                        href="https://www.youtube.com/channel/UCaVEJUlceBfmF-6GxKYeqhQ" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="w-12 h-12 bg-gradient-to-r from-red-600 to-red-400 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform" 
+                      <a
+                        href="https://www.youtube.com/channel/UCaVEJUlceBfmF-6GxKYeqhQ"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 bg-gradient-to-r from-red-600 to-red-400 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
                         aria-label="YouTube"
                       >
                         <i className="fab fa-youtube text-lg"></i>
                       </a>
-                      <a 
-                        href="https://chat.whatsapp.com/Bzf2RZ500Ef2lOEcuu6m2S" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-400 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform" 
+                      <a
+                        href="https://chat.whatsapp.com/Bzf2RZ500Ef2lOEcuu6m2S"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-400 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform"
                         aria-label="WhatsApp"
                       >
                         <i className="fab fa-whatsapp text-lg"></i>
                       </a>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
           </div>
         </div>
       </section>

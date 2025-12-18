@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,7 +19,11 @@ const registerSchema = z.object({
     firstName: z.string().min(2, 'First name is required'),
     lastName: z.string().min(2, 'Last name is required'),
     email: z.string().email('Please enter a valid email address.'),
-    password: z.string().min(6, 'Password must be at least 6 characters long.'), // fabiole requires 6 checks
+    password: z.string()
+        .min(8, 'Password must be at least 8 characters long.')
+        .refine((password) => /[A-Z]/.test(password), 'Password must contain at least one uppercase letter.')
+        .refine((password) => /[a-z]/.test(password), 'Password must contain at least one lowercase letter.')
+        .refine((password) => /[0-9]/.test(password), 'Password must contain at least one number.'),
     birthDate: z.string().min(1, "Birth date is required"),
     terms: z.boolean().refine(val => val === true, {
         message: 'You must agree to the terms of service.',
@@ -27,12 +32,15 @@ const registerSchema = z.object({
 type RegisterSchema = z.infer<typeof registerSchema>;
 
 export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
+    const router = useRouter();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const registerMutation = useRegister();
 
     const { register, handleSubmit, formState: { errors }, setError } = useForm<RegisterSchema>({
         resolver: zodResolver(registerSchema),
     });
+
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const onSubmit: SubmitHandler<RegisterSchema> = (data) => {
         registerMutation.mutate(
@@ -45,9 +53,13 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
             },
             {
                 onSuccess: () => {
-                    onClose();
-                    // Alert or toast success
-                    alert("Account created! Please check your email.");
+                    // Show success message
+                    setShowSuccess(true);
+                    // Wait for state update and give user time to see the message
+                    setTimeout(() => {
+                        onClose();
+                        router.push("/dashboard");
+                    }, 1500);
                 },
                 onError: (error: any) => {
                     const message = error.message || "Registration failed";
@@ -122,6 +134,12 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
             {errors.root?.serverError && (
                 <p className="text-sm text-center text-destructive font-medium">
                     {errors.root.serverError.message}
+                </p>
+            )}
+            {showSuccess && (
+                <p className="text-sm text-center text-green-500 font-medium">
+                    <i className="fa-solid fa-check-circle mr-2"></i>
+                    Conta criada com sucesso! A redirecionar...
                 </p>
             )}
             <NewButton type="submit" h='12' variant='new_primary_rounded' className="w-full !py-3 !text-base !font-semibold" disabled={isSubmitting}>

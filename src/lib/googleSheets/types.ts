@@ -71,33 +71,36 @@ export interface Pesagem {
 /**
  * Perímetro Corporal (Body Measurements)
  * @description Single entry in the body measurements section
+ * Columns from sheet: DATE 📅, MS RIGHT, MS RIGHT FLEX, MS LEFT, MS LEFT FLEX, CHEST, WAIST, ABDOMEN, HIPS, THIGH R, THIGH L
  * @interface PerimetroCorporal
  */
 export interface PerimetroCorporal {
-  data: string;
-  msDrt: string;
-  msDrtCon: string;
-  msEsq: string;
-  msEsqCon: string;
-  peito: string;
-  cintura: string;
-  abdominal: string;
-  anca: string;
-  miDrt: string;
-  miEsq: string;
+  date: string;      // DATE 📅
+  msRight: string;   // MS RIGHT (arm)
+  msRightFlex: string; // MS RIGHT FLEX (arm contracted)
+  msLeft: string;    // MS LEFT (arm)
+  msLeftFlex: string;  // MS LEFT FLEX (arm contracted)
+  chest: string;     // CHEST
+  waist: string;     // WAIST
+  abdomen: string;   // ABDOMEN
+  hips: string;      // HIPS
+  thighR: string;    // THIGH R (right leg)
+  thighL: string;    // THIGH L (left leg)
 }
 
 /**
  * Avaliação Física (Physical Evaluation)
  * @description Single entry in the physical evaluation section
+ * Columns: DATE 📅, PUSH-UPS 1', SIT-UPS 1', MILE, MILE RESULT, NOTES 📝
  * @interface AvaliacaoFisica
  */
 export interface AvaliacaoFisica {
-  data: string;
-  flexoes1min: string;
-  abdominais1min: string;
-  milha: string;
-  resultadoMilha: string;
+  date: string;       // DATE 📅
+  pushUps: string;    // PUSH-UPS 1'
+  sitUps: string;     // SIT-UPS 1'
+  mile: string;       // MILE
+  mileResult: string; // MILE RESULT
+  notes: string;      // NOTES 📝
 }
 
 /**
@@ -129,43 +132,19 @@ export type { InfoDataRow };
  * @interface ReferenceTableData
  */
 export interface ReferenceTableData {
-  massaGordaMasculino?: {
-    '20-29': { excelente: string; bom: string; medio: string; mau: string };
-    '30-39': { excelente: string; bom: string; medio: string; mau: string };
-  };
-  massaGordaFeminino?: {
-    '20-29': { excelente: string; bom: string; medio: string; mau: string };
-    '30-39': { excelente: string; bom: string; medio: string; mau: string };
-  };
+  massaGordaMasculino?: Record<string, { percent?: string; description?: string; excelente?: string; bom?: string; medio?: string; mau?: string }>;
+  massaGordaFeminino?: Record<string, { percent?: string; description?: string; excelente?: string; bom?: string; medio?: string; mau?: string }>;
   imc?: {
     magreza: string;
     normal: string;
     sobrepeso: string;
     obesidade: string;
   };
-  flexoesFeminino?: {
-    '20-29': { excelente: string; bom: string; medio: string; mau: string };
-    '30-39': { excelente: string; bom: string; medio: string; mau: string };
-  };
-  flexoesMasculino?: {
-    '20-29': { excelente: string; bom: string; medio: string; mau: string };
-    '30-39': { excelente: string; bom: string; medio: string; mau: string };
-  };
-  abdominaisFeminino?: {
-    '20-29': { excelente: string; bom: string; medio: string; mau: string };
-    '30-39': { excelente: string; bom: string; medio: string; mau: string };
-  };
-  abdominaisMasculino?: {
-    '20-29': { excelente: string; bom: string; medio: string; mau: string };
-    '30-39': { excelente: string; bom: string; medio: string; mau: string };
-  };
-  milhaFeminino?: {
-    '20-29': { excelente: string; bom: string; medio: string; mau: string };
-    '30-39': { excelente: string; bom: string; medio: string; mau: string };
-  };
-  milhaMasculino?: {
-    '20-29': { excelente: string; bom: string; medio: string; mau: string };
-    '30-39': { excelente: string; bom: string; medio: string; mau: string };
-  };
+  flexoesFeminino?: Record<string, { excelente: string; bom: string; medio: string; mau: string }>;
+  flexoesMasculino?: Record<string, { excelente: string; bom: string; medio: string; mau: string }>;
+  abdominaisFeminino?: Record<string, { excelente: string; bom: string; medio: string; mau: string }>;
+  abdominaisMasculino?: Record<string, { excelente: string; bom: string; medio: string; mau: string }>;
+  milhaFeminino?: Record<string, { excelente: string; bom: string; medio: string; mau: string }>;
+  milhaMasculino?: Record<string, { excelente: string; bom: string; medio: string; mau: string }>;
 }
 

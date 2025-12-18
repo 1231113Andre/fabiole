@@ -42,7 +42,7 @@ const AuthModal = ({ isOpen, onClose, initialView = 'login' }: AuthModalProps) =
             titleId="auth-modal-title"
             size="lg"
             zIndex="z-[9999]"
-            className="[&_.p-6]:!py-4"
+            className="[&_.p-6]:!py-4 !bg-[#1c2434] !text-white !border-[#2E3A47] !shadow-2xl"
         >
             <AuthModalHeader authType={authType} setAuthType={setAuthType} />
             {authType === 'login' ? <LoginForm onClose={onClose} /> : <RegisterForm onClose={onClose} />}

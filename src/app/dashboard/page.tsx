@@ -96,6 +96,17 @@ export default function DashboardPage() {
       q4: userData.personalInfo.q4 || "",
     };
 
+    // Helper to parse date (assuming DD/MM/YYYY or DD.MM.YYYY format)
+    const parseDate = (dateStr: string) => {
+      if (!dateStr) return 0;
+      const parts = dateStr.split(/[./]/); // Split by . or /
+      if (parts.length === 3) {
+        // DD/MM/YYYY -> YYYY-MM-DD for comparison
+        return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
+      }
+      return new Date(dateStr).getTime();
+    };
+
     // Convert pesagens data
     const pesagens: Pesagem[] = (userData.pesagens || [])
       .map((p: any) => ({
@@ -112,35 +123,39 @@ export default function DashboardPage() {
         resultadoPercentualMG: p.resultadoPercentualMG || "",
         notas: p.notas || "",
       }))
-      .filter((p: Pesagem) => p.peso > 0);
+      .filter((p: Pesagem) => p.peso > 0)
+      .sort((a, b) => parseDate(b.data) - parseDate(a.data)); // Sort descending (newest first)
 
     // Convert perimetros data
     const perimetros: PerimetroCorporal[] = (userData.perimetros || [])
       .map((p: any) => ({
-        data: p.data,
-        msDrt: parseFloat(p.msDrt) || 0,
-        msDrtCon: parseFloat(p.msDrtCon) || 0,
-        msEsq: parseFloat(p.msEsq) || 0,
-        msEsqCon: parseFloat(p.msEsqCon) || 0,
-        peito: parseFloat(p.peito) || 0,
-        cintura: parseFloat(p.cintura) || 0,
-        abdominal: parseFloat(p.abdominal) || 0,
-        anca: parseFloat(p.anca) || 0,
-        miDrt: parseFloat(p.miDrt) || 0,
-        miEsq: parseFloat(p.miEsq) || 0,
+        date: p.date,
+        msRight: parseFloat(p.msRight) || 0,
+        msRightFlex: parseFloat(p.msRightFlex) || 0,
+        msLeft: parseFloat(p.msLeft) || 0,
+        msLeftFlex: parseFloat(p.msLeftFlex) || 0,
+        chest: parseFloat(p.chest) || 0,
+        waist: parseFloat(p.waist) || 0,
+        abdomen: parseFloat(p.abdomen) || 0,
+        hips: parseFloat(p.hips) || 0,
+        thighR: parseFloat(p.thighR) || 0,
+        thighL: parseFloat(p.thighL) || 0,
       }))
-      .filter((p: PerimetroCorporal) => p.peito > 0 || p.cintura > 0);
+      .filter((p: PerimetroCorporal) => p.chest > 0 || p.waist > 0)
+      .sort((a, b) => parseDate(b.date) - parseDate(a.date)); // Sort descending (newest first)
 
     // Convert avaliacoes data
     const avaliacoes: AvaliacaoFisica[] = (userData.avaliacoes || [])
       .map((a: any) => ({
-        data: a.data,
-        flexoes1min: parseInt(a.flexoes1min) || 0,
-        abdominais1min: parseInt(a.abdominais1min) || 0,
-        milha: a.milha || "",
-        resultadoMilha: a.resultadoMilha || "",
+        date: a.date,
+        pushUps: parseInt(a.pushUps) || 0,
+        sitUps: parseInt(a.sitUps) || 0,
+        mile: a.mile || "",
+        mileResult: a.mileResult || "",
+        notes: a.notes || "",
       }))
-      .filter((a: AvaliacaoFisica) => a.flexoes1min > 0 || a.abdominais1min > 0 || a.milha);
+      .filter((a: AvaliacaoFisica) => a.pushUps > 0 || a.sitUps > 0 || a.mile)
+      .sort((a, b) => parseDate(b.date) - parseDate(a.date)); // Sort descending (newest first)
 
     return {
       personalInfo,

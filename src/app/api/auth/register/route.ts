@@ -1,3 +1,4 @@
+import { revalidatePath } from 'next/cache';
 import { BaseRouteHandler } from '@/lib/api/core/BaseRouteHandler';
 import { ApiResponse } from '@/lib/api/core/ApiResponse';
 import { requestIdMiddleware } from '@/lib/api/middleware/RequestIdMiddleware';
@@ -39,6 +40,9 @@ const registerHandler = new BaseRouteHandler()
 
       // Add session cookie (auto-login after registration)
       response.cookies = [sessionCookie];
+
+      // Force re-render of SSR components (navbar)
+      revalidatePath('/', 'layout');
 
       return response;
     } catch (error) {

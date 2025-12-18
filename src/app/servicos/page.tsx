@@ -59,7 +59,7 @@ export default function ServicosPage() {
       router.push(`/contacto?${params.toString()}`);
       return;
     }
-    
+
     setSelectedService(serviceTitle);
     setShowModal(true);
   };
@@ -71,7 +71,7 @@ export default function ServicosPage() {
       duration: trainingDuration,
       type: trainingType
     });
-    
+
     router.push(`/contacto?${params.toString()}`);
   };
 
@@ -143,7 +143,7 @@ export default function ServicosPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 pt-36">
       {/* Hero Section */}
       <section className="pt-32 pb-20 bg-gradient-to-br from-blue-100 to-white">
         <div className="container mx-auto px-4">
@@ -179,7 +179,7 @@ export default function ServicosPage() {
           <div className="grid lg:grid-cols-3 gap-4">
             {services.map((service, index) => (
               <div key={service.title} className="lg:col-span-1">
-                <div 
+                <div
                   className={`bg-white shadow-lg border-0 rounded-2xl h-full relative cursor-pointer ${service.popular ? 'border-2 border-secondary' : ''}`}
                   onClick={() => handleServiceClick(service.title)}
                 >
@@ -188,7 +188,7 @@ export default function ServicosPage() {
                       MAIS POPULAR
                     </span>
                   )}
-                  
+
                   <div className="p-4">
                     <div className="mb-4">
                       <div className="w-full" style={{ height: '192px' }}>
@@ -201,7 +201,7 @@ export default function ServicosPage() {
                         />
                       </div>
                     </div>
-                    
+
                     <h3 className="text-xl font-bold text-center mb-2">{service.title}</h3>
                     <p className="text-gray-600 text-center mb-3">{service.desc}</p>
                     <div className="text-center mb-4">
@@ -230,13 +230,13 @@ export default function ServicosPage() {
                       </div>
                     )}
 
-                <div className="text-center">
-                  <button 
-                    className={`w-full modern-btn-service ${service.popular ? 'modern-btn-service-popular' : 'modern-btn-service-standard'}`}
-                  >
-                    {service.title === "Ginástica Laboral / Teambuilding para Empresas" || service.title === "Acompanhamento Online" ? "Contactar Para Informações" : "Escolher Plano"}
-                  </button>
-                </div>
+                    <div className="text-center">
+                      <button
+                        className={`w-full modern-btn-service ${service.popular ? 'modern-btn-service-popular' : 'modern-btn-service-standard'}`}
+                      >
+                        {service.title === "Ginástica Laboral / Teambuilding para Empresas" || service.title === "Acompanhamento Online" ? "Contactar Para Informações" : "Escolher Plano"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -293,7 +293,7 @@ export default function ServicosPage() {
                     </button>
                   ))}
                 </div>
-                             </div>
+              </div>
 
               {/* Training Type */}
               <div>
@@ -320,19 +320,19 @@ export default function ServicosPage() {
                 </div>
               </div>
 
-               {/* Price Display */}
-               <div className="bg-gray-50 rounded-lg p-4 mt-6">
-                 <div className="text-center">
-                   <p className="text-sm text-gray-600 mb-2">Preço/Semana</p>
-                   <p className="text-3xl font-bold text-[#1E90FF]">€{calculatePrice()}</p>
-                   <p className="text-xs text-gray-500 mt-1">
-                     {trainingFrequency}x por semana • {trainingDuration} • {trainingType === "individual" ? "Individual" : trainingType === "dupla" ? "Dupla" : "Trio"}
-                   </p>
-                 </div>
-               </div>
+              {/* Price Display */}
+              <div className="bg-gray-50 rounded-lg p-4 mt-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Preço/Semana</p>
+                  <p className="text-3xl font-bold text-[#1E90FF]">€{calculatePrice()}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {trainingFrequency}x por semana • {trainingDuration} • {trainingType === "individual" ? "Individual" : trainingType === "dupla" ? "Dupla" : "Trio"}
+                  </p>
+                </div>
+              </div>
 
-               {/* Action Buttons */}
-               <div className="flex gap-3 pt-4">
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
                 <button
                   onClick={handleCloseModal}
                   className="modern-btn-cancel flex-1"
@@ -385,17 +385,17 @@ export default function ServicosPage() {
               </p>
             </div>
 
-                         <div className="text-center p-8 bg-white rounded-2xl border border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
-               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
-                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .993-.241 1.929-.668 2.754l-1.524-1.525a3.997 3.997 0 00.078-2.183l1.562-1.562C15.802 8.249 16 9.1 16 10zm-5.165 3.913l1.58 1.58A5.98 5.98 0 0110 16a5.976 5.976 0 01-2.516-.552l1.562-1.562a4.006 4.006 0 001.789.027zm-4.677-2.796a4.002 4.002 0 01-.041-2.08l-.08.08-1.53-1.533A5.98 5.98 0 004 10c0 .954.223 1.856.619 2.657l1.54-1.54zm1.088-6.45A5.974 5.974 0 0110 4c.954 0 1.856.223 2.657.619l-1.54 1.54a4.002 4.002 0 00-2.346.033L7.246 4.668zM12 10a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd" />
-                 </svg>
-               </div>
-               <h3 className="text-xl font-bold text-gray-800 mb-4">Suporte</h3>
-               <p className="text-gray-600">
-                 Suporte dedicado e motivação constante para manteres o foco.
-               </p>
-             </div>
+            <div className="text-center p-8 bg-white rounded-2xl border border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-2 0c0 .993-.241 1.929-.668 2.754l-1.524-1.525a3.997 3.997 0 00.078-2.183l1.562-1.562C15.802 8.249 16 9.1 16 10zm-5.165 3.913l1.58 1.58A5.98 5.98 0 0110 16a5.976 5.976 0 01-2.516-.552l1.562-1.562a4.006 4.006 0 001.789.027zm-4.677-2.796a4.002 4.002 0 01-.041-2.08l-.08.08-1.53-1.533A5.98 5.98 0 004 10c0 .954.223 1.856.619 2.657l1.54-1.54zm1.088-6.45A5.974 5.974 0 0110 4c.954 0 1.856.223 2.657.619l-1.54 1.54a4.002 4.002 0 00-2.346.033L7.246 4.668zM12 10a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Suporte</h3>
+              <p className="text-gray-600">
+                Suporte dedicado e motivação constante para manteres o foco.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -409,7 +409,7 @@ export default function ServicosPage() {
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Contacta-me para uma avaliação gratuita e descobre qual o melhor plano para ti
           </p>
-          <button 
+          <button
             onClick={() => router.push('/contacto')}
             className="inline-block bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-bold text-xl px-12 py-5 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
           >

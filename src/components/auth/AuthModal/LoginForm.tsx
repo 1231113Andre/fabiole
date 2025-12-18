@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -22,6 +23,7 @@ const loginSchema = z.object({
 type LoginSchema = z.infer<typeof loginSchema>;
 
 export const LoginForm = ({ onClose }: { onClose: () => void }) => {
+    const router = useRouter();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const loginMutation = useLogin();
 
@@ -41,12 +43,11 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
             },
             {
                 onSuccess: () => {
-                    // Success handling - close modal first so navbar updates immediately
                     onClose();
-                    // Wait 2 seconds before redirecting to dashboard
+                    // Wait a tick for setQueryData to propagate before navigating
                     setTimeout(() => {
-                        window.location.href = "/dashboard";
-                    }, 2000);
+                        router.push("/dashboard");
+                    }, 100);
                 },
                 onError: (error) => {
                     setError('root.serverError', { type: 'custom', message: error.message });

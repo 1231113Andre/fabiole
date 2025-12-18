@@ -1,11 +1,12 @@
 
 import type { Metadata } from "next";
+
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
 import ConditionalLayoutWrapper from "./components/ConditionalLayoutWrapper";
 import MainLayout from "@/components/MainLayout";
 import { ThemeProvider } from "./components/ThemeProvider";
 import ServiceWorkerUnregister from "./components/ServiceWorkerUnregister";
-import StaticNavbar from "@/components/navbar/StaticNavbar";
+import ServerNavbar from "@/components/navbar/ServerNavbar";
 import { NotificationProvider } from "@/components/NotificationContext";
 import "./globals.css";
 
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
   description: "Personal training presencial e online. Marca já a tua sessão.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -25,10 +26,30 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Critical inline CSS to prevent Font Awesome icon flash */}
+        {/* Preload critical Font Awesome webfonts for immediate SSR rendering */}
+        <link
+          rel="preload"
+          href="/fontawesome/webfonts/fa-duotone-900.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fontawesome/webfonts/fa-solid-900.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fontawesome/webfonts/fa-brands-400.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
 
-
-        {/* Preload Font Awesome CSS for immediate rendering - prevents icon flickering */}
+        {/* Load Font Awesome CSS with high priority */}
         <link
           rel="preload"
           href="/fontawesome/css/all.min.css"
@@ -47,7 +68,7 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <NotificationProvider>
-              <MainLayout navbar={<StaticNavbar />}>
+              <MainLayout navbar={<ServerNavbar />}>
                 <ConditionalLayoutWrapper>
                   {children}
                 </ConditionalLayoutWrapper>

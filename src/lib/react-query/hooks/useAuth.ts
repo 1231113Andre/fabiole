@@ -42,9 +42,8 @@ interface RegisterResponse {
 
 /**
  * Query hook to check authentication session
- * Cache: 5 minutes staleTime
- * Refetch on window focus
- * @param initialData - Optional initial session data from server (SSR)
+ * - Uses placeholderData for SSR initial render (no loading spinner)
+ * - setQueryData still works for instant updates on login/logout
  */
 export function useSession(initialData?: SessionResponse) {
   return useQuery<SessionResponse>({
@@ -56,10 +55,13 @@ export function useSession(initialData?: SessionResponse) {
       }
       return response.json();
     },
-    initialData: initialData, // Use SSR data as initial data to prevent flickering
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // placeholderData allows SSR render but doesn't block cache updates
+    placeholderData: initialData,
+    staleTime: 0, // Always refetch to sync with server
+    gcTime: 5 * 60 * 1000,
+    refetchOnMount: true,
     refetchOnWindowFocus: true,
-    retry: false, // Don't retry on 401 errors
+    retry: false,
   });
 }
 
@@ -112,9 +114,9 @@ export function useLogin() {
 
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate session query to refetch with new auth state
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+    onSuccess: (data) => {
+      // Immediately update session state for instant navbar refresh
+      queryClient.setQueryData(["session"], { authenticated: true, user: data.user });
       // Show success notification
       notify("Login efetuado com sucesso!", "success");
       // Note: Redirect is handled in the component to ensure cookie is set
@@ -169,9 +171,9 @@ export function useRegister() {
 
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate session query to refetch with new auth state
-      queryClient.invalidateQueries({ queryKey: ["session"] });
+    onSuccess: (data) => {
+      // Immediately update session state for instant navbar refresh
+      queryClient.setQueryData(["session"], { authenticated: true, user: data.user });
       notify("Conta criada com sucesso!", "success");
       // Redirect to dashboard (auto-login after registration)
       router.push("/dashboard");
@@ -217,15 +219,18 @@ export function useLogout() {
       }
     },
     onSuccess: () => {
-      // Invalidate all queries to clear cache
-      queryClient.clear();
+      // Immediately clear session state for instant navbar refresh
+      queryClient.setQueryData(["session"], { authenticated: false, user: undefined });
+      // Clear all other queries
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "session" });
       notify("Sessão terminada com sucesso", "info");
       // Redirect to home page
       router.push("/");
     },
     onError: () => {
-      // Even on error, clear cache and redirect to home
-      queryClient.clear();
+      // Even on error, clear session state and redirect to home
+      queryClient.setQueryData(["session"], { authenticated: false, user: undefined });
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "session" });
       notify("Sessão terminada", "info");
       router.push("/");
     },

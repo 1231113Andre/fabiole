@@ -50,7 +50,7 @@ export function parsePersonalInfo(row: any[]): UserSheetData['personalInfo'] {
 export function parsePesagens(rows: any[]): Pesagem[] {
   const pesagens: Pesagem[] = [];
   let pesagensHeaderRow = -1;
-  
+
   // Find row with "Pesagens" header (row 4, index 3)
   for (let i = 0; i < Math.min(5, rows.length); i++) {
     if (rows[i] && rows[i][0] && rows[i][0].toString().toLowerCase().includes('pesagens')) {
@@ -58,14 +58,14 @@ export function parsePesagens(rows: any[]): Pesagem[] {
       break;
     }
   }
-  
+
   if (pesagensHeaderRow >= 0 && rows.length > pesagensHeaderRow + 2) {
     // Data starts 2 rows after the section header
     for (let i = pesagensHeaderRow + 2; i < rows.length; i++) {
       const row = rows[i] || [];
       const hasDate = row[0] && row[0].toString().trim() !== '';
       const hasWeight = row[1] && row[1].toString().trim() !== '';
-      
+
       if (hasDate && hasWeight) {
         pesagens.push({
           data: row[0] || '',
@@ -88,7 +88,7 @@ export function parsePesagens(rows: any[]): Pesagem[] {
       }
     }
   }
-  
+
   return pesagens;
 }
 
@@ -105,82 +105,114 @@ export function parsePesagens(rows: any[]): Pesagem[] {
 export function parsePerimetros(rows: any[]): PerimetroCorporal[] {
   const perimetros: PerimetroCorporal[] = [];
   let perimetrosHeaderRow = -1;
-  
-  for (let i = 0; i < Math.min(5, rows.length); i++) {
-    if (rows[i] && rows[i][12] && rows[i][12].toString().toLowerCase().includes('perímetros')) {
-      perimetrosHeaderRow = i;
-      break;
+  let perimetrosStartCol = 12; // Default to column M (index 12)
+
+  // Search for PERÍMETROS header - try different variations and columns
+  for (let i = 0; i < Math.min(10, rows.length); i++) {
+    const row = rows[i] || [];
+    // Search across multiple columns (M to P) for the header
+    for (let col = 12; col <= 16; col++) {
+      const cellValue = row[col]?.toString().toLowerCase() || '';
+      // Match various header formats: perímetros, perimetros, body measurements, or emoji prefix
+      if (cellValue.includes('perimetro') ||
+        cellValue.includes('perímetro') ||
+        cellValue.includes('body measurement') ||
+        cellValue.includes('📏')) {
+        perimetrosHeaderRow = i;
+        perimetrosStartCol = col;
+        console.log(`[parsePerimetros] Found header at row ${i}, col ${col}: "${row[col]}"`);
+        break;
+      }
     }
+    if (perimetrosHeaderRow >= 0) break;
   }
-  
+
   if (perimetrosHeaderRow >= 0 && rows.length > perimetrosHeaderRow + 2) {
+    // Data starts 2 rows after the section header
     for (let i = perimetrosHeaderRow + 2; i < rows.length; i++) {
       const row = rows[i] || [];
-      const hasDate = row[12] && row[12].toString().trim() !== '';
-      
+      const dateCol = perimetrosStartCol;
+      const hasDate = row[dateCol] && row[dateCol].toString().trim() !== '';
+
       if (hasDate) {
         perimetros.push({
-          data: row[12] || '',
-          msDrt: row[13] || '',
-          msDrtCon: row[14] || '',
-          msEsq: row[15] || '',
-          msEsqCon: row[16] || '',
-          peito: row[17] || '',
-          cintura: row[18] || '',
-          abdominal: row[19] || '',
-          anca: row[20] || '',
-          miDrt: row[21] || '',
-          miEsq: row[22] || '',
+          date: row[dateCol] || '',
+          msRight: row[dateCol + 1] || '',
+          msRightFlex: row[dateCol + 2] || '',
+          msLeft: row[dateCol + 3] || '',
+          msLeftFlex: row[dateCol + 4] || '',
+          chest: row[dateCol + 5] || '',
+          waist: row[dateCol + 6] || '',
+          abdomen: row[dateCol + 7] || '',
+          hips: row[dateCol + 8] || '',
+          thighR: row[dateCol + 9] || '',
+          thighL: row[dateCol + 10] || '',
         });
       } else {
         break; // No more data rows
       }
     }
+  } else {
+    console.log('[parsePerimetros] Header not found in first 10 rows');
   }
-  
+
+  console.log(`[parsePerimetros] Found ${perimetros.length} entries`);
   return perimetros;
 }
 
 /**
- * Parse Avaliação Física section
- * @description Finds and parses physical evaluation data (columns X-AB, starting from row 6)
+ * Parse Avaliação Física section (Physical Evaluation)
+ * @description Finds and parses physical evaluation data
+ * Sheet columns: DATE 📅, PUSH-UPS 1', SIT-UPS 1', MILE, MILE RESULT, NOTES 📝
  * 
  * @param {any[]} rows - All rows from the sheet
- * @returns {AvaliacaoFisica[]} Array of parsed AvaliacaoFisica entries
- * 
- * @author Personal Trainer Platform Team
- * @since 1.0.0
+ * @returns {AvaliacaoFisica[]} Array of parsed evaluation entries
  */
 export function parseAvaliacoes(rows: any[]): AvaliacaoFisica[] {
   const avaliacoes: AvaliacaoFisica[] = [];
-  let avaliacoesHeaderRow = -1;
-  
-  for (let i = 0; i < Math.min(5, rows.length); i++) {
-    if (rows[i] && rows[i][23] && rows[i][23].toString().toLowerCase().includes('avaliação')) {
-      avaliacoesHeaderRow = i;
-      break;
-    }
-  }
-  
-  if (avaliacoesHeaderRow >= 0 && rows.length > avaliacoesHeaderRow + 2) {
-    for (let i = avaliacoesHeaderRow + 2; i < rows.length; i++) {
-      const row = rows[i] || [];
-      const hasDate = row[23] && row[23].toString().trim() !== '';
-      
-      if (hasDate) {
-        avaliacoes.push({
-          data: row[23] || '',
-          flexoes1min: row[24] || '',
-          abdominais1min: row[25] || '',
-          milha: row[26] || '',
-          resultadoMilha: row[27] || '',
-        });
-      } else {
-        break; // No more data rows
+
+  // Find the AVALIAÇÃO header (search in first 10 rows, columns 23-28)
+  let headerRow = -1;
+  let startCol = -1;
+
+  for (let row = 0; row < Math.min(10, rows.length); row++) {
+    for (let col = 23; col <= 28; col++) {
+      const cell = rows[row]?.[col]?.toString().toLowerCase() || '';
+      if (cell.includes('avaliação') || cell.includes('physical evaluation') || cell.includes('🏋️')) {
+        headerRow = row;
+        startCol = col;
+        break;
       }
     }
+    if (headerRow >= 0) break;
   }
-  
+
+  if (headerRow < 0) {
+    console.log('[parseAvaliacoes] Header not found');
+    return [];
+  }
+
+  console.log(`[parseAvaliacoes] Found header at row ${headerRow}, col ${startCol}`);
+
+  // Data starts 2 rows after header
+  for (let i = headerRow + 2; i < rows.length; i++) {
+    const row = rows[i] || [];
+    const date = row[startCol]?.toString().trim() || '';
+
+    // Stop if no date
+    if (!date) break;
+
+    avaliacoes.push({
+      date: date,
+      pushUps: row[startCol + 1] || '',
+      sitUps: row[startCol + 2] || '',
+      mile: row[startCol + 3] || '',
+      mileResult: row[startCol + 4] || '',
+      notes: row[startCol + 5] || '',
+    });
+  }
+
+  console.log(`[parseAvaliacoes] Found ${avaliacoes.length} entries`);
   return avaliacoes;
 }
 

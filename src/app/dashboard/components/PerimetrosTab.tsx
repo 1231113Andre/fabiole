@@ -10,76 +10,84 @@ export function PerimetrosTab({ perimetros }: PerimetrosTabProps) {
     return (
         <div className="space-y-6">
             {perimetros.length > 0 ? (
-                <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-                    <h4 className="mb-6 text-xl font-semibold text-black dark:text-white flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                            <i className="fas fa-ruler-combined text-primary text-sm"></i>
+                <>
+                    {/* Table Card - Same style as PesagensTab */}
+                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                        <div className="border-b border-gray-100 px-6 py-5">
+                            <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                                    <i className="fa-duotone fa-ruler-combined text-primary"></i>
+                                </div>
+                                Perímetros Corporais / Body Measurements
+                            </h4>
                         </div>
-                        Perímetros Corporais
-                    </h4>
-                    <div className="max-w-full overflow-x-auto">
-                        <table className="w-full table-auto">
-                            <thead>
-                                <tr className="bg-gray-2 text-left dark:bg-meta-4">
-                                    <th className="min-w-[120px] py-4 px-4 font-medium text-black dark:text-white xl:pl-11">Data</th>
-                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white text-center hidden md:table-cell">MS Drt</th>
-                                    <th className="min-w-[110px] py-4 px-4 font-medium text-black dark:text-white text-center hidden lg:table-cell">MS Drt Con</th>
-                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white text-center hidden md:table-cell">MS Esq</th>
-                                    <th className="min-w-[110px] py-4 px-4 font-medium text-black dark:text-white text-center hidden lg:table-cell">MS Esq Con</th>
-                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white text-center">Peito</th>
-                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white text-center">Cintura</th>
-                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white text-center hidden md:table-cell">Abdominal</th>
-                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white text-center hidden lg:table-cell">Anca</th>
-                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white text-center hidden lg:table-cell">MI Drt</th>
-                                    <th className="min-w-[100px] py-4 px-4 font-medium text-black dark:text-white text-center hidden lg:table-cell">MI Esq</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {perimetros.map((perimetro, index) => (
-                                    <tr key={index} className="border-b border-stroke dark:border-strokedark">
-                                        <td className="py-5 px-4 pl-9 xl:pl-11">
-                                            <h5 className="font-medium text-black dark:text-white">{perimetro.data}</h5>
-                                        </td>
-                                        <td className="py-5 px-4 text-center hidden md:table-cell">
-                                            <p className="text-black dark:text-white">{perimetro.msDrt || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center hidden lg:table-cell">
-                                            <p className="text-black dark:text-white">{perimetro.msDrtCon || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center hidden md:table-cell">
-                                            <p className="text-black dark:text-white">{perimetro.msEsq || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center hidden lg:table-cell">
-                                            <p className="text-black dark:text-white">{perimetro.msEsqCon || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center">
-                                            <p className="text-black dark:text-white font-semibold">{perimetro.peito || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center">
-                                            <p className="text-black dark:text-white font-semibold">{perimetro.cintura || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center hidden md:table-cell">
-                                            <p className="text-black dark:text-white">{perimetro.abdominal || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center hidden lg:table-cell">
-                                            <p className="text-black dark:text-white">{perimetro.anca || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center hidden lg:table-cell">
-                                            <p className="text-black dark:text-white">{perimetro.miDrt || "-"}</p>
-                                        </td>
-                                        <td className="py-5 px-4 text-center hidden lg:table-cell">
-                                            <p className="text-black dark:text-white">{perimetro.miEsq || "-"}</p>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-gray-50 border-b border-gray-100">
+                                        <th className="py-4 px-4 text-left font-semibold text-gray-700 text-sm xl:pl-8">Data</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">MS Right</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden lg:table-cell">MS Right Flex</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">MS Left</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden lg:table-cell">MS Left Flex</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Chest</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Waist</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">Abdomen</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden lg:table-cell">Hips</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden lg:table-cell">Thigh R</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden lg:table-cell">Thigh L</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {perimetros.map((p, index) => (
+                                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                                            <td className="py-4 px-4 xl:pl-8">
+                                                <div className="flex items-center gap-2">
+                                                    <i className="fa-duotone fa-calendar-days text-primary text-sm"></i>
+                                                    <span className="font-medium text-gray-900">{p.date}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-4 px-4 text-center hidden md:table-cell">
+                                                <span className="text-gray-700">{p.msRight || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center hidden lg:table-cell">
+                                                <span className="text-gray-700">{p.msRightFlex || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center hidden md:table-cell">
+                                                <span className="text-gray-700">{p.msLeft || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center hidden lg:table-cell">
+                                                <span className="text-gray-700">{p.msLeftFlex || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center">
+                                                <span className="font-bold text-gray-900">{p.chest || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center">
+                                                <span className="font-bold text-gray-900">{p.waist || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center hidden md:table-cell">
+                                                <span className="text-gray-700">{p.abdomen || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center hidden lg:table-cell">
+                                                <span className="text-gray-700">{p.hips || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center hidden lg:table-cell">
+                                                <span className="text-gray-700">{p.thighR || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center hidden lg:table-cell">
+                                                <span className="text-gray-700">{p.thighL || "-"}</span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                </>
             ) : (
-                <div className="bg-card rounded-lg border border-border p-12 text-center">
-                    <i className="fas fa-ruler-combined text-muted-foreground text-4xl mb-4"></i>
-                    <p className="text-muted-foreground">Nenhum perímetro registado</p>
+                <div className="rounded-xl border border-gray-200 bg-white p-12 text-center shadow-sm">
+                    <i className="fa-duotone fa-ruler-combined text-gray-300 text-5xl mb-4"></i>
+                    <p className="text-gray-500 font-medium">Nenhum perímetro registado</p>
                 </div>
             )}
         </div>

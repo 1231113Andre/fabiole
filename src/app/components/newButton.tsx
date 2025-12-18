@@ -286,6 +286,7 @@ type NewButtonProps = {
   type?: "button" | "submit" | "reset";
   h?: string;
   iconPosition?: 'left' | 'right';
+  textColor?: string;
 } & React.ButtonHTMLAttributes<HTMLButtonElement> &
   React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
@@ -304,6 +305,7 @@ const NewButton = forwardRef<
     type,
     h,
     iconPosition = 'left',
+    textColor,
     ...props
   },
   ref
@@ -331,6 +333,7 @@ const NewButton = forwardRef<
     VARIANTS[variant],
     heightClass,
     paddingYClass, // Dodawanie paddingu, jeśli nie ma jawnej wysokości/paddingu
+    textColor, // Opcjonalny kolor tekstu (API)
     className, // KLASA Z PROPA MA NAJWYŻSZY PRIORYTET
     { "cursor-not-allowed": disabled }
   );
