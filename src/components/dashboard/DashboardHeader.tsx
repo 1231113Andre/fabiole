@@ -9,6 +9,8 @@ interface DashboardHeaderProps {
     userEmail?: string;
     onRefresh?: () => void;
     isRefreshing?: boolean;
+    cooldownProgress?: number; // 0-1, where 1 is full cooldown
+    lastRefreshTime?: Date;
     onLogout?: () => void;
     isLoggingOut?: boolean;
 }
@@ -20,6 +22,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     userEmail = "",
     onRefresh,
     isRefreshing = false,
+    cooldownProgress = 0,
+    lastRefreshTime,
     onLogout,
     isLoggingOut = false,
 }) => {
@@ -60,23 +64,65 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 {/* Search Bar Removed */}
                 <div className="hidden sm:block"></div>
             </div>
-
             <div className="flex items-center gap-2 ml-auto">
-                {/* Refresh Button */}
+                {/* Refresh Button with Info Tooltip */}
                 {onRefresh && (
-                    <button
-                        className="relative flex items-center justify-center w-10 h-10 border border-gray-200 bg-white rounded-xl text-gray-500 cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-primary hover:border-primary/30 shadow-sm active:scale-95 disabled:opacity-50"
-                        onClick={onRefresh}
-                        disabled={isRefreshing}
-                        title="Atualizar dados"
-                    >
-                        <i
-                            className={`fa-duotone fa-arrows-rotate ${isRefreshing ? "fa-spin" : ""}`}
-                        ></i>
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {/* Info icon with tooltip */}
+                        <div className="relative group">
+                            <i className="fa-duotone fa-circle-info text-gray-400 text-sm cursor-help hover:text-primary transition-colors"></i>
+                            {/* Info tooltip */}
+                            <div className="absolute top-full left-0 mt-2 px-3 py-2 bg-gray-900 text-white text-[11px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-lg w-56">
+                                <p className="leading-relaxed">
+                                    Atualização automática de dados a cada <span className="text-primary font-semibold">30 segundos</span>. Para atualizar manualmente, clique no <span className="text-primary font-semibold">Spinner</span> ao lado.
+                                </p>
+                                <div className="absolute bottom-full left-2 border-4 border-transparent border-b-gray-900"></div>
+                            </div>
+                        </div>
+
+                        {/* Refresh button with border */}
+                        <button
+                            className={`relative flex items-center justify-center w-10 h-10 rounded-xl cursor-pointer transition-all duration-300 shadow-sm active:scale-95 overflow-hidden border border-gray-200
+                                ${isRefreshing
+                                    ? "bg-gradient-to-br from-primary/20 to-primary/10 text-primary border-primary/30"
+                                    : "bg-white text-gray-500 hover:bg-gray-50 hover:text-primary hover:border-primary/30"
+                                }`}
+                            onClick={onRefresh}
+                            disabled={isRefreshing}
+                            title="Atualizar dados"
+                        >
+
+                            {/* Icon: FA spinner normally, LoadingSpinner when refreshing */}
+                            {isRefreshing ? (
+                                <div className="relative w-5 h-5 z-10">
+                                    {/* Outer ring */}
+                                    <div
+                                        className="absolute inset-0 rounded-full border-2 border-transparent border-t-blue-500 border-r-blue-500"
+                                        style={{ animation: 'spin 1.5s linear infinite' }}
+                                    />
+                                    {/* Inner ring */}
+                                    <div
+                                        className="absolute inset-1 rounded-full border-2 border-transparent border-b-blue-400 border-l-blue-400"
+                                        style={{ animation: 'spin-reverse 1s linear infinite' }}
+                                    />
+                                    <style jsx>{`
+                                        @keyframes spin {
+                                            from { transform: rotate(0deg); }
+                                            to { transform: rotate(360deg); }
+                                        }
+                                        @keyframes spin-reverse {
+                                            from { transform: rotate(360deg); }
+                                            to { transform: rotate(0deg); }
+                                        }
+                                    `}</style>
+                                </div>
+                            ) : (
+                                <i className="fa-duotone fa-arrows-rotate text-gray-500"></i>
+                            )}
+                        </button>
+                    </div>
                 )}
 
-                {/* Notifications */}
                 {/* Notifications */}
                 <button className="relative flex items-center justify-center w-10 h-10 border border-gray-200 bg-white rounded-xl text-gray-500 cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-primary hover:border-primary/30 shadow-sm active:scale-95">
                     <i className="fa-duotone fa-bell"></i>
@@ -150,7 +196,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     )}
                 </div>
             </div>
-        </header>
+        </header >
     );
 };
 

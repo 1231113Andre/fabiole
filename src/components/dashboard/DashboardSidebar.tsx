@@ -23,7 +23,8 @@ interface DashboardSidebarProps {
     menuItems: MenuItem[];
     brandName?: string;
     brandIcon?: string;
-    userEmail?: string;
+    userName?: string;
+    userSurname?: string;
 }
 
 // ============================================
@@ -150,7 +151,8 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     menuItems,
     brandName = "Dashboard",
     brandIcon = "fa-chart-line",
-    userEmail,
+    userName,
+    userSurname,
 }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -295,13 +297,13 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 {!isCollapsed && (
                     <div className="p-5 border-t border-gray-100">
                         <div className="flex items-center gap-4">
-                            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center">
-                                <i className="fa-duotone fa-id-badge text-white text-xs" aria-hidden="true" />
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center shadow-lg shadow-primary/25">
+                                <i className="fa-duotone fa-user-shield text-white text-xl" aria-hidden="true" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-bold text-gray-900 uppercase tracking-wide">User Panel</p>
-                                <p className="text-xs text-gray-500 truncate" title={userEmail}>
-                                    {userEmail || 'Not logged in'}
+                                <p className="text-xs text-gray-500 truncate" title={userName && userSurname ? `${userName} ${userSurname}` : 'Not logged in'}>
+                                    {userName && userSurname ? `${userName} ${userSurname}` : 'Not logged in'}
                                 </p>
                             </div>
                         </div>

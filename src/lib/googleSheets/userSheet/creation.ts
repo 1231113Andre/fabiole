@@ -32,27 +32,29 @@ export async function populateUserSheetData(
   console.log(`   - Surname: ${userData.surname || '(empty)'}`);
   console.log(`   - Email: ${userData.email || '(empty)'}`);
   console.log(`   - Birth: ${userData.birth || '(empty)'}`);
-  
+
   const dataValues = [
-    (userData.name || '').toUpperCase(),        // UserName
-    (userData.surname || '').toUpperCase(),     // UserSurname
-    (userData.email || '').toUpperCase(),       // UserEmail
-    '',                                         // UserPhone (empty)
-    (userData.birth || '').toUpperCase(),       // UserBirth
-    '',                                         // TrainingCredit (empty)
-    '',                                         // TreiningsScheduled (empty)
-    '',                                         // DebtValue (empty)
-    '',                                         // Paid? (empty)
-    '',                                         // Q1 (empty)
-    '',                                         // Q2 (empty)
-    '',                                         // Q3 (empty)
-    '',                                         // Q4 (empty)
-    ''                                          // Notas (empty)
+    (userData.name || '').toUpperCase(),        // A: UserName
+    (userData.surname || '').toUpperCase(),     // B: UserSurname
+    (userData.email || '').toUpperCase(),       // C: UserEmail
+    '',                                         // D: UserPhone (empty)
+    (userData.birth || '').toUpperCase(),       // E: UserBirth
+    '',                                         // F: TrainingCredit (empty)
+    '',                                         // G: TrainingsScheduled (empty)
+    '',                                         // H: DebtValue (empty)
+    '',                                         // I: Paid? (empty)
+    '',                                         // J: Q1 (empty)
+    '',                                         // K: Q2 (empty)
+    '',                                         // L: Q3 (empty)
+    '',                                         // M: Q4 (empty)
+    '',                                         // N: OBJETIVO 📝 (empty)
+    '',                                         // O: NOTES 📝 (empty)
+    userData.age || '',                         // P: IDADE/ALTURA
   ];
-  
+
   await sheets.spreadsheets.values.update({
     spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-    range: `${userSheetName}!A2:N2`,
+    range: `${userSheetName}!A2:P2`,
     valueInputOption: 'RAW',
     requestBody: {
       values: [dataValues],

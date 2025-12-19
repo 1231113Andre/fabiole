@@ -33,9 +33,13 @@ export function parsePersonalInfo(row: any[]): UserSheetData['personalInfo'] {
     q2: row[10] || '',
     q3: row[11] || '',
     q4: row[12] || '',
-    notas: row[13] || '',       // Column N: OBJETIVO
-    inicio: row[14] || '',      // Column O: INÍCIO
-    age: row[15] || '',         // Column P: IDADE
+    // Column N (index 13) is empty/unused in current template
+    goals: row[14] || '',       // Column O: OBJETIVO 📝
+    notes: row[15] || '',       // Column P: NOTES 📝
+    age: row[16] || '',         // Column Q: IDADE/ALTURA (if exists)
+    // Legacy fields for backward compatibility
+    notas: row[14] || '',
+    inicio: row[15] || '',
   };
 }
 

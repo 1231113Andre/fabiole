@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import ClientAuthModal from './ClientAuthModal';
 import { useSession } from '@/lib/react-query/hooks/useAuth';
+import NewButton from '@/app/components/newButton';
+import AuthModal from '@/components/auth/AuthModal';
 
 interface NavItem {
     href: string;
@@ -56,6 +58,13 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
         ? `${user.name || ''} ${user.surname || ''}`.trim().toUpperCase()
         : 'USER';
 
+    // Auth modal state for direct control
+    const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+
+    const openAuthModal = useCallback(() => {
+        setAuthModalOpen(true);
+    }, []);
+
     return (
         <>
             {/* Mobile Menu Button */}
@@ -82,7 +91,7 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
             >
                 <div className="flex flex-col h-full">
                     {/* Mobile Menu Header */}
-                    <div className="flex items-center justify-end border-b border-[var(--border)] bg-gradient-to-r from-[var(--background)] to-[color-mix(in oklab, var(--muted) 20%, transparent)] p-5">
+                    <div className="relative flex items-center justify-end bg-gradient-to-r from-[var(--background)] to-[color-mix(in oklab, var(--muted) 20%, transparent)] p-5">
                         <button
                             id="mobile-menu-close-btn"
                             onClick={closeMenu}
@@ -91,6 +100,8 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                         >
                             <i className="fa-solid fa-xmark text-xl text-[var(--foreground)]"></i>
                         </button>
+                        {/* Gradient divider */}
+                        <div className="absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent"></div>
                     </div>
 
                     {/* Mobile Menu Navigation */}
@@ -101,10 +112,10 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                                 href={link.href}
                                 prefetch={true}
                                 onClick={closeMenu}
-                                className="flex items-center gap-4 rounded-xl px-4 py-3 text-base font-semibold text-[var(--foreground)] transition-all duration-200 hover:translate-x-1 hover:bg-[var(--muted)] hover:text-[var(--primary)] active:scale-95"
+                                className="flex items-center gap-4 rounded-xl px-4 py-3 text-base font-semibold text-[var(--foreground)] transition-all duration-200 hover:translate-x-1 hover:bg-white/30 hover:text-[var(--primary)] active:scale-95"
                             >
                                 {link.icon && (
-                                    <i className={`${link.icon} text-lg text-[var(--muted-foreground)] transition-colors duration-200`}></i>
+                                    <i className={`${link.icon} text-lg text-white transition-colors duration-200`}></i>
                                 )}
                                 <span className="text-base">{link.label}</span>
                             </Link>
@@ -112,7 +123,9 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                     </nav>
 
                     {/* Mobile Menu Footer */}
-                    <div className="space-y-3 border-t border-[var(--border)] bg-[color-mix(in oklab, var(--muted) 20%, transparent)] p-4">
+                    <div className="relative space-y-3 bg-[color-mix(in oklab, var(--muted) 20%, transparent)] p-4">
+                        {/* Gradient divider */}
+                        <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent"></div>
                         {/* Auth Buttons - SSR initial + client reactivity */}
                         <div id="mobile-auth-btn">
                             {isAuthenticated ? (
@@ -124,36 +137,27 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                                     {fullName}
                                 </Link>
                             ) : (
-                                <div className="flex flex-col gap-2 w-full">
-                                    <button
-                                        id="mobile-login-btn"
-                                        type="button"
-                                        className="inline-flex items-center justify-center px-4 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-300 ease-out active:scale-95 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary cursor-pointer bg-transparent text-popover-foreground rounded-lg shadow-md font-medium text-base px-6 disabled:opacity-60 hover:bg-primary-hover hover:backdrop-blur-sm hover:shadow-2xl hover:bg-primary hover:border-orange-400 active:shadow-lg transition-all duration-200 ease-out border-2 border-transparent h-12 w-full uppercase font-bold text-lg"
-                                    >
-                                        <i className="fa-duotone fa-right-to-bracket mr-2"></i>
-                                        LOGIN
-                                    </button>
-                                    <button
-                                        id="mobile-register-btn"
-                                        type="button"
-                                        className="inline-flex items-center justify-center px-4 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-300 ease-out active:scale-95 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary cursor-pointer bg-primary text-white rounded-lg shadow-md font-medium text-base px-6 disabled:opacity-60 hover:!bg-transparent hover:border-orange-400 hover:!text-white hover:shadow-[0_10px_24px_rgba(230,145,91,0.35)] active:shadow-lg transition-all duration-200 ease-out border-2 border-orange-400 h-12 w-full uppercase font-bold text-lg"
-                                    >
-                                        <i className="fa-duotone fa-user-plus mr-2"></i>
-                                        REGISTER
-                                    </button>
-                                </div>
+                                <NewButton
+                                    variant="new_primary_rounded"
+                                    icon={<i className="fa-duotone fa-right-to-bracket" />}
+                                    iconPosition="left"
+                                    className="w-full h-12 uppercase font-bold text-base"
+                                    onClick={openAuthModal}
+                                >
+                                    LOGIN <span className="mx-2 opacity-60">|</span> REGISTER
+                                </NewButton>
                             )}
                         </div>
 
-                        {/* Separator */}
-                        <div className="my-2 h-px bg-[color-mix(in oklab, var(--border) 50%, transparent)]"></div>
+                        {/* Gradient Separator */}
+                        <div className="my-3 h-px bg-gradient-to-r from-transparent via-gray-400 to-transparent"></div>
 
                         {/* Social Media Icons */}
                         <div className="flex items-center justify-center gap-3 py-2">
                             <a
                                 href="https://discord.com"
                                 aria-label="Discord"
-                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--muted)] text-[var(--foreground)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-[#5865F2] hover:bg-[#5865F2] hover:text-white hover:shadow-[0_6px_20px_rgba(88,101,242,0.5)]"
+                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-600 transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-[#5865F2] hover:bg-[#5865F2] hover:text-white hover:shadow-[0_6px_20px_rgba(88,101,242,0.5)]"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -162,7 +166,7 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                             <a
                                 href="https://instagram.com"
                                 aria-label="Instagram"
-                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--muted)] text-[var(--foreground)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-[#E4405F] hover:bg-[#E4405F] hover:text-white hover:shadow-[0_6px_20px_rgba(228,64,95,0.5)]"
+                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-600 transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-[#E4405F] hover:bg-[#E4405F] hover:text-white hover:shadow-[0_6px_20px_rgba(228,64,95,0.5)]"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -171,7 +175,7 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                             <a
                                 href="https://x.com"
                                 aria-label="X / Twitter"
-                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--muted)] text-[var(--foreground)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-[#1DA1F2] hover:bg-[#1DA1F2] hover:text-white hover:shadow-[0_6px_20px_rgba(29,161,242,0.5)]"
+                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-600 transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-[#1DA1F2] hover:bg-[#1DA1F2] hover:text-white hover:shadow-[0_6px_20px_rgba(29,161,242,0.5)]"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -180,7 +184,7 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                             <a
                                 href="https://www.tiktok.com"
                                 aria-label="TikTok"
-                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--muted)] text-[var(--foreground)] transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-[#EE1D52] hover:bg-[#EE1D52] hover:text-white hover:shadow-[0_6px_20px_rgba(238,29,82,0.5)]"
+                                className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-gray-600 transition-all duration-200 hover:-translate-y-0.5 hover:scale-105 hover:border-[#EE1D52] hover:bg-[#EE1D52] hover:text-white hover:shadow-[0_6px_20px_rgba(238,29,82,0.5)]"
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
@@ -191,8 +195,12 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                 </div>
             </div>
 
-            {/* Client Component for Modal Only */}
-            <ClientAuthModal triggerId="mobile" />
+            {/* Auth Modal - direct control */}
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setAuthModalOpen(false)}
+                initialView="login"
+            />
         </>
     );
 }

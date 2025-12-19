@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/lib/react-query/hooks/useAuth";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
@@ -15,6 +15,7 @@ import { ReferencesTab } from "./components/ReferencesTab";
 import { PesagensInfoCards } from "./components/PesagensInfoCards";
 import { TabType, Gender, Category } from "./types";
 import { useDashboardData } from "./hooks/useDashboardData";
+import { useRefreshData } from "@/lib/react-query/hooks/useUserData";
 import { useNotification } from "@/components/NotificationContext";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
@@ -34,14 +35,20 @@ export default function DashboardPage() {
   const logoutMutation = useLogout();
 
   // UI state
-  const [forceRefresh, setForceRefresh] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
 
   // Reference tab state (lifted up)
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category>("massaGorda");
+
+  // Refresh hook with cooldown
+  const {
+    refresh,
+    isRefreshing: isManualRefreshing,
+    cooldownProgress
+  } = useRefreshData();
 
   // Data from custom hook
   const {
@@ -56,8 +63,7 @@ export default function DashboardPage() {
     isRefreshing: isDataRefreshing,
     user,
     isAuthenticated,
-    refetch,
-  } = useDashboardData(forceRefresh);
+  } = useDashboardData();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -67,19 +73,19 @@ export default function DashboardPage() {
   }, [isLoading, isAuthenticated, router]);
 
   // Handlers
-  const handleRefresh = useCallback(() => {
-    setIsRefreshing(true);
-    setForceRefresh(true);
-    refetch()
-      .then(() => notify("Os seus dados foram atualizados com sucesso.", "success"))
-      .catch(() => notify("Não foi possível atualizar os dados. Tente novamente.", "error"))
-      .finally(() => {
-        setTimeout(() => {
-          setForceRefresh(false);
-          setIsRefreshing(false);
-        }, 500);
-      });
-  }, [refetch, notify]);
+  const handleRefresh = useCallback(async () => {
+    const result = await refresh();
+
+    if (result.success) {
+      setLastRefreshTime(new Date());
+      notify("Os seus dados foram atualizados com sucesso.", "success");
+    } else if (result.reason === "cooldown") {
+      const seconds = result.remainingSeconds || 30;
+      notify(`Aguarde ${seconds} segundo${seconds !== 1 ? 's' : ''} antes de atualizar novamente.`, "info");
+    } else {
+      notify("Não foi possível atualizar os dados. Tente novamente.", "error");
+    }
+  }, [refresh, notify]);
 
   const handleLogout = useCallback(() => {
     logoutMutation.mutate();
@@ -110,7 +116,8 @@ export default function DashboardPage() {
         menuItems={TABS}
         brandName="Fabiole"
         brandIcon="fa-dumbbell"
-        userEmail={user?.email}
+        userName={user?.name}
+        userSurname={user?.surname}
       />
 
       {/* Header */}
@@ -120,7 +127,9 @@ export default function DashboardPage() {
         userSurname={user?.surname}
         userEmail={user?.email}
         onRefresh={handleRefresh}
-        isRefreshing={isRefreshing || isDataRefreshing}
+        isRefreshing={isManualRefreshing || isDataRefreshing}
+        cooldownProgress={cooldownProgress}
+        lastRefreshTime={lastRefreshTime ?? undefined}
         onLogout={handleLogout}
         isLoggingOut={logoutMutation.isPending}
       />

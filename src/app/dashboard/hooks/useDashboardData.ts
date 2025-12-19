@@ -203,7 +203,7 @@ function calculateStats(
 /**
  * Custom hook for dashboard data transformation and management
  */
-export function useDashboardData(forceRefresh: boolean = false): UseDashboardDataResult {
+export function useDashboardData(): UseDashboardDataResult {
     const { data: sessionData, isLoading: isSessionLoading } = useSession();
     const {
         data: userData,
@@ -211,7 +211,7 @@ export function useDashboardData(forceRefresh: boolean = false): UseDashboardDat
         isFetching,
         error,
         refetch
-    } = useUserData(forceRefresh);
+    } = useUserData();
 
     const user = sessionData?.user;
     const isAuthenticated = Boolean(sessionData?.authenticated && user);
@@ -248,8 +248,8 @@ export function useDashboardData(forceRefresh: boolean = false): UseDashboardDat
             weight: userData.pesagens?.length > 0
                 ? `${userData.pesagens[userData.pesagens.length - 1].peso} kg`
                 : "",
-            goals: userData.personalInfo.notas || "",
-            notes: userData.personalInfo.notas || "",
+            goals: userData.personalInfo.goals || userData.personalInfo.notas || "",
+            notes: userData.personalInfo.notes || userData.personalInfo.inicio || "",
             trainingCredit: userData.personalInfo.trainingCredit || "",
             trainingsScheduled: userData.personalInfo.trainingsScheduled || "",
             debtValue: userData.personalInfo.debtValue || "",

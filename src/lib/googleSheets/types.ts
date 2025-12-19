@@ -45,9 +45,12 @@ export interface PersonalInfo {
   q2: string;
   q3: string;
   q4: string;
-  notas: string;        // Column N: OBJETIVO
-  inicio: string;       // Column O: INÍCIO
+  goals: string;        // Column N: OBJETIVO 📝
+  notes: string;        // Column O: NOTES 📝
   age?: string;         // Column P: IDADE (or calculated)
+  // Legacy fields (kept for backward compatibility)
+  notas?: string;       // Deprecated: use goals
+  inicio?: string;      // Deprecated: use notes
 }
 
 /**
