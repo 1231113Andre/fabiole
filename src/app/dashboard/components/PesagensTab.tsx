@@ -37,10 +37,16 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                     <tr className="bg-gray-50 border-b border-gray-100">
                                         <th className="py-4 px-4 text-left font-semibold text-gray-700 text-sm xl:pl-8">Data</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Peso (kg)</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Altura (cm)</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">% MG</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">MM (kg)</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden lg:table-cell">H2O</th>
-                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">IMC</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">
+                                            <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-violet-500/20 to-purple-500/20 text-violet-700 px-3 py-1.5 rounded-full border border-violet-200 shadow-sm">
+                                                <span className="text-sm">🤖</span>
+                                                <span className="font-bold text-xs uppercase tracking-wide">IMC (AUTO)</span>
+                                            </span>
+                                        </th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden lg:table-cell">Gordura Visc.</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden xl:table-cell">ID Metab.</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden xl:table-cell">Massa Óssea</th>
@@ -59,6 +65,9 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                             </td>
                                             <td className="py-4 px-4 text-center">
                                                 <span className="font-bold text-gray-900">{pesagem.peso || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center">
+                                                <span className="text-gray-700">{pesagem.height || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center">
                                                 <span className="text-gray-700">{pesagem.percentualMG || "-"}</span>
@@ -83,20 +92,20 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                             </td>
                                             <td className="py-4 px-4 text-center">
                                                 <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${pesagem.resultadoIMC?.toLowerCase().includes('excelente') ? 'bg-emerald-100 text-emerald-700' :
-                                                        pesagem.resultadoIMC?.toLowerCase().includes('bom') ? 'bg-blue-100 text-blue-700' :
-                                                            pesagem.resultadoIMC?.toLowerCase().includes('médio') || pesagem.resultadoIMC?.toLowerCase().includes('medio') ? 'bg-amber-100 text-amber-700' :
-                                                                pesagem.resultadoIMC?.toLowerCase().includes('mau') ? 'bg-red-100 text-red-700' :
-                                                                    'bg-gray-100 text-gray-600'
+                                                    pesagem.resultadoIMC?.toLowerCase().includes('bom') ? 'bg-blue-100 text-blue-700' :
+                                                        pesagem.resultadoIMC?.toLowerCase().includes('médio') || pesagem.resultadoIMC?.toLowerCase().includes('medio') ? 'bg-amber-100 text-amber-700' :
+                                                            pesagem.resultadoIMC?.toLowerCase().includes('mau') ? 'bg-red-100 text-red-700' :
+                                                                'bg-gray-100 text-gray-600'
                                                     }`}>
                                                     {pesagem.resultadoIMC || "-"}
                                                 </span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden md:table-cell">
                                                 <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${pesagem.resultadoPercentualMG?.toLowerCase().includes('excelente') ? 'bg-emerald-100 text-emerald-700' :
-                                                        pesagem.resultadoPercentualMG?.toLowerCase().includes('bom') ? 'bg-blue-100 text-blue-700' :
-                                                            pesagem.resultadoPercentualMG?.toLowerCase().includes('médio') || pesagem.resultadoPercentualMG?.toLowerCase().includes('medio') ? 'bg-amber-100 text-amber-700' :
-                                                                pesagem.resultadoPercentualMG?.toLowerCase().includes('mau') ? 'bg-red-100 text-red-700' :
-                                                                    'bg-gray-100 text-gray-600'
+                                                    pesagem.resultadoPercentualMG?.toLowerCase().includes('bom') ? 'bg-blue-100 text-blue-700' :
+                                                        pesagem.resultadoPercentualMG?.toLowerCase().includes('médio') || pesagem.resultadoPercentualMG?.toLowerCase().includes('medio') ? 'bg-amber-100 text-amber-700' :
+                                                            pesagem.resultadoPercentualMG?.toLowerCase().includes('mau') ? 'bg-red-100 text-red-700' :
+                                                                'bg-gray-100 text-gray-600'
                                                     }`}>
                                                     {pesagem.resultadoPercentualMG || "-"}
                                                 </span>

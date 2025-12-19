@@ -33,7 +33,9 @@ export function parsePersonalInfo(row: any[]): UserSheetData['personalInfo'] {
     q2: row[10] || '',
     q3: row[11] || '',
     q4: row[12] || '',
-    notas: row[13] || '',
+    notas: row[13] || '',       // Column N: OBJETIVO
+    inicio: row[14] || '',      // Column O: INÍCIO
+    age: row[15] || '',         // Column P: IDADE
   };
 }
 

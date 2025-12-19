@@ -114,21 +114,36 @@ export default function DashboardPage() {
 
     // Convert pesagens data
     const pesagens: Pesagem[] = (userData.pesagens || [])
-      .map((p: any) => ({
-        data: p.data,
-        peso: parseFloat(p.peso) || 0,
-        percentualMG: parseFloat(p.percentualMG) || 0,
-        MM: parseFloat(p.MM) || 0,
-        H2O: parseFloat(p.H2O) || 0,
-        IMC: parseFloat(p.IMC) || 0,
-        gordVisceral: parseFloat(p.gordVisceral) || 0,
-        IDMetabolica: parseFloat(p.IDMetabolica) || 0,
-        massaOssea: parseFloat(p.massaOssea) || 0,
-        resultadoIMC: p.resultadoIMC || "",
-        resultadoPercentualMG: p.resultadoPercentualMG || "",
-        notas: p.notas || "",
-        height: parseFloat(p.height) || 0,
-      }))
+      .map((p: any) => {
+        const peso = parseFloat(p.peso) || 0;
+        const heightCm = parseFloat(p.height) || 0;
+        const heightM = heightCm / 100; // Convert cm to meters
+
+        // Calculate BMI if not provided and we have both weight and height
+        let imc = parseFloat(p.IMC) || 0;
+        let isIMCCalculated = false;
+        if (imc === 0 && peso > 0 && heightM > 0) {
+          imc = Math.round((peso / (heightM * heightM)) * 10) / 10; // BMI = kg / m²
+          isIMCCalculated = true;
+        }
+
+        return {
+          data: p.data,
+          peso,
+          percentualMG: parseFloat(p.percentualMG) || 0,
+          MM: parseFloat(p.MM) || 0,
+          H2O: parseFloat(p.H2O) || 0,
+          IMC: imc,
+          isIMCCalculated,
+          gordVisceral: parseFloat(p.gordVisceral) || 0,
+          IDMetabolica: parseFloat(p.IDMetabolica) || 0,
+          massaOssea: parseFloat(p.massaOssea) || 0,
+          resultadoIMC: p.resultadoIMC || "",
+          resultadoPercentualMG: p.resultadoPercentualMG || "",
+          notas: p.notas || "",
+          height: heightCm,
+        };
+      })
       .filter((p: Pesagem) => p.peso > 0)
       .sort((a, b) => parseDate(b.data) - parseDate(a.data)); // Sort descending (newest first)
 
@@ -178,8 +193,8 @@ export default function DashboardPage() {
     setIsRefreshing(true);
     setForceRefresh(true);
     refetch()
-      .then(() => notify("Dados atualizados com sucesso", "success"))
-      .catch(() => notify("Erro ao atualizar dados", "error"))
+      .then(() => notify("Os seus dados foram atualizados com sucesso.", "success"))
+      .catch(() => notify("Não foi possível atualizar os dados. Tente novamente.", "error"))
       .finally(() => {
         setTimeout(() => {
           setForceRefresh(false);
@@ -284,15 +299,27 @@ export default function DashboardPage() {
           {/* Page Header */}
           <div className="mb-6 sm:mb-8">
             <div className="mb-6 flex flex-wrap gap-4">
-              <NewButton
-                href="/"
-                variant="new_primary_rounded"
-                icon={<i className="fa-duotone fa-arrow-left"></i>}
-                iconPosition="left"
-                className="w-full sm:w-auto min-w-[200px] shadow-md uppercase font-bold"
-              >
-                Voltar ao website
-              </NewButton>
+              {activeTab === "overview" ? (
+                <NewButton
+                  href="/"
+                  variant="new_primary_rounded"
+                  icon={<i className="fa-duotone fa-home-lg"></i>}
+                  iconPosition="left"
+                  className="w-full sm:w-auto min-w-[200px] shadow-md uppercase font-bold"
+                >
+                  Voltar ao Site
+                </NewButton>
+              ) : (
+                <NewButton
+                  onClick={() => setActiveTab("overview")}
+                  variant="new_primary_rounded"
+                  icon={<i className="fa-duotone fa-arrow-left"></i>}
+                  iconPosition="left"
+                  className="w-full sm:w-auto min-w-[200px] shadow-md uppercase font-bold"
+                >
+                  Voltar ao Overview
+                </NewButton>
+              )}
 
               {/* Reset IMC Button - Only visible in Referencias tab when gender is selected */}
               {activeTab === "referencias" && selectedGender && (
@@ -324,6 +351,39 @@ export default function DashboardPage() {
                   Bem-vindo de volta, <span className="text-primary font-bold">{user ? `${user.name} ${user.surname}!` : 'Visitante!'}</span>
                 </p>
               </div>
+
+              {/* Info Cards - only on Pesagens tab */}
+              {activeTab === "pesagens" && (
+                <div className="flex flex-wrap gap-3">
+                  {/* BMI Auto-Calculation Info */}
+                  <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-200 rounded-xl p-4 max-w-xs">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">🤖</span>
+                      <div>
+                        <h4 className="font-bold text-violet-700 text-sm mb-1">Cálculo Automático do IMC</h4>
+                        <p className="text-xs text-violet-600 leading-relaxed">
+                          <strong>Fórmula:</strong> IMC = Peso (kg) ÷ Altura² (m)<br />
+                          <span className="text-violet-500">Ex: 80kg ÷ (1.75m)² = <strong>26.1</strong></span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Data Refresh Info */}
+                  <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-200 rounded-xl p-4 max-w-xs">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">🔄</span>
+                      <div>
+                        <h4 className="font-bold text-blue-700 text-sm mb-1">Atualização de Dados</h4>
+                        <p className="text-xs text-blue-600 leading-relaxed">
+                          Os dados são atualizados automaticamente.<br />
+                          <span className="text-blue-500">Para forçar atualização, clique no <strong>ícone de refresh</strong> no header.</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

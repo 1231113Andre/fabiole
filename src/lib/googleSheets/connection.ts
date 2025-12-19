@@ -36,46 +36,46 @@ import { ConnectionTestResult } from './types';
 export async function testConnection(): Promise<ConnectionTestResult> {
   try {
     console.log('🧪 [Google Sheets] Starting connection test...');
-    
+
     // Test authentication
     const auth = await getAuthClient();
     const client = await auth.getClient();
-    
+
     console.log('✅ [Google Sheets] Authentication successful');
-    
+
     // Test API access
     const sheets = await getSheetsAPI();
     console.log(`📊 [Google Sheets] Testing access to spreadsheet: ${ACCOUNT_DATA_SHEET_ID}`);
-    
+
     // Try to get spreadsheet metadata
     const spreadsheetInfo = await sheets.spreadsheets.get({
       spreadsheetId: ACCOUNT_DATA_SHEET_ID,
     });
-    
+
     console.log('✅ [Google Sheets] Spreadsheet access confirmed');
     const spreadsheetTitle = spreadsheetInfo.data.properties?.title || 'Unknown';
     console.log(`   - Spreadsheet title: ${spreadsheetTitle}`);
-    
+
     // Try to read infoData headers
     let headers: string[] = [];
     let userCount = 0;
     try {
       const headersResponse = await sheets.spreadsheets.values.get({
         spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-        range: `${INFO_DATA_SHEET_NAME}!A1:E1`,
+        range: `${INFO_DATA_SHEET_NAME}!A10:F10`,
       });
-      
+
       if (headersResponse.data.values && headersResponse.data.values.length > 0) {
         headers = headersResponse.data.values[0] as string[];
         console.log(`✅ [Google Sheets] Headers read: ${headers.join(', ')}`);
       }
-      
+
       // Try to count users (only valid rows with email containing @)
       const usersResponse = await sheets.spreadsheets.values.get({
         spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-        range: `${INFO_DATA_SHEET_NAME}!A:E`,
+        range: `${INFO_DATA_SHEET_NAME}!A10:F`,
       });
-      
+
       if (usersResponse.data.values && usersResponse.data.values.length > 1) {
         // Count only rows that have a valid email (contains @)
         const validUsers = usersResponse.data.values.slice(1).filter(
@@ -87,13 +87,13 @@ export async function testConnection(): Promise<ConnectionTestResult> {
     } catch (readError) {
       console.warn('⚠️ [Google Sheets] Could not read data from sheet:', readError);
     }
-    
+
     // Get service account email from credentials
     const fs = await import('fs/promises');
     const credentialsPath = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_PATH;
     let serviceAccountEmail: string | undefined;
     let projectId: string | undefined;
-    
+
     if (credentialsPath) {
       try {
         const fileContent = await fs.readFile(credentialsPath, 'utf-8');
@@ -104,9 +104,9 @@ export async function testConnection(): Promise<ConnectionTestResult> {
         console.warn('⚠️ [Google Sheets] Could not read service account email');
       }
     }
-    
+
     console.log('✅ [Google Sheets] Connection test completed successfully');
-    
+
     return {
       success: true,
       message: 'Connection to Google Sheets is working correctly',

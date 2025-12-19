@@ -2,7 +2,7 @@
  * @fileoverview InfoData sheet operations module
  * @author Personal Trainer Platform Team
  * @description This module handles all operations related to the main admin sheet "infoData",
- *              which contains user account information (Name, Surname, Email, Password, Birth).
+ *              which contains user account information (Name, Surname, Email, Password, Birth, Age).
  *              This sheet is manually editable by the trainer (admin) and serves as the
  *              source for account provisioning.
  * @since 1.0.0
@@ -12,11 +12,15 @@ import { InfoDataRow } from '@/types/user';
 import { getSheetsAPI } from './auth';
 import { ACCOUNT_DATA_SHEET_ID, INFO_DATA_SHEET_NAME } from './config';
 import { apiCache, CacheKeys, clearInfoDataCache } from './cache';
+import { comparePassword } from '@/lib/security/password';
+
+// Debug mode - can be disabled in production
+const DEBUG = process.env.NODE_ENV === 'development';
 
 /**
  * Initialize infoData sheet with headers
  * @description Ensures the infoData sheet exists and has the correct headers.
- *              Headers: Name | Surname | Email | Password | Birth
+ *              Headers: Name | Surname | Email | Password | Birth | Age
  *              This function is idempotent - safe to call multiple times.
  * 
  * @returns {Promise<void>} Resolves when headers are initialized
@@ -24,7 +28,7 @@ import { apiCache, CacheKeys, clearInfoDataCache } from './cache';
  * 
  * @example
  * await initializeInfoDataSheet();
- * // Sheet now has headers: Name, Surname, Email, Password, Birth
+ * // Sheet now has headers: Name, Surname, Email, Password, Birth, Age
  * 
  * @author Personal Trainer Platform Team
  * @since 1.0.0
@@ -45,18 +49,18 @@ export async function initializeInfoDataSheet(): Promise<void> {
     console.log('🔍 [Google Sheets] Checking if headers exist...');
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-      range: `${INFO_DATA_SHEET_NAME}!A1:E1`,
+      range: `${INFO_DATA_SHEET_NAME}!A10:F10`,
     });
 
     if (!response.data.values || response.data.values.length === 0) {
       console.log('📝 [Google Sheets] Headers do not exist, adding...');
-      // Add headers: Name, Surname, Email, Password, Birth
+      // Add headers: Name, Surname, Email, Password, Birth, Age
       await sheets.spreadsheets.values.update({
         spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-        range: `${INFO_DATA_SHEET_NAME}!A1:E1`,
+        range: `${INFO_DATA_SHEET_NAME}!A10:F10`,
         valueInputOption: 'RAW',
         requestBody: {
-          values: [['Name', 'Surname', 'Email', 'Password', 'Birth']],
+          values: [['Name', 'Surname', 'Email', 'Password', 'Birth', 'Age']],
         },
       });
       console.log('✅ [Google Sheets] Headers added successfully');
@@ -101,7 +105,7 @@ export async function getAllInfoDataUsers(): Promise<InfoDataRow[]> {
     const sheets = await getSheetsAPI();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-      range: `${INFO_DATA_SHEET_NAME}!A:E`, // Name, Surname, Email, Password, Birth
+      range: `${INFO_DATA_SHEET_NAME}!A10:F`, // Headers in row 10: Name, Surname, Email, Password, Birth, Age
     });
 
     console.log('✅ [Google Sheets] API response received');
@@ -123,6 +127,7 @@ export async function getAllInfoDataUsers(): Promise<InfoDataRow[]> {
         email: (row[2] || '').trim(),
         password: (row[3] || '').trim(),
         birth: (row[4] || '').trim(),
+        age: (row[5] || '').trim(),
       }))
       .filter((user: InfoDataRow) => user.email.trim() !== ''); // Only count rows with email
 
@@ -172,9 +177,6 @@ export async function findUserInInfoData(email: string, password: string): Promi
       return null;
     }
 
-    // Import password comparison function
-    const { comparePassword } = await import('@/lib/security/password');
-
     // Check if password is hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
     const isHashed = user.password.startsWith('$2a$') ||
       user.password.startsWith('$2b$') ||
@@ -183,7 +185,7 @@ export async function findUserInInfoData(email: string, password: string): Promi
     let passwordMatches = false;
 
     if (isHashed) {
-      // Compare with hashed password
+      // Compare with hashed password (using module-level import)
       passwordMatches = await comparePassword(password, user.password);
     } else {
       // Legacy: compare plain text (for backward compatibility during migration)
@@ -255,7 +257,7 @@ export async function userExistsInInfoData(email: string): Promise<boolean> {
  *              Validates that the user doesn't already exist before adding.
  *              Email is automatically converted to lowercase.
  * 
- * @param {InfoDataRow} userData - User data to add (Name, Surname, Email, Password, Birth)
+ * @param {InfoDataRow} userData - User data to add (Name, Surname, Email, Password, Birth, Age)
  * @returns {Promise<InfoDataRow>} The added user record (with normalized email)
  * @throws {Error} If user already exists or sheet cannot be written to
  * 
@@ -289,13 +291,14 @@ export async function addUserToInfoData(userData: InfoDataRow): Promise<InfoData
       userData.email.toLowerCase(),
       userData.password,
       userData.birth,
+      userData.age || '',
     ];
 
     console.log(`📝 [Google Sheets] Adding row to infoData...`);
     // Append the new row
     await sheets.spreadsheets.values.append({
       spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-      range: `${INFO_DATA_SHEET_NAME}!A:E`,
+      range: `${INFO_DATA_SHEET_NAME}!A:F`,
       valueInputOption: 'RAW',
       requestBody: {
         values: [newRow],

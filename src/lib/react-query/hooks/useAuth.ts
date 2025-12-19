@@ -126,7 +126,7 @@ export function useLogin() {
       // Immediately update session state for instant navbar refresh
       queryClient.setQueryData(["session"], { authenticated: true, user: data.user });
       // Show success notification
-      notify("Login efetuado com sucesso!", "success");
+      notify("Bem-vindo de volta! A sua sessão foi iniciada com sucesso.", "success");
       // Note: Redirect is handled in the component to ensure cookie is set
     },
   });
@@ -182,7 +182,7 @@ export function useRegister() {
     onSuccess: (data) => {
       // Immediately update session state for instant navbar refresh
       queryClient.setQueryData(["session"], { authenticated: true, user: data.user });
-      notify("Conta criada com sucesso!", "success");
+      notify("A sua conta foi criada com sucesso. Bem-vindo à Fabiole!", "success");
       // Redirect to dashboard (auto-login after registration)
       router.push("/dashboard");
     },
@@ -231,7 +231,7 @@ export function useLogout() {
       queryClient.setQueryData(["session"], { authenticated: false, user: undefined });
       // Clear all other queries
       queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "session" });
-      notify("Sessão terminada com sucesso", "info");
+      notify("A sua sessão foi terminada. Até breve!", "info");
       // Redirect to home page
       router.push("/");
     },
@@ -239,7 +239,7 @@ export function useLogout() {
       // Even on error, clear session state and redirect to home
       queryClient.setQueryData(["session"], { authenticated: false, user: undefined });
       queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "session" });
-      notify("Sessão terminada", "info");
+      notify("Sessão terminada.", "info");
       router.push("/");
     },
   });

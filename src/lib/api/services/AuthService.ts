@@ -125,32 +125,4 @@ export class AuthService {
       },
     };
   }
-
-  /**
-   * Delete session cookie
-   */
-  static createLogoutCookie(): {
-    name: string;
-    value: string;
-    options: {
-      httpOnly: boolean;
-      secure: boolean;
-      sameSite: 'strict';
-      maxAge: number;
-      path: string;
-    };
-  } {
-    return {
-      name: 'auth_session',
-      value: '',
-      options: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 0, // Expire immediately
-        path: '/',
-      },
-    };
-  }
 }
-

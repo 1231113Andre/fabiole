@@ -45,8 +45,9 @@ export interface PersonalInfo {
   q2: string;
   q3: string;
   q4: string;
-  notas: string;
-  age?: string;
+  notas: string;        // Column N: OBJETIVO
+  inicio: string;       // Column O: INÍCIO
+  age?: string;         // Column P: IDADE (or calculated)
 }
 
 /**

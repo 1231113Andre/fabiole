@@ -48,11 +48,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <header className="fixed top-0 left-0 right-0 lg:left-[var(--sidebar-width,290px)] h-[72px] bg-white shadow-sm z-[998] flex items-center px-6 transition-[left] duration-300 border-b border-transparent">
             <div className="flex items-center gap-4">
                 {/* Mobile Menu Button */}
+                {/* Mobile Menu Button */}
                 <button
-                    className="flex items-center justify-center w-10 h-10 border-none bg-transparent rounded-lg text-foreground dark:text-white cursor-pointer transition-all duration-200 hover:bg-muted dark:hover:bg-meta-4 lg:hidden"
+                    className="flex items-center justify-center w-10 h-10 border border-gray-200 bg-white rounded-xl text-gray-700 cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-primary hover:border-primary/30 shadow-sm lg:hidden active:scale-95"
                     onClick={onMenuClick}
+                    aria-label="Menu"
                 >
-                    <i className="fas fa-bars text-lg"></i>
+                    <i className="fa-duotone fa-bars text-xl"></i>
                 </button>
 
                 {/* Search Bar Removed */}
@@ -63,39 +65,40 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 {/* Refresh Button */}
                 {onRefresh && (
                     <button
-                        className="relative flex items-center justify-center w-11 h-11 border-none bg-transparent rounded-[10px] text-muted-foreground cursor-pointer transition-all duration-200 hover:bg-muted dark:hover:bg-meta-4 hover:text-foreground dark:text-bodydark2 dark:hover:text-white disabled:opacity-50"
+                        className="relative flex items-center justify-center w-10 h-10 border border-gray-200 bg-white rounded-xl text-gray-500 cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-primary hover:border-primary/30 shadow-sm active:scale-95 disabled:opacity-50"
                         onClick={onRefresh}
                         disabled={isRefreshing}
                         title="Atualizar dados"
                     >
                         <i
-                            className={`fas fa-arrows-rotate ${isRefreshing ? "fa-spin" : ""}`}
+                            className={`fa-duotone fa-arrows-rotate ${isRefreshing ? "fa-spin" : ""}`}
                         ></i>
                     </button>
                 )}
 
                 {/* Notifications */}
-                <button className="relative flex items-center justify-center w-11 h-11 border-none bg-transparent rounded-[10px] text-muted-foreground cursor-pointer transition-all duration-200 hover:bg-muted dark:hover:bg-meta-4 hover:text-foreground dark:text-bodydark2 dark:hover:text-white">
-                    <i className="fas fa-bell"></i>
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white dark:border-boxdark"></span>
+                {/* Notifications */}
+                <button className="relative flex items-center justify-center w-10 h-10 border border-gray-200 bg-white rounded-xl text-gray-500 cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-primary hover:border-primary/30 shadow-sm active:scale-95">
+                    <i className="fa-duotone fa-bell"></i>
+                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full border-2 border-white"></span>
                 </button>
 
                 {/* Profile Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                     <button
-                        className="flex items-center gap-3 py-1.5 px-3 pl-1.5 bg-transparent border-none rounded-[10px] cursor-pointer transition-all duration-200 hover:bg-muted dark:hover:bg-meta-4"
+                        className="flex items-center gap-3 py-1 px-1.5 bg-white border border-transparent hover:border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:bg-gray-50"
                         onClick={() => setShowDropdown(!showDropdown)}
                     >
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shadow-[0_2px_8px_rgba(230,145,91,0.3)]">
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary/20">
                             {initials}
                         </div>
                         <div className="text-left hidden md:block">
-                            <div className="text-sm font-semibold text-foreground dark:text-white leading-tight">
+                            <div className="text-sm font-bold text-gray-900 leading-tight">
                                 {userName} {userSurname}
                             </div>
-                            <div className="text-xs text-muted-foreground dark:text-bodydark2">Cliente</div>
+                            <div className="text-[11px] font-medium text-gray-500">Cliente</div>
                         </div>
-                        <i className="fas fa-chevron-down text-xs text-muted-foreground hidden md:block dark:text-bodydark2"></i>
+                        <i className="fa-duotone fa-chevron-down text-xs text-gray-400 hidden md:block px-2"></i>
                     </button>
 
                     {/* Dropdown Menu */}

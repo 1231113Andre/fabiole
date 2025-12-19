@@ -46,12 +46,12 @@ const BrandSection = memo(function BrandSection({
     isCollapsed: boolean;
 }) {
     return (
-        <div className={`flex items-center gap-3 px-6 py-6 border-b border-gray-100 ${isCollapsed ? "justify-center" : ""}`}>
+        <div className={`flex items-center gap-3 px-6 py-6 border-b border-gray-200 ${isCollapsed ? "justify-center" : ""}`}>
             <div className="w-11 h-11 min-w-11 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white text-lg shadow-lg shadow-primary/25">
                 <i className={`fa-duotone ${brandIcon}`} aria-hidden="true" />
             </div>
             {!isCollapsed && (
-                <span className="text-xl font-bold text-gray-900 tracking-tight">
+                <span className="text-xl font-extrabold text-gray-900 tracking-tight">
                     {brandName}
                 </span>
             )}
@@ -80,11 +80,11 @@ const MenuItemButton = memo(function MenuItemButton({
             onClick={onClick}
             className={`
                 group relative flex items-center gap-3.5 px-5 py-3 mx-3 rounded-xl 
-                border-none text-[15px] font-medium text-left cursor-pointer 
+                border-none text-[15px] font-semibold text-left cursor-pointer 
                 transition-all duration-200
                 ${isActive
                     ? "bg-primary text-white shadow-lg shadow-primary/25"
-                    : "bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    : "bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                 }
                 ${isCollapsed ? "justify-center px-3 mx-2" : ""}
             `}
@@ -93,7 +93,7 @@ const MenuItemButton = memo(function MenuItemButton({
             <i
                 className={`${iconClass} text-xl transition-colors duration-200 
                     ${isCollapsed ? "text-2xl" : "w-6 text-center"} 
-                    ${isActive ? "text-white" : "text-gray-400 group-hover:text-primary"}`}
+                    ${isActive ? "text-white" : "text-gray-500 group-hover:text-primary"}`}
                 aria-hidden="true"
             />
             {!isCollapsed && <span className="flex-1">{item.label}</span>}
@@ -112,7 +112,7 @@ const SectionLabel = memo(function SectionLabel({
     if (isCollapsed) return null;
 
     return (
-        <div className="px-6 mb-3 text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+        <div className="px-6 mb-3 text-[11px] font-bold uppercase tracking-widest text-gray-500">
             {label}
         </div>
     );
@@ -130,7 +130,7 @@ const CollapseToggle = memo(function CollapseToggle({
         <div className="mt-auto px-4 pb-6 hidden lg:block">
             <button
                 onClick={onToggle}
-                className="flex items-center justify-center w-full h-10 border border-gray-200 rounded-xl bg-gray-50 text-gray-400 hover:bg-gray-100 hover:text-gray-600 hover:border-gray-300 transition-all cursor-pointer"
+                className="flex items-center justify-center w-full h-10 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 hover:border-gray-400 transition-all cursor-pointer"
             >
                 <i className={`fa-duotone ${isCollapsed ? "fa-chevrons-right" : "fa-chevrons-left"}`} aria-hidden="true" />
             </button>
@@ -206,7 +206,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                     fixed top-0 left-0 h-screen z-[999] flex flex-col 
                     transition-all duration-300 ease-in-out 
                     overflow-y-auto overflow-x-hidden
-                    bg-white border-r border-gray-100 shadow-xl shadow-gray-200/50
+                    bg-white border-r border-gray-200 shadow-xl shadow-gray-200/50
                     ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
                     ${isCollapsed ? "w-[90px]" : "w-[290px]"}
                 `}
@@ -243,21 +243,21 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                         href="/"
                         className={`
                             group flex items-center gap-3.5 px-5 py-3 mx-3 rounded-xl 
-                            border-none text-[15px] font-medium text-left cursor-pointer 
+                            border-none text-[15px] font-semibold text-left cursor-pointer 
                             transition-all duration-200 
-                            bg-transparent text-gray-600 hover:bg-primary/10 hover:text-primary 
+                            bg-transparent text-gray-700 hover:bg-primary/10 hover:text-primary 
                             no-underline
                             ${isCollapsed ? "justify-center px-3 mx-2" : ""}
                         `}
-                        title={isCollapsed ? "Voltar ao Site" : ""}
+                        title={isCollapsed ? "Voltar ao Overview" : ""}
                     >
                         <i
                             className={`fa-duotone fa-house text-xl transition-colors duration-200 
                                 ${isCollapsed ? "text-2xl" : "w-6 text-center"} 
-                                text-gray-400 group-hover:text-primary`}
+                                text-gray-500 group-hover:text-primary`}
                             aria-hidden="true"
                         />
-                        {!isCollapsed && <span className="flex-1">Voltar ao Site</span>}
+                        {!isCollapsed && <span className="flex-1">Voltar ao Overview</span>}
                     </Link>
 
                     {/* Beta Notice with Version */}

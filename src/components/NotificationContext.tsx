@@ -19,6 +19,8 @@ interface ToastConfigItem {
     icon: string;
     iconColor: string;
     borderColor: string;
+    bgClass: string;
+    title: string;
 }
 
 // ============================================
@@ -26,30 +28,36 @@ interface ToastConfigItem {
 // ============================================
 const TOAST_CONFIG: Readonly<Record<NotificationType, ToastConfigItem>> = {
     success: {
-        icon: "fa-duotone fa-circle-check",
-        iconColor: "text-emerald-500",
-        borderColor: "border-emerald-200",
+        icon: "fa-duotone fa-check-circle",
+        iconColor: "text-emerald-300",
+        borderColor: "border-emerald-500/30",
+        bgClass: "bg-emerald-950/95 shadow-emerald-900/20",
+        title: "SUCESSO",
     },
     error: {
-        icon: "fa-duotone fa-circle-xmark",
-        iconColor: "text-red-500",
-        borderColor: "border-red-200",
+        icon: "fa-duotone fa-circle-exclamation",
+        iconColor: "text-red-300",
+        borderColor: "border-red-500/30",
+        bgClass: "bg-red-950/95 shadow-red-900/20",
+        title: "ERRO",
     },
     info: {
         icon: "fa-duotone fa-circle-info",
-        iconColor: "text-primary",
-        borderColor: "border-primary/30",
+        iconColor: "text-blue-300",
+        borderColor: "border-blue-500/30",
+        bgClass: "bg-blue-950/95 shadow-blue-900/20",
+        title: "INFORMAÇÃO",
     },
 } as const;
 
 const BASE_TOAST_OPTIONS: ToastOptions = {
     position: "top-right",
-    autoClose: 3000,
+    autoClose: 2500,
     hideProgressBar: true,
     closeOnClick: true,
     pauseOnHover: true,
     draggable: false,
-    theme: "light",
+    theme: "dark",
     closeButton: false,
     pauseOnFocusLoss: false,
 } as const;
@@ -72,7 +80,7 @@ const DetailsList = memo(function DetailsList({ details }: { details: Notificati
     return (
         <ul className="mt-2 space-y-1 list-none p-0 m-0">
             {errorList.map((item, index) => (
-                <li key={index} className="flex items-center gap-2 text-xs text-gray-500 font-montserrat">
+                <li key={index} className="flex items-center gap-2 text-[13px] text-gray-400 font-montserrat">
                     <i className="fa-solid fa-chevron-right text-[8px]" aria-hidden="true" />
                     <span>{item}</span>
                 </li>
@@ -85,19 +93,30 @@ const DetailsList = memo(function DetailsList({ details }: { details: Notificati
 const ToastContent = memo(function ToastContent({
     type,
     message,
-    details
+    details,
+    timestamp
 }: {
     type: NotificationType;
     message: string;
     details?: NotificationDetails;
+    timestamp: string;
 }) {
-    const { icon, iconColor } = TOAST_CONFIG[type];
+    const { icon, iconColor, title } = TOAST_CONFIG[type];
 
     return (
-        <div className="flex items-center gap-3 py-0.5">
-            <i className={`${icon} ${iconColor} text-xl flex-shrink-0`} aria-hidden="true" />
+        <div className="flex items-start gap-3.5">
+            <i className={`${icon} ${iconColor} text-xl mt-0.5`} aria-hidden="true" />
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800 leading-tight font-montserrat m-0">
+                <div className="flex items-center justify-between mb-1.5">
+                    <h4 className={`text-[11px] uppercase font-extrabold tracking-wider leading-none ${iconColor.replace('text-', 'text-')}`}>
+                        {title}
+                    </h4>
+                    <span className="text-[10px] text-gray-500 font-medium">
+                        <i className="fa-duotone fa-clock mr-1" aria-hidden="true"></i>
+                        {timestamp}
+                    </span>
+                </div>
+                <p className="text-[13px] text-gray-300 font-medium leading-relaxed font-montserrat m-0">
                     {message}
                 </p>
                 {details && <DetailsList details={details} />}
@@ -115,15 +134,17 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         type: NotificationType,
         details?: NotificationDetails
     ) => {
-        const { borderColor } = TOAST_CONFIG[type];
+        const { borderColor, bgClass } = TOAST_CONFIG[type];
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
 
         toast(
-            <ToastContent type={type} message={message} details={details} />,
+            <ToastContent type={type} message={message} details={details} timestamp={timestamp} />,
             {
                 ...BASE_TOAST_OPTIONS,
                 type,
                 icon: false,
-                className: `!bg-white !backdrop-blur-sm !border ${borderColor} !rounded-xl !shadow-lg !shadow-gray-200/50`,
+                className: `!${bgClass} !backdrop-blur-md !border ${borderColor} !rounded-lg !shadow-lg !p-3 !min-h-0 !mb-2`,
             }
         );
     }, []);
