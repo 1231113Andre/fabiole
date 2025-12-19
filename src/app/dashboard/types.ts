@@ -27,6 +27,7 @@ export interface Pesagem {
     H2O: number;
     IMC: number;
     isIMCCalculated?: boolean; // true if BMI was auto-calculated from weight/height
+    deltaPeso?: number; // weight change from previous measurement
     gordVisceral: number;
     IDMetabolica: number;
     massaOssea: number;

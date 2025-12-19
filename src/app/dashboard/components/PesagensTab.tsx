@@ -37,6 +37,12 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                     <tr className="bg-gray-50 border-b border-gray-100">
                                         <th className="py-4 px-4 text-left font-semibold text-gray-700 text-sm xl:pl-8">Data</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Peso (kg)</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">
+                                            <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-violet-500/20 to-purple-500/20 text-violet-700 px-3 py-1.5 rounded-full border border-violet-200 shadow-sm">
+                                                <span className="text-sm">🤖</span>
+                                                <span className="font-bold text-xs uppercase tracking-wide">Δ PESO (AUTO)</span>
+                                            </span>
+                                        </th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Altura (cm)</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">% MG</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">MM (kg)</th>
@@ -65,6 +71,20 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                             </td>
                                             <td className="py-4 px-4 text-center">
                                                 <span className="font-bold text-gray-900">{pesagem.peso || "-"}</span>
+                                            </td>
+                                            <td className="py-4 px-4 text-center">
+                                                {pesagem.deltaPeso !== undefined ? (
+                                                    <span className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded-full text-sm ${pesagem.deltaPeso > 0
+                                                        ? 'bg-red-100 text-red-700'
+                                                        : pesagem.deltaPeso < 0
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : 'bg-gray-100 text-gray-600'
+                                                        }`}>
+                                                        {pesagem.deltaPeso > 0 ? '+' : ''}{pesagem.deltaPeso} kg
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-400">—</span>
+                                                )}
                                             </td>
                                             <td className="py-4 px-4 text-center">
                                                 <span className="text-gray-700">{pesagem.height || "-"}</span>

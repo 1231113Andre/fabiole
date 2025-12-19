@@ -23,6 +23,7 @@ interface DashboardSidebarProps {
     menuItems: MenuItem[];
     brandName?: string;
     brandIcon?: string;
+    userEmail?: string;
 }
 
 // ============================================
@@ -149,6 +150,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     menuItems,
     brandName = "Dashboard",
     brandIcon = "fa-chart-line",
+    userEmail,
 }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -289,12 +291,19 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                     <CollapseToggle isCollapsed={isCollapsed} onToggle={toggleCollapse} />
                 </nav>
 
-                {/* Footer */}
+                {/* Footer - User Panel */}
                 {!isCollapsed && (
-                    <div className="p-6 border-t border-gray-100">
-                        <div className="flex items-center gap-3 text-gray-400 text-xs">
-                            <i className="fa-duotone fa-shield-check text-primary" aria-hidden="true" />
-                            <span>Área Segura</span>
+                    <div className="p-5 border-t border-gray-100">
+                        <div className="flex items-center gap-4">
+                            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center">
+                                <i className="fa-duotone fa-id-badge text-white text-xs" aria-hidden="true" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-bold text-gray-900 uppercase tracking-wide">User Panel</p>
+                                <p className="text-xs text-gray-500 truncate" title={userEmail}>
+                                    {userEmail || 'Not logged in'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}

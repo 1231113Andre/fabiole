@@ -4,11 +4,13 @@ import { ApiResponse } from '@/lib/api/core/ApiResponse';
 import { requestIdMiddleware } from '@/lib/api/middleware/RequestIdMiddleware';
 import { timeoutMiddleware } from '@/lib/api/middleware/TimeoutMiddleware';
 import { compressionMiddleware } from '@/lib/api/middleware/CompressionMiddleware';
+import { rateLimitMiddleware } from '@/lib/api/middleware/RateLimitMiddleware';
 import { csrfMiddleware } from '@/lib/api/middleware/CsrfMiddleware';
 import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware';
-// import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddleware'; // Removed - causes jsdom issue on Vercel
+import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddleware';
 import { loginSchema } from '@/lib/api/validators/auth.validator';
 import { AuthService } from '@/lib/api/services/AuthService';
+import { RATE_LIMITS } from '@/lib/security/rateLimit';
 import {
   checkAccountLockout,
   recordFailedAttempt,
@@ -20,9 +22,10 @@ const loginHandler = new BaseRouteHandler()
   .use(requestIdMiddleware)
   .use(timeoutMiddleware(30000))
   .use(compressionMiddleware)
-  // .use(csrfMiddleware) // Temporarily disabled for debugging 405 on Vercel
+  .use(rateLimitMiddleware(RATE_LIMITS.AUTH)) // Strict rate limiting for auth
+  .use(csrfMiddleware)
   .use(validationMiddleware(loginSchema))
-  // .use(sanitizationMiddleware) // Removed - causes jsdom issue on Vercel
+  .use(sanitizationMiddleware)
   .handle(async (context) => {
     try {
       const { email, password } = context.validatedData as { email: string; password: string };

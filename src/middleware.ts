@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { generateCsrfTokenSync } from '@/lib/csrf/csrf';
+
+const CSRF_COOKIE_NAME = 'csrf-token';
+const CSRF_COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours
 
 export function middleware(request: NextRequest) {
   // Clone the request headers
@@ -8,12 +12,27 @@ export function middleware(request: NextRequest) {
   // Add the pathname to headers so ServerNavbar can access it
   requestHeaders.set('x-pathname', request.nextUrl.pathname);
 
-  // Return response with modified headers
-  return NextResponse.next({
+  // Create response with modified headers
+  const response = NextResponse.next({
     request: {
       headers: requestHeaders,
     },
   });
+
+  // Set CSRF token cookie if not present
+  const existingToken = request.cookies.get(CSRF_COOKIE_NAME);
+  if (!existingToken) {
+    const csrfToken = generateCsrfTokenSync();
+    response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
+      httpOnly: false, // Must be readable by JavaScript
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: CSRF_COOKIE_MAX_AGE,
+      path: '/',
+    });
+  }
+
+  return response;
 }
 
 // Apply middleware to all routes

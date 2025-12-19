@@ -1,9 +1,8 @@
 "use client";
-import { useMemo, useState, useCallback, useEffect } from "react";
+
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useSession, useLogout } from "@/lib/react-query/hooks/useAuth";
-import { useUserData } from "@/lib/react-query/hooks/useUserData";
+import { useLogout } from "@/lib/react-query/hooks/useAuth";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import NewButton from "@/app/components/newButton";
@@ -13,182 +12,61 @@ import { PesagensTab } from "./components/PesagensTab";
 import { PerimetrosTab } from "./components/PerimetrosTab";
 import { AvaliacoesTab } from "./components/AvaliacoesTab";
 import { ReferencesTab } from "./components/ReferencesTab";
-import { PersonalInfo, Pesagem, PerimetroCorporal, AvaliacaoFisica, TabType, ReferenceTables, Gender, Category } from "./types";
-
+import { PesagensInfoCards } from "./components/PesagensInfoCards";
+import { TabType, Gender, Category } from "./types";
+import { useDashboardData } from "./hooks/useDashboardData";
 import { useNotification } from "@/components/NotificationContext";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
+// Tab configuration
+const TABS: { id: TabType; label: string; icon: string }[] = [
+  { id: "overview", label: "Overview", icon: "fa-chart-line" },
+  { id: "personal", label: "Informações Pessoais", icon: "fa-user" },
+  { id: "pesagens", label: "Pesagens", icon: "fa-weight" },
+  { id: "perimetros", label: "Perímetros", icon: "fa-ruler-combined" },
+  { id: "avaliacoes", label: "Avaliações", icon: "fa-dumbbell" },
+  { id: "referencias", label: "Referências", icon: "fa-clipboard-list" },
+];
+
 export default function DashboardPage() {
   const router = useRouter();
+  const { notify } = useNotification();
+  const logoutMutation = useLogout();
+
+  // UI state
   const [forceRefresh, setForceRefresh] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("overview");
-  const { notify } = useNotification();
 
-  // State for Reference Tab (lifted up to control from header)
+  // Reference tab state (lifted up)
   const [selectedGender, setSelectedGender] = useState<Gender | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category>("massaGorda");
 
-  // Use TanStack Query hooks - ALL HOOKS MUST BE CALLED UNCONDITIONALLY
-  const { data: sessionData, isLoading: isSessionLoading } = useSession();
-  const { data: userData, isLoading: isUserDataLoading, isFetching: isUserDataFetching, error: userDataError, refetch } = useUserData(forceRefresh);
-  const logoutMutation = useLogout();
+  // Data from custom hook
+  const {
+    personalInfo,
+    pesagens,
+    perimetros,
+    avaliacoes,
+    referenceTables,
+    chartData,
+    stats,
+    isLoading,
+    isRefreshing: isDataRefreshing,
+    user,
+    isAuthenticated,
+    refetch,
+  } = useDashboardData(forceRefresh);
 
-  const user = sessionData?.user;
-  const isLoading = isSessionLoading || isUserDataLoading;
-  const isAuthenticated = sessionData?.authenticated && sessionData?.user;
-
-  // Redirect to home if not authenticated (using useEffect to avoid hooks order issues)
+  // Redirect if not authenticated
   useEffect(() => {
-    if (!isSessionLoading && !isAuthenticated) {
-      router.push('/');
+    if (!isLoading && !isAuthenticated) {
+      router.push("/");
     }
-  }, [isSessionLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router]);
 
-  // Transform user data from Google Sheets format to component format
-  const transformedData = useMemo(() => {
-    if (!userData || !user) {
-      return {
-        personalInfo: null,
-        pesagens: [],
-        perimetros: [],
-        avaliacoes: [],
-        referenceTables: {},
-      };
-    }
-
-    // Fallback to session data if userData fails
-    const fallbackPersonalInfo: PersonalInfo = {
-      name: `${user.name} ${user.surname}`,
-      email: user.email,
-      birthDate: user.birth,
-      phone: "",
-      height: "",
-      weight: "",
-      goals: "",
-      notes: "",
-    };
-
-    if (userDataError || !userData) {
-      return {
-        personalInfo: fallbackPersonalInfo,
-        pesagens: [],
-        perimetros: [],
-        avaliacoes: [],
-        referenceTables: {},
-      };
-    }
-
-    // Set personal info from sheet data
-    const personalInfo: PersonalInfo = {
-      name: `${userData.personalInfo.userName} ${userData.personalInfo.userSurname}`,
-      email: userData.personalInfo.userEmail,
-      birthDate: userData.personalInfo.userBirth,
-      phone: userData.personalInfo.userPhone || "",
-      height: "",
-      weight: userData.pesagens && userData.pesagens.length > 0 ? `${userData.pesagens[userData.pesagens.length - 1].peso} kg` : "",
-      goals: userData.personalInfo.notas || "",
-      notes: userData.personalInfo.notas || "",
-      trainingCredit: userData.personalInfo.trainingCredit || "",
-      trainingsScheduled: userData.personalInfo.trainingsScheduled || "",
-      debtValue: userData.personalInfo.debtValue || "",
-      paid: userData.personalInfo.paid || "",
-      q1: userData.personalInfo.q1 || "",
-      q2: userData.personalInfo.q2 || "",
-      q3: userData.personalInfo.q3 || "",
-      q4: userData.personalInfo.q4 || "",
-      age: userData.personalInfo.age || "",
-    };
-
-    // Helper to parse date (assuming DD/MM/YYYY or DD.MM.YYYY format)
-    const parseDate = (dateStr: string) => {
-      if (!dateStr) return 0;
-      const parts = dateStr.split(/[./]/); // Split by . or /
-      if (parts.length === 3) {
-        // DD/MM/YYYY -> YYYY-MM-DD for comparison
-        return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
-      }
-      return new Date(dateStr).getTime();
-    };
-
-    // Convert pesagens data
-    const pesagens: Pesagem[] = (userData.pesagens || [])
-      .map((p: any) => {
-        const peso = parseFloat(p.peso) || 0;
-        const heightCm = parseFloat(p.height) || 0;
-        const heightM = heightCm / 100; // Convert cm to meters
-
-        // Calculate BMI if not provided and we have both weight and height
-        let imc = parseFloat(p.IMC) || 0;
-        let isIMCCalculated = false;
-        if (imc === 0 && peso > 0 && heightM > 0) {
-          imc = Math.round((peso / (heightM * heightM)) * 10) / 10; // BMI = kg / m²
-          isIMCCalculated = true;
-        }
-
-        return {
-          data: p.data,
-          peso,
-          percentualMG: parseFloat(p.percentualMG) || 0,
-          MM: parseFloat(p.MM) || 0,
-          H2O: parseFloat(p.H2O) || 0,
-          IMC: imc,
-          isIMCCalculated,
-          gordVisceral: parseFloat(p.gordVisceral) || 0,
-          IDMetabolica: parseFloat(p.IDMetabolica) || 0,
-          massaOssea: parseFloat(p.massaOssea) || 0,
-          resultadoIMC: p.resultadoIMC || "",
-          resultadoPercentualMG: p.resultadoPercentualMG || "",
-          notas: p.notas || "",
-          height: heightCm,
-        };
-      })
-      .filter((p: Pesagem) => p.peso > 0)
-      .sort((a, b) => parseDate(b.data) - parseDate(a.data)); // Sort descending (newest first)
-
-    // Convert perimetros data
-    const perimetros: PerimetroCorporal[] = (userData.perimetros || [])
-      .map((p: any) => ({
-        date: p.date,
-        msRight: parseFloat(p.msRight) || 0,
-        msRightFlex: parseFloat(p.msRightFlex) || 0,
-        msLeft: parseFloat(p.msLeft) || 0,
-        msLeftFlex: parseFloat(p.msLeftFlex) || 0,
-        chest: parseFloat(p.chest) || 0,
-        waist: parseFloat(p.waist) || 0,
-        abdomen: parseFloat(p.abdomen) || 0,
-        hips: parseFloat(p.hips) || 0,
-        thighR: parseFloat(p.thighR) || 0,
-        thighL: parseFloat(p.thighL) || 0,
-      }))
-      .filter((p: PerimetroCorporal) => p.chest > 0 || p.waist > 0)
-      .sort((a, b) => parseDate(b.date) - parseDate(a.date)); // Sort descending (newest first)
-
-    // Convert avaliacoes data
-    const avaliacoes: AvaliacaoFisica[] = (userData.avaliacoes || [])
-      .map((a: any) => ({
-        date: a.date,
-        pushUps: parseInt(a.pushUps) || 0,
-        sitUps: parseInt(a.sitUps) || 0,
-        mile: a.mile || "",
-        mileResult: a.mileResult || "",
-        notes: a.notes || "",
-      }))
-      .filter((a: AvaliacaoFisica) => a.pushUps > 0 || a.sitUps > 0 || a.mile)
-      .sort((a, b) => parseDate(b.date) - parseDate(a.date)); // Sort descending (newest first)
-
-    return {
-      personalInfo,
-      pesagens,
-      perimetros,
-      avaliacoes,
-      referenceTables: (userData.referenceTables || {}) as ReferenceTables,
-    };
-  }, [userData, user, userDataError]);
-
-  const { personalInfo, pesagens, perimetros, avaliacoes, referenceTables } = transformedData;
-
+  // Handlers
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     setForceRefresh(true);
@@ -207,61 +85,13 @@ export default function DashboardPage() {
     logoutMutation.mutate();
   }, [logoutMutation]);
 
-  // Prepare chart data
-  // Prepare chart data - Sort by date ASCENDING for charts (Oldest -> Newest)
-  const chartData = [...pesagens]
-    .reverse() // Reverse to get oldest first
-    .map((p) => ({
-      data: p.data,
-      peso: typeof p.peso === 'number' ? p.peso : parseFloat(String(p.peso)) || 0,
-      massaGorda: typeof p.percentualMG === 'number' ? p.percentualMG : parseFloat(String(p.percentualMG)) || 0,
-      massaMuscular: typeof p.MM === 'number' ? p.MM : parseFloat(String(p.MM)) || 0,
-      gorduraVisceral: typeof p.gordVisceral === 'number' ? p.gordVisceral : parseFloat(String(p.gordVisceral)) || 0,
-      IMC: typeof p.IMC === 'number' ? p.IMC : parseFloat(String(p.IMC)) || 0,
-    }));
+  const handleResetReferences = useCallback(() => {
+    setSelectedGender(null);
+    setSelectedCategory("massaGorda");
+  }, []);
 
-  // Calculate statistics for overview
-  const stats = useMemo(() => {
-    const latestPesagem = pesagens.length > 0 ? pesagens[pesagens.length - 1] : null;
-    const latestPerimetro = perimetros.length > 0 ? perimetros[perimetros.length - 1] : null;
-    const latestAvaliacao = avaliacoes.length > 0 ? avaliacoes[avaliacoes.length - 1] : null;
-
-    // Calculate weight trend
-    const weightTrend = pesagens.length >= 2
-      ? pesagens[pesagens.length - 1].peso - pesagens[pesagens.length - 2].peso
-      : 0;
-
-    return {
-      latestPesagem,
-      latestPerimetro,
-      latestAvaliacao,
-      weightTrend,
-      totalPesagens: pesagens.length,
-      totalPerimetros: perimetros.length,
-      totalAvaliacoes: avaliacoes.length,
-    };
-  }, [pesagens, perimetros, avaliacoes]);
-
-  const tabs: { id: TabType; label: string; icon: string }[] = [
-    { id: "overview", label: "Overview", icon: "fa-chart-line" },
-    { id: "personal", label: "Informações Pessoais", icon: "fa-user" },
-    { id: "pesagens", label: "Pesagens", icon: "fa-weight" },
-    { id: "perimetros", label: "Perímetros", icon: "fa-ruler-combined" },
-    { id: "avaliacoes", label: "Avaliações", icon: "fa-dumbbell" },
-    { id: "referencias", label: "Referências", icon: "fa-clipboard-list" },
-  ];
-
-  // Menu items for sidebar
-  const menuItems = tabs.map(tab => ({
-    id: tab.id,
-    label: tab.label,
-    icon: tab.icon,
-  }));
-
-
-
-  // Show loading spinner while loading OR while redirecting unauthenticated users
-  if (isLoading || (!isSessionLoading && !isAuthenticated)) {
+  // Loading state
+  if (isLoading || (!isLoading && !isAuthenticated)) {
     return (
       <div className="flex h-screen items-center justify-center bg-whiten dark:bg-boxdark-2">
         <LoadingSpinner />
@@ -271,39 +101,42 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-whiten dark:bg-boxdark-2 text-bodydark1">
-      {/* TailAdmin-style Sidebar */}
+      {/* Sidebar */}
       <DashboardSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab as TabType)}
-        menuItems={menuItems}
+        menuItems={TABS}
         brandName="Fabiole"
         brandIcon="fa-dumbbell"
+        userEmail={user?.email}
       />
 
-      {/* TailAdmin-style Header */}
+      {/* Header */}
       <DashboardHeader
         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         userName={user?.name}
         userSurname={user?.surname}
         userEmail={user?.email}
         onRefresh={handleRefresh}
-        isRefreshing={isRefreshing || isUserDataFetching}
+        isRefreshing={isRefreshing || isDataRefreshing}
         onLogout={handleLogout}
         isLoggingOut={logoutMutation.isPending}
       />
 
+      {/* Main Content */}
       <main className="flex-1 ml-0 lg:ml-[var(--sidebar-width,290px)] mt-[72px] p-6 min-h-[calc(100vh-72px)] bg-whiten transition-[margin-left] duration-300">
         <div className="max-w-screen-2xl mx-auto">
           {/* Page Header */}
           <div className="mb-6 sm:mb-8">
+            {/* Navigation Buttons */}
             <div className="mb-6 flex flex-wrap gap-4">
               {activeTab === "overview" ? (
                 <NewButton
                   href="/"
                   variant="new_primary_rounded"
-                  icon={<i className="fa-duotone fa-home-lg"></i>}
+                  icon={<i className="fa-duotone fa-home-lg" />}
                   iconPosition="left"
                   className="w-full sm:w-auto min-w-[200px] shadow-md uppercase font-bold"
                 >
@@ -313,7 +146,7 @@ export default function DashboardPage() {
                 <NewButton
                   onClick={() => setActiveTab("overview")}
                   variant="new_primary_rounded"
-                  icon={<i className="fa-duotone fa-arrow-left"></i>}
+                  icon={<i className="fa-duotone fa-arrow-left" />}
                   iconPosition="left"
                   className="w-full sm:w-auto min-w-[200px] shadow-md uppercase font-bold"
                 >
@@ -321,15 +154,11 @@ export default function DashboardPage() {
                 </NewButton>
               )}
 
-              {/* Reset IMC Button - Only visible in Referencias tab when gender is selected */}
               {activeTab === "referencias" && selectedGender && (
                 <NewButton
-                  onClick={() => {
-                    setSelectedGender(null);
-                    setSelectedCategory("massaGorda");
-                  }}
+                  onClick={handleResetReferences}
                   variant="new_primary_rounded"
-                  icon={<i className="fa-duotone fa-arrow-left"></i>}
+                  icon={<i className="fa-duotone fa-arrow-left" />}
                   iconPosition="left"
                   className="w-full sm:w-auto min-w-[200px] uppercase font-bold"
                 >
@@ -338,52 +167,26 @@ export default function DashboardPage() {
               )}
             </div>
 
+            {/* Page Title */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-2 flex items-center gap-3">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center shadow-lg">
-                    <i className="fa-duotone fa-user-circle text-white text-lg sm:text-xl"></i>
+                    <i className="fa-duotone fa-user-circle text-white text-lg sm:text-xl" />
                   </div>
                   <span>Dashboard do Cliente</span>
                 </h1>
                 <p className="text-muted-foreground text-lg sm:text-xl font-medium flex items-center gap-2 mt-1 animate-in fade-in slide-in-from-left-4 duration-700 delay-200">
                   <span className="text-2xl hover:animate-pulse cursor-default">👋</span>
-                  Bem-vindo de volta, <span className="text-primary font-bold">{user ? `${user.name} ${user.surname}!` : 'Visitante!'}</span>
+                  Bem-vindo de volta,{" "}
+                  <span className="text-primary font-bold">
+                    {user ? `${user.name} ${user.surname}!` : "Visitante!"}
+                  </span>
                 </p>
               </div>
 
-              {/* Info Cards - only on Pesagens tab */}
-              {activeTab === "pesagens" && (
-                <div className="flex flex-wrap gap-3">
-                  {/* BMI Auto-Calculation Info */}
-                  <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-200 rounded-xl p-4 max-w-xs">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">🤖</span>
-                      <div>
-                        <h4 className="font-bold text-violet-700 text-sm mb-1">Cálculo Automático do IMC</h4>
-                        <p className="text-xs text-violet-600 leading-relaxed">
-                          <strong>Fórmula:</strong> IMC = Peso (kg) ÷ Altura² (m)<br />
-                          <span className="text-violet-500">Ex: 80kg ÷ (1.75m)² = <strong>26.1</strong></span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Data Refresh Info */}
-                  <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-200 rounded-xl p-4 max-w-xs">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">🔄</span>
-                      <div>
-                        <h4 className="font-bold text-blue-700 text-sm mb-1">Atualização de Dados</h4>
-                        <p className="text-xs text-blue-600 leading-relaxed">
-                          Os dados são atualizados automaticamente.<br />
-                          <span className="text-blue-500">Para forçar atualização, clique no <strong>ícone de refresh</strong> no header.</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Info Cards - Pesagens tab only */}
+              {activeTab === "pesagens" && <PesagensInfoCards />}
             </div>
           </div>
 
@@ -400,13 +203,9 @@ export default function DashboardPage() {
             <PesagensTab pesagens={pesagens} chartData={chartData} />
           )}
 
-          {activeTab === "perimetros" && (
-            <PerimetrosTab perimetros={perimetros} />
-          )}
+          {activeTab === "perimetros" && <PerimetrosTab perimetros={perimetros} />}
 
-          {activeTab === "avaliacoes" && (
-            <AvaliacoesTab avaliacoes={avaliacoes} />
-          )}
+          {activeTab === "avaliacoes" && <AvaliacoesTab avaliacoes={avaliacoes} />}
 
           {activeTab === "referencias" && referenceTables && (
             <ReferencesTab
@@ -417,10 +216,8 @@ export default function DashboardPage() {
               setSelectedCategory={setSelectedCategory}
             />
           )}
-
-
         </div>
-      </main >
-    </div >
+      </main>
+    </div>
   );
 }

@@ -8,10 +8,14 @@ import { SignJWT, jwtVerify } from 'jose';
 
 /**
  * Secret key for signing sessions
- * In production, use a strong random secret from environment variable
+ * SECURITY: Must be set via SESSION_SECRET environment variable
+ * Fails securely if not configured
  */
 const getSecretKey = (): Uint8Array => {
-  const secret = process.env.SESSION_SECRET || 'default-secret-change-in-production';
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    throw new Error('SESSION_SECRET environment variable is required for secure sessions');
+  }
   return new TextEncoder().encode(secret);
 };
 
