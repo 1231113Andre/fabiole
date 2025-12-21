@@ -59,6 +59,10 @@ export async function getAuthClient(): Promise<Auth.GoogleAuth> {
       console.log(`   - Service account email: ${credentialsObj.client_email || 'Not found'}`);
     } catch (error) {
       console.error('❌ [Google Sheets] Error parsing JSON:', error);
+      // Safe logging of the start of the string to help debug format issues
+      const preview = credentialsString ? credentialsString.substring(0, 50).replace(/\n/g, '\\n') + '...' : 'Empty';
+      console.error(`🔍 [Google Sheets] Invalid JSON content preview (first 50 chars): '${preview}'`);
+      console.error(`   Total length: ${credentialsString?.length || 0}`);
       throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_CREDENTIALS JSON format');
     }
   }
