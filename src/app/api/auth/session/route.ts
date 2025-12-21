@@ -109,9 +109,12 @@ const deleteSessionHandler = new BaseRouteHandler()
     cookieStore.delete('auth_session');
     cookieStore.delete('has_session');
 
-    return ApiResponse.success(
-      { message: 'Logged out successfully' },
+    return ApiResponse.custom(
       200,
+      {
+        success: true,
+        data: { message: 'Logged out successfully' }
+      },
       { 'Clear-Site-Data': '"cache", "cookies", "storage"' }
     );
   });
