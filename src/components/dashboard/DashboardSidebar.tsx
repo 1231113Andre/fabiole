@@ -266,24 +266,24 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
                     {/* Beta Notice with Version */}
                     {!isCollapsed && (
-                        <div className="mx-3 mt-4 p-4 rounded-2xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 border border-violet-200/50 backdrop-blur-sm">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/25">
-                                    <i className="fa-duotone fa-flask-vial text-white text-sm" aria-hidden="true" />
+                        <div className="mx-3 mt-4 p-2.5 rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 border border-violet-200/50 backdrop-blur-sm">
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md shadow-violet-500/25">
+                                    <i className="fa-duotone fa-flask-vial text-white text-[10px]" aria-hidden="true" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-sm font-bold text-violet-700 uppercase tracking-wide">Beta</p>
-                                    <p className="text-xs text-violet-600/90 leading-snug font-medium">
+                                    <p className="text-[10px] font-bold text-violet-700 uppercase tracking-wide leading-none">Beta</p>
+                                    <p className="text-[9px] text-violet-600/90 leading-tight font-medium mt-0.5">
                                         v{process.env.NEXT_PUBLIC_VERSION || "0.1.0"}
-                                        <span className="text-violet-400 mx-1.5">•</span>
+                                        <span className="text-violet-400 mx-1">•</span>
                                         <span className="font-mono">{process.env.NEXT_PUBLIC_COMMIT_ID || "dev"}</span>
                                     </p>
                                 </div>
                             </div>
-                            <div className="mt-3 pt-3 border-t border-violet-200/30">
-                                <p className="text-[10px] text-violet-600/70 whitespace-nowrap">
+                            <div className="mt-2 pt-2 border-t border-violet-200/30">
+                                <p className="text-[9px] text-violet-600/70">
                                     <i className="fa-duotone fa-envelope text-violet-500 mr-1" aria-hidden="true" />
-                                    Bugs, suggestions: <a href="mailto:kamszotlol@proton.me" className="font-bold text-violet-700 hover:text-violet-800">kamszotlol@proton.me</a>
+                                    <a href="mailto:kamszotlol@proton.me" className="font-bold text-violet-700 hover:text-violet-800">kamszotlol@proton.me</a>
                                 </p>
                             </div>
                         </div>

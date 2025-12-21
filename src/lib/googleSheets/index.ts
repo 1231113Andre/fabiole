@@ -33,6 +33,12 @@ export {
   getUserSheetData,
 } from './userSheet/index';
 
+export { renameUserSheet } from './userSheet/rename';
+
+export { findUserByUUID } from './findUserByUUID';
+
+export { updateUserUUID } from './updateUserUUID';
+
 // Connection testing
 export { testConnection } from './connection';
 

@@ -1,18 +1,19 @@
 // Plik: components/auth/AuthModal/RegisterForm.tsx
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
+import { useNotification } from '@/components/NotificationContext';
 import { useRegister } from '@/lib/react-query/hooks/useAuth';
 import NewButton from '@/app/components/newButton';
 import { cn } from '@/lib/utils';
 import { Input } from './Input';
-// import { InfoBox } from '@/components/ui/infobox'; // Removed unused import
 import { LoadingSpinner } from '@/components/ui/spinner';
+import { VerificationCodeInput } from './VerificationCodeInput';
 
 // Adapted Schema for Fabiole: firstName, lastName, email, password, birthDate
 const registerSchema = z.object({
@@ -31,42 +32,188 @@ const registerSchema = z.object({
 });
 type RegisterSchema = z.infer<typeof registerSchema>;
 
+type Step = 'form' | 'verify';
+
 export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
     const router = useRouter();
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const { notify } = useNotification();
     const registerMutation = useRegister();
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [step, setStep] = useState<Step>('form');
+    const [isLoading, setIsLoading] = useState(false);
+    const [verifyError, setVerifyError] = useState<string | undefined>();
+    const [formData, setFormData] = useState<RegisterSchema | null>(null);
+    const [timeLeft, setTimeLeft] = useState(0);
 
-    const { register, handleSubmit, formState: { errors }, setError } = useForm<RegisterSchema>({
+    // Timer logic
+    useEffect(() => {
+        if (timeLeft <= 0) return;
+
+        const timerId = setInterval(() => {
+            setTimeLeft((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timerId);
+    }, [timeLeft]);
+
+    const { register, handleSubmit, formState: { errors }, setError, getValues } = useForm<RegisterSchema>({
         resolver: zodResolver(registerSchema),
     });
 
-    const [showSuccess, setShowSuccess] = useState(false);
+    // Helper to get cookie by name
+    const getCookie = (name: string): string | null => {
+        if (typeof document === 'undefined') return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+        return null;
+    };
 
-    const onSubmit: SubmitHandler<RegisterSchema> = (data) => {
-        registerMutation.mutate(
-            {
-                name: data.firstName,
-                surname: data.lastName,
-                email: data.email,
-                password: data.password,
-                birth: data.birthDate,
-            },
-            {
-                onSuccess: () => {
-                    // Show success message
-                    setShowSuccess(true);
-                    // Wait for state update and give user time to see the message
-                    setTimeout(() => {
-                        onClose();
-                        router.push("/dashboard");
-                    }, 1500);
-                },
-                onError: (error: any) => {
-                    const message = error.message || "Registration failed";
-                    setError('root.serverError', { type: 'custom', message });
-                }
+    // Step 1: Send verification code
+    const onSubmit: SubmitHandler<RegisterSchema> = async (data) => {
+        setIsLoading(true);
+        setFormData(data);
+
+        try {
+            const csrfToken = getCookie('csrf-token');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json'
+            };
+            if (csrfToken) {
+                headers['X-CSRF-Token'] = csrfToken;
             }
-        );
+
+            const response = await fetch('/api/auth/send-verification', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    email: data.email,
+                    firstName: data.firstName,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Failed to send verification code');
+            }
+
+            // Move to verification step
+            setStep('verify');
+            setTimeLeft(60);
+            notify('Verification code sent to your email!', 'success');
+        } catch (error: any) {
+            setError('root.serverError', {
+                type: 'custom',
+                message: error.message || 'Failed to send verification code'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Step 2: Verify code and complete registration
+    const handleVerifyCode = useCallback(async (code: string) => {
+        if (!formData) return;
+
+        setIsLoading(true);
+        setVerifyError(undefined);
+
+        try {
+            const csrfToken = getCookie('csrf-token');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json'
+            };
+            if (csrfToken) {
+                headers['X-CSRF-Token'] = csrfToken;
+            }
+
+            // First verify the code
+            const verifyResponse = await fetch('/api/auth/verify-code', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    email: formData.email,
+                    code,
+                }),
+            });
+
+            const verifyResult = await verifyResponse.json();
+
+            if (!verifyResponse.ok || !verifyResult.success) {
+                throw new Error(verifyResult.error || 'Invalid verification code');
+            }
+
+            // Code verified! Now complete registration
+            await registerMutation.mutateAsync({
+                name: formData.firstName,
+                surname: formData.lastName,
+                email: formData.email,
+                password: formData.password,
+                birth: formData.birthDate,
+            });
+
+            // Success handled by hook (session update, notification)
+            onClose();
+
+            // Redirect after brief delay
+            setTimeout(() => {
+                notify("Redirecting to your dashboard...", "loading");
+                setTimeout(() => {
+                    router.push("/dashboard");
+                }, 2000);
+            }, 1500);
+
+        } catch (error: any) {
+            setVerifyError(error.message || 'Verification failed');
+            setIsLoading(false);
+        }
+    }, [formData, notify, onClose, router]);
+
+    // Go back to form
+    const handleBack = () => {
+        setStep('form');
+        setVerifyError(undefined);
+    };
+
+    // Resend code
+    const handleResend = async () => {
+        if (!formData) return;
+
+        setIsLoading(true);
+        setVerifyError(undefined);
+
+        try {
+            const csrfToken = getCookie('csrf-token');
+            const headers: HeadersInit = {
+                'Content-Type': 'application/json'
+            };
+            if (csrfToken) {
+                headers['X-CSRF-Token'] = csrfToken;
+            }
+
+            const response = await fetch('/api/auth/send-verification', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    email: formData.email,
+                    firstName: formData.firstName,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.error || 'Failed to resend code');
+            }
+
+            notify('New code sent!', 'success');
+            setTimeLeft(60);
+        } catch (error: any) {
+            setVerifyError(error.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const passwordIcon = (
@@ -75,8 +222,70 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
         </button>
     );
 
-    const isSubmitting = registerMutation.isPending;
+    // Verification Step UI
+    if (step === 'verify') {
+        return (
+            <div className="space-y-6 py-4">
+                {/* Header */}
+                <div className="text-center space-y-2">
+                    <div className="w-16 h-16 mx-auto bg-[var(--primary)]/10 rounded-full flex items-center justify-center">
+                        <i className="fa-solid fa-envelope text-2xl text-[var(--primary)]" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">
+                        Check your email
+                    </h3>
+                    <p className="text-sm text-[var(--muted-foreground)]">
+                        We sent a 6-digit code to<br />
+                        <span className="font-medium text-white">{formData?.email}</span>
+                    </p>
+                </div>
 
+                {/* Code Input */}
+                <VerificationCodeInput
+                    onComplete={handleVerifyCode}
+                    disabled={isLoading}
+                    error={verifyError}
+                />
+
+                {/* Loading indicator */}
+                {isLoading && (
+                    <div className="flex justify-center">
+                        <LoadingSpinner size="h-6 w-6" color="text-primary" />
+                    </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex flex-col gap-3 pt-2">
+                    <div className="flex justify-center">
+                        <NewButton
+                            onClick={handleResend}
+                            disabled={isLoading || timeLeft > 0}
+                            variant="new_destructive_no_bg_rounded"
+                            className="bg-transparent"
+                            h="10"
+                        >
+                            {timeLeft > 0 ? (
+                                `Resend code in ${timeLeft}s`
+                            ) : (
+                                "Didn't receive the code? Resend"
+                            )}
+                        </NewButton>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleBack}
+                        disabled={isLoading}
+                        className="text-sm text-[var(--muted-foreground)] hover:text-white disabled:opacity-50"
+                    >
+                        <i className="fa-solid fa-arrow-left mr-2" />
+                        Back to form
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Registration Form UI
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
             <div className="flex gap-2">
@@ -85,7 +294,7 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                     registration={register('firstName')}
                     placeholder="John"
                     error={errors.firstName}
-                    disabled={isSubmitting} autoComplete="given-name"
+                    disabled={isLoading} autoComplete="given-name"
                     className="flex-1"
                 />
                 <Input
@@ -93,7 +302,7 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                     registration={register('lastName')}
                     placeholder="Doe"
                     error={errors.lastName}
-                    disabled={isSubmitting} autoComplete="family-name"
+                    disabled={isLoading} autoComplete="family-name"
                     className="flex-1"
                 />
             </div>
@@ -103,7 +312,7 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                 registration={register('email')}
                 placeholder="mail@example.com"
                 error={errors.email}
-                disabled={isSubmitting} autoComplete="email"
+                disabled={isLoading} autoComplete="email"
             />
             <Input
                 id="password" label="Password"
@@ -111,7 +320,7 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                 placeholder="********"
                 registration={register('password')}
                 error={errors.password}
-                disabled={isSubmitting}
+                disabled={isLoading}
                 autoComplete="new-password"
                 icon={passwordIcon}
             />
@@ -119,12 +328,12 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                 id="birthDate" label="Birth Date" type="date"
                 registration={register('birthDate')}
                 error={errors.birthDate}
-                disabled={isSubmitting}
+                disabled={isLoading}
             />
 
             <div>
                 <div className="flex items-start gap-3 mt-2">
-                    <input id="terms" type="checkbox" {...register('terms')} className="w-4 h-4 flex-shrink-0 mt-0.5 rounded border-[var(--border)] bg-[var(--muted)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-[var(--background)] cursor-pointer" disabled={isSubmitting} />
+                    <input id="terms" type="checkbox" {...register('terms')} className="w-4 h-4 flex-shrink-0 mt-0.5 rounded border-[var(--border)] bg-[var(--muted)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-[var(--background)] cursor-pointer" disabled={isLoading} />
                     <label htmlFor="terms" className="text-sm select-none text-[var(--muted-foreground)] cursor-pointer">
                         I agree to the <a href="/terms" className="font-medium text-[var(--primary)] hover:underline">terms of service</a> and <a href="/privacy" className="font-medium text-[var(--primary)] hover:underline">privacy policy</a>.
                     </label>
@@ -136,14 +345,8 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                     {errors.root.serverError.message}
                 </p>
             )}
-            {showSuccess && (
-                <p className="text-sm text-center text-green-500 font-medium">
-                    <i className="fa-solid fa-check-circle mr-2"></i>
-                    Conta criada com sucesso! A redirecionar...
-                </p>
-            )}
-            <NewButton type="submit" h='12' variant='new_primary_rounded' className="w-full !py-3 !text-base !font-semibold" disabled={isSubmitting}>
-                {isSubmitting ? (
+            <NewButton type="submit" h='12' variant='new_primary_rounded' className="w-full !py-3 !text-base !font-semibold" disabled={isLoading}>
+                {isLoading ? (
                     <LoadingSpinner size="h-6 w-6" color="text-primary-foreground" />
                 ) : (
                     'Sign Up'

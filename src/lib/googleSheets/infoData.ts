@@ -13,6 +13,7 @@ import { getSheetsAPI } from './auth';
 import { ACCOUNT_DATA_SHEET_ID, INFO_DATA_SHEET_NAME } from './config';
 import { apiCache, CacheKeys, clearInfoDataCache } from './cache';
 import { comparePassword } from '@/lib/security/password';
+import { calculateAge } from './utils';
 
 // Debug mode - can be disabled in production
 const DEBUG = process.env.NODE_ENV === 'development';
@@ -105,7 +106,7 @@ export async function getAllInfoDataUsers(): Promise<InfoDataRow[]> {
     const sheets = await getSheetsAPI();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-      range: `${INFO_DATA_SHEET_NAME}!A10:F`, // Headers in row 10: Name, Surname, Email, Password, Birth, Age
+      range: `${INFO_DATA_SHEET_NAME}!A10:G`, // Headers in row 10: Name, Surname, Email, Password, Birth, Age, UUID
     });
 
     console.log('✅ [Google Sheets] API response received');
@@ -127,7 +128,8 @@ export async function getAllInfoDataUsers(): Promise<InfoDataRow[]> {
         email: (row[2] || '').trim(),
         password: (row[3] || '').trim(),
         birth: (row[4] || '').trim(),
-        age: (row[5] || '').trim(),
+        // age is in column F (index 5) but we don't need it
+        uuid: (row[6] || '').trim(), // UUID is in column G (index 6)
       }))
       .filter((user: InfoDataRow) => user.email.trim() !== ''); // Only count rows with email
 
@@ -291,14 +293,15 @@ export async function addUserToInfoData(userData: InfoDataRow): Promise<InfoData
       userData.email.toLowerCase(),
       userData.password,
       userData.birth,
-      userData.age || '',
+      calculateAge(userData.birth), // Age (column F) - auto-calculated from birth date
+      userData.uuid || '', // UUID (column G)
     ];
 
     console.log(`📝 [Google Sheets] Adding row to infoData...`);
     // Append the new row
     await sheets.spreadsheets.values.append({
       spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-      range: `${INFO_DATA_SHEET_NAME}!A:F`,
+      range: `${INFO_DATA_SHEET_NAME}!A:G`,
       valueInputOption: 'RAW',
       requestBody: {
         values: [newRow],
@@ -318,6 +321,7 @@ export async function addUserToInfoData(userData: InfoDataRow): Promise<InfoData
       email: userData.email.toLowerCase(),
       password: userData.password,
       birth: userData.birth,
+      uuid: userData.uuid,
     };
   } catch (error) {
     console.error('❌ [Google Sheets] Error adding user to infoData:', error);

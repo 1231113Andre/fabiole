@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import NewButton from '@/app/components/newButton';
 import AuthModal from '@/components/auth/AuthModal';
-import { useSession } from '@/lib/react-query/hooks/useAuth';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface User {
     name?: string;
@@ -11,42 +11,57 @@ interface User {
     email?: string;
 }
 
+interface SessionData {
+    authenticated?: boolean;
+    user?: User;
+}
+
 interface InteractiveAuthButtonsProps {
     initialUser?: User | null;
     mobile?: boolean;
 }
 
+/**
+ * Interactive Auth Buttons - handles login/register modal and session state
+ * Uses session-updated custom event for instant navbar updates after login/logout
+ */
 export default function InteractiveAuthButtons({ initialUser, mobile = false }: InteractiveAuthButtonsProps) {
     const [isAuthModalOpen, setAuthModalOpen] = useState(false);
     const [authModalView, setAuthModalView] = useState<'login' | 'register'>('login');
+    const queryClient = useQueryClient();
 
-    // Use initialUser from SSR if available, otherwise fetch client-side
-    // This ensures no loading spinner is shown if SSR data is present
-    const { data: sessionData, isLoading } = useSession({
-        enabled: !initialUser // Only fetch if no initial user
-    });
+    // Session state - initialized from cache, updated via event
+    const [session, setSession] = useState<SessionData | undefined>(() =>
+        queryClient.getQueryData(['session'])
+    );
 
-    const user = sessionData?.user || initialUser;
-    const isAuthenticated = !!user;
+    // Single event listener for session updates - most efficient approach
+    useEffect(() => {
+        const handleSessionUpdated = (event: Event) => {
+            const { detail } = event as CustomEvent<SessionData>;
+            if (detail) {
+                setSession(detail);
+            }
+        };
+
+        window.addEventListener('session-updated', handleSessionUpdated);
+        return () => window.removeEventListener('session-updated', handleSessionUpdated);
+    }, []);
+
+    // Derive user from session or initial SSR data
+    const user = session?.user || initialUser;
+    const isAuthenticated = session?.authenticated || !!user;
+    const fullName = user ? `${user.name || ''} ${user.surname || ''}`.trim().toUpperCase() : 'USER';
 
     const openAuthModal = (view: 'login' | 'register') => {
         setAuthModalView(view);
         setAuthModalOpen(true);
         if (mobile) {
-            const event = new CustomEvent('close-mobile-menu');
-            window.dispatchEvent(event);
+            window.dispatchEvent(new CustomEvent('close-mobile-menu'));
         }
     };
 
-    // Build user display name
-    const fullName = user ? `${user.name || ''} ${user.surname || ''}`.trim().toUpperCase() : 'USER';
-
-    // Show loading state only if no initial user AND fetching
-    if (isLoading && initialUser === undefined) {
-        // Return placeholder or nothing instead of spinner to match "immediate" requirement
-        return null;
-    }
-
+    // Mobile View
     if (mobile) {
         if (isAuthenticated) {
             return (
@@ -58,7 +73,7 @@ export default function InteractiveAuthButtons({ initialUser, mobile = false }: 
                 >
                     {fullName}
                 </NewButton>
-            )
+            );
         }
 
         return (

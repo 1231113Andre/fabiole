@@ -65,7 +65,7 @@ const VARIANTS = {
   new_primary_full_rounded:
     "bg-primary text-white rounded-full shadow-md " +
     "font-medium text-base px-6 disabled:opacity-60 " +
-    "hover:!bg-transparent hover:border-orange-400 hover:!text-white" +
+    "hover:!bg-transparent hover:border-orange-400 hover:!text-primary " +
     "hover:shadow-[0_10px_24px_rgba(230,145,91,0.35)] " +
     "active:shadow-lg " +
     "transition-all duration-200 ease-out " +

@@ -49,7 +49,7 @@ export async function populateUserSheetData(
     '',                                         // M: Q4 (empty)
     '',                                         // N: OBJETIVO 📝 (empty)
     '',                                         // O: NOTES 📝 (empty)
-    userData.age || '',                         // P: IDADE/ALTURA
+    '',                                         // P: IDADE/ALTURA (calculated separately)
   ];
 
   await sheets.spreadsheets.values.update({

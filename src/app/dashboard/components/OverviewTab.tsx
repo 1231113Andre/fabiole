@@ -22,80 +22,142 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
         <div className="space-y-8">
             {/* Top Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                {/* Training Credit */}
-                {personalInfo?.trainingCredit && (
-                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
-                        <div className="flex flex-col items-center text-center gap-4 mb-6">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
-                                <i className="fa-duotone fa-coins text-2xl"></i>
-                            </div>
-                            <div>
-                                <h4 className="text-lg font-bold text-black">Training Credit</h4>
-                                <span className="text-xs font-medium text-slate-500 group">
-                                    <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                    Your remaining balance of prepaid training sessions.
-                                </span>
-                            </div>
-                        </div>
-                        <div className="flex items-end justify-between">
-                            <span className="text-2xl font-bold text-black">{personalInfo.trainingCredit}</span>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-600">
-                                <i className="fas fa-arrow-up text-[10px]"></i>
-                                Available
-                            </span>
-                        </div>
-                    </div>
-                )}
-
                 {/* Trainings Scheduled */}
-                {personalInfo?.trainingsScheduled && (
-                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
-                        <div className="flex flex-col items-center text-center gap-4 mb-6">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
-                                <i className="fa-duotone fa-calendar-check text-2xl"></i>
-                            </div>
-                            <div>
-                                <h4 className="text-lg font-bold text-black">Scheduled</h4>
-                                <span className="text-xs font-medium text-slate-500 group">
-                                    <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                    The number of training sessions currently scheduled.
-                                </span>
-                            </div>
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
+                            <i className="fa-duotone fa-calendar-check text-2xl"></i>
                         </div>
-                        <div className="flex items-end justify-between">
-                            <span className="text-2xl font-bold text-black">{personalInfo.trainingsScheduled}</span>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-600">
-                                <i className="fas fa-clock text-[10px]"></i>
-                                Upcoming
+                        <div>
+                            <h4 className="text-lg font-bold text-black">Scheduled</h4>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                The number of training sessions currently scheduled.
                             </span>
                         </div>
                     </div>
-                )}
+                    <div className="flex items-end justify-between">
+                        <span className="text-2xl font-bold text-black">{personalInfo?.trainingsScheduled || '0'}</span>
+                        {Number(personalInfo?.trainingsScheduled || 0) > 0 ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-calendar-alt text-[10px]"></i>
+                                Agendado
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+                                <i className="fas fa-calendar-xmark text-[10px]"></i>
+                                Sem Treinos
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Training Credit */}
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
+                            <i className="fa-duotone fa-coins text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-bold text-black">Training Credit</h4>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                Your remaining balance of prepaid training sessions.
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-end justify-between">
+                        <span className="text-2xl font-bold text-black">{personalInfo?.trainingCredit || '0'}</span>
+                        {Number(personalInfo?.trainingCredit || 0) > 5 ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-coins text-[10px]"></i>
+                                Ativo
+                            </span>
+                        ) : Number(personalInfo?.trainingCredit || 0) > 0 ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-exclamation text-[10px]"></i>
+                                Baixo
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+                                <i className="fas fa-ban text-[10px]"></i>
+                                Esgotado
+                            </span>
+                        )}
+                    </div>
+                </div>
 
                 {/* Debt Value - Highlighted if debt exists */}
-                {personalInfo?.debtValue && (
-                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
-                        <div className="flex flex-col items-center text-center gap-4 mb-6">
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
-                                <i className="fa-duotone fa-file-invoice-dollar text-2xl"></i>
-                            </div>
-                            <div>
-                                <h4 className="text-lg font-bold text-black">Debt Value</h4>
-                                <span className="text-xs font-medium text-slate-500 group">
-                                    <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                    Total amount currently outstanding on your account.
-                                </span>
-                            </div>
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
+                            <i className="fa-duotone fa-file-invoice-dollar text-2xl"></i>
                         </div>
-                        <div className="flex items-end justify-between">
-                            <span className="text-2xl font-bold text-black">{personalInfo.debtValue}</span>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-medium text-rose-600">
-                                <i className="fas fa-exclamation-circle text-[10px]"></i>
-                                Action
+                        <div>
+                            <h4 className="text-lg font-bold text-black">Debt Value</h4>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                Total amount currently outstanding on your account.
                             </span>
                         </div>
                     </div>
-                )}
+                    <div className="flex items-end justify-between">
+                        <span className="text-2xl font-bold text-black">{personalInfo?.debtValue || '0€'}</span>
+                        {!personalInfo?.debtValue || personalInfo?.debtValue === '0€' || personalInfo?.debtValue === '0' ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-check-circle text-[10px]"></i>
+                                Sem Dívida
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-rose-500 to-red-500 px-3 py-1 text-xs font-semibold text-white shadow-sm animate-pulse">
+                                <i className="fas fa-exclamation-triangle text-[10px]"></i>
+                                Pendente
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Paid Status */}
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-full ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes')
+                            ? 'bg-emerald-50 text-emerald-500'
+                            : 'bg-amber-50 text-amber-500'
+                            }`}>
+                            <i className={`fa-duotone ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes')
+                                ? 'fa-shield-check'
+                                : 'fa-shield-exclamation'
+                                } text-2xl`}></i>
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-bold text-black">Status</h4>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                Current status of your account monthly payment.
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-end justify-between">
+                        <span className={`text-2xl font-bold ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes')
+                            ? 'text-emerald-500'
+                            : 'text-amber-500'
+                            }`}>
+                            {personalInfo?.paid || 'N/A'}
+                        </span>
+                        {(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes') ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-shield-check text-[10px]"></i>
+                                Pago
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-hourglass-half text-[10px]"></i>
+                                Aguarda
+                            </span>
+                        )}
+                    </div>
+                </div>
+
 
                 {/* Total Pesagens with Weight Trend */}
                 <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
@@ -114,17 +176,52 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                     <div className="flex items-end justify-between">
                         <span className="text-2xl font-bold text-black">{stats.totalPesagens}</span>
                         {stats.weightTrend !== 0 ? (
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${stats.weightTrend < 0
-                                ? 'bg-emerald-50 text-emerald-600'
-                                : 'bg-rose-50 text-rose-600'
+                            <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold text-white shadow-sm ${stats.weightTrend < 0
+                                ? 'bg-gradient-to-r from-emerald-500 to-green-500'
+                                : 'bg-gradient-to-r from-rose-500 to-red-500'
                                 }`}>
-                                <i className={`fas fa-arrow-${stats.weightTrend < 0 ? 'down' : 'up'} text-[10px]`}></i>
-                                {Math.abs(stats.weightTrend).toFixed(1)} kg
+                                <i className={`fas fa-arrow-trend-${stats.weightTrend < 0 ? 'down' : 'up'} text-[10px]`}></i>
+                                {stats.weightTrend < 0 ? '-' : '+'}{Math.abs(stats.weightTrend).toFixed(1)} kg
+                            </span>
+                        ) : stats.totalPesagens > 0 ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-scale-balanced text-[10px]"></i>
+                                Estável
                             </span>
                         ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-500">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
                                 <i className="fas fa-minus text-[10px]"></i>
-                                Stable
+                                Sem Dados
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Total Avaliações */}
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
+                            <i className="fa-duotone fa-dumbbell text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-bold text-black">Avaliações</h4>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                Total number of physical assessments completed.
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-end justify-between">
+                        <span className="text-2xl font-bold text-black">{stats.totalAvaliacoes}</span>
+                        {stats.totalAvaliacoes > 0 ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-clipboard-check text-[10px]"></i>
+                                Concluído
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+                                <i className="fas fa-clipboard-list text-[10px]"></i>
+                                Sem Dados
                             </span>
                         )}
                     </div>
@@ -146,77 +243,19 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                     </div>
                     <div className="flex items-end justify-between">
                         <span className="text-2xl font-bold text-black">{stats.totalPerimetros}</span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                            <i className="fas fa-chart-bar text-[10px]"></i>
-                            Tracked
-                        </span>
+                        {stats.totalPerimetros > 0 ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-ruler text-[10px]"></i>
+                                Registado
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+                                <i className="fas fa-ruler text-[10px]"></i>
+                                Sem Dados
+                            </span>
+                        )}
                     </div>
                 </div>
-
-                {/* Total Avaliações */}
-                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex flex-col items-center text-center gap-4 mb-6">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
-                            <i className="fa-duotone fa-dumbbell text-2xl"></i>
-                        </div>
-                        <div>
-                            <h4 className="text-lg font-bold text-black">Avaliações</h4>
-                            <span className="text-xs font-medium text-slate-500 group">
-                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                Total number of physical assessments completed.
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex items-end justify-between">
-                        <span className="text-2xl font-bold text-black">{stats.totalAvaliacoes}</span>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-50 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-                            <i className="fas fa-star text-[10px]"></i>
-                            Completed
-                        </span>
-                    </div>
-                </div>
-
-                {/* Paid Status */}
-                {personalInfo?.paid && (
-                    <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
-                        <div className="flex flex-col items-center text-center gap-4 mb-6">
-                            <div className={`flex h-14 w-14 items-center justify-center rounded-full ${personalInfo.paid.toLowerCase() === 'sim' || personalInfo.paid.toLowerCase() === 'yes'
-                                ? 'bg-emerald-50 text-emerald-500'
-                                : 'bg-amber-50 text-amber-500'
-                                }`}>
-                                <i className={`fa-duotone ${personalInfo.paid.toLowerCase() === 'sim' || personalInfo.paid.toLowerCase() === 'yes'
-                                    ? 'fa-shield-check'
-                                    : 'fa-shield-exclamation'
-                                    } text-2xl`}></i>
-                            </div>
-                            <div>
-                                <h4 className="text-lg font-bold text-black">Status</h4>
-                                <span className="text-xs font-medium text-slate-500 group">
-                                    <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                    Current status of your account monthly payment.
-                                </span>
-                            </div>
-                        </div>
-                        <div className="flex items-end justify-between">
-                            <span className={`text-2xl font-bold ${personalInfo.paid.toLowerCase() === 'sim' || personalInfo.paid.toLowerCase() === 'yes'
-                                ? 'text-emerald-500'
-                                : 'text-amber-500'
-                                }`}>
-                                {personalInfo.paid}
-                            </span>
-                            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${personalInfo.paid.toLowerCase() === 'sim' || personalInfo.paid.toLowerCase() === 'yes'
-                                ? 'bg-emerald-50 text-emerald-600'
-                                : 'bg-amber-50 text-amber-600'
-                                }`}>
-                                <i className={`fas ${personalInfo.paid.toLowerCase() === 'sim' || personalInfo.paid.toLowerCase() === 'yes'
-                                    ? 'fa-check'
-                                    : 'fa-triangle-exclamation'
-                                    } text-[10px]`}></i>
-                                {personalInfo.paid.toLowerCase() === 'sim' || personalInfo.paid.toLowerCase() === 'yes' ? 'Verified' : 'Pending'}
-                            </span>
-                        </div>
-                    </div>
-                )}
 
             </div>
 

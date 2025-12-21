@@ -20,12 +20,9 @@ export class UserMapper {
         if (!email) return null; // Email is mandatory
 
         const birth = (row[4] || '').trim();
-        let age = (row[5] || '').trim(); // Column F is index 5
-
-        // Fallback: Calculate age if missing but birth date exists
-        if (!age && birth) {
-            age = calculateAge(birth);
-        }
+        // Age is calculated on-the-fly from birth date, not stored
+        // UUID is in column G (index 6)
+        const uuid = (row[6] || '').trim();
 
         return {
             name: (row[0] || '').trim(),
@@ -33,7 +30,7 @@ export class UserMapper {
             email: email, // Email kept as-is, normalization happens in repository logic if needed, but standard is usually lowercase there
             password: (row[3] || '').trim(),
             birth: birth,
-            age: age
+            uuid: uuid
         };
     }
 
@@ -51,7 +48,8 @@ export class UserMapper {
             user.email,
             user.password,
             user.birth,
-            user.age || ''
+            '', // Age is calculated, not stored
+            user.uuid || ''
         ];
     }
 }

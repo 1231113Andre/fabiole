@@ -34,8 +34,10 @@ const loginHandler = new BaseRouteHandler()
       // Check if account is locked
       const lockoutCheck = checkAccountLockout(email, ip);
       if (lockoutCheck.isLocked) {
-        return ApiResponse.unauthorized(
-          `Account temporarily locked due to too many failed login attempts. Please try again in ${lockoutCheck.remainingSeconds} seconds.`
+        return ApiResponse.error(
+          `Conta temporariamente bloqueada. Tenta novamente em ${lockoutCheck.remainingSeconds} segundos.`,
+          401,
+          { lockoutSeconds: lockoutCheck.remainingSeconds }
         );
       }
 
@@ -45,7 +47,7 @@ const loginHandler = new BaseRouteHandler()
         // Clear failed attempts on successful login
         clearFailedAttempts(email, ip);
 
-        const sessionCookie = await AuthService.createSessionCookie(user);
+        const sessionCookies = await AuthService.createSessionCookie(user);
 
         const response = ApiResponse.success(
           {
@@ -55,8 +57,8 @@ const loginHandler = new BaseRouteHandler()
           200
         );
 
-        // Add session cookie
-        response.cookies = [sessionCookie];
+        // Add session cookies
+        response.cookies = sessionCookies;
 
         // Force re-render of SSR components (navbar)
         revalidatePath('/', 'layout');
@@ -67,13 +69,15 @@ const loginHandler = new BaseRouteHandler()
         const lockoutResult = recordFailedAttempt(email, ip);
 
         if (lockoutResult.isLocked) {
-          return ApiResponse.unauthorized(
-            `Too many failed login attempts. Account locked for ${lockoutResult.remainingSeconds} seconds.`
+          return ApiResponse.error(
+            `Demasiadas tentativas falhadas. Conta bloqueada por ${lockoutResult.remainingSeconds} segundos.`,
+            401,
+            { lockoutSeconds: lockoutResult.remainingSeconds }
           );
         }
 
         // Return generic error to prevent user enumeration
-        return ApiResponse.unauthorized('Invalid email or password');
+        return ApiResponse.unauthorized('Email ou password incorretos');
       }
     } catch (error) {
       throw error; // Re-throw to be handled by BaseRouteHandler

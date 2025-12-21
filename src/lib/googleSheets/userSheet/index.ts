@@ -52,36 +52,36 @@ export async function getOrCreateUserSheet(email: string, userData: InfoDataRow)
   try {
     const userSheetName = generateUserSheetName(email);
     console.log(`📋 [Google Sheets] Getting or creating user sheet: ${userSheetName}`);
-    
+
     const sheets = await getSheetsAPI();
-    
+
     // Check if sheet exists
     let sheetExists = false;
     try {
       const spreadsheet = await sheets.spreadsheets.get({
         spreadsheetId: ACCOUNT_DATA_SHEET_ID,
       });
-      
+
       const existingSheet = spreadsheet.data.sheets?.find(
         (sheet: any) => sheet.properties?.title === userSheetName
       );
-      
+
       if (existingSheet) {
         sheetExists = true;
         console.log(`✅ [Google Sheets] User sheet already exists: ${userSheetName}`);
-        
+
         // Check if data row (row 2) is empty - if so, fill it with infoData
         try {
           const dataCheck = await sheets.spreadsheets.values.get({
             spreadsheetId: ACCOUNT_DATA_SHEET_ID,
             range: `${userSheetName}!A2:N2`,
           });
-          
-          const hasData = dataCheck.data.values && 
-                          dataCheck.data.values.length > 0 && 
-                          dataCheck.data.values[0] && 
-                          dataCheck.data.values[0].some((cell: any) => cell && cell.toString().trim() !== '');
-          
+
+          const hasData = dataCheck.data.values &&
+            dataCheck.data.values.length > 0 &&
+            dataCheck.data.values[0] &&
+            dataCheck.data.values[0].some((cell: any) => cell && cell.toString().trim() !== '');
+
           if (!hasData) {
             console.log(`📝 [Google Sheets] Sheet exists but data row is empty - filling with infoData...`);
             // Fill empty row with data from infoData
@@ -91,25 +91,26 @@ export async function getOrCreateUserSheet(email: string, userData: InfoDataRow)
               valueInputOption: 'RAW',
               requestBody: {
                 values: [[
-                  (userData.name || '').toUpperCase(),        // UserName
-                  (userData.surname || '').toUpperCase(),     // UserSurname
-                  (userData.email || '').toUpperCase(),      // UserEmail
-                  '',                                         // UserPhone (empty)
-                  (userData.birth || '').toUpperCase(),       // UserBirth
-                  '',                                         // TrainingCredit (empty)
-                  '',                                         // TreiningsScheduled (empty)
-                  '',                                         // DebtValue (empty)
-                  '',                                         // Paid? (empty)
-                  '',                                         // Q1 (empty)
-                  '',                                         // Q2 (empty)
-                  '',                                         // Q3 (empty)
-                  '',                                         // Q4 (empty)
-                  ''                                          // Notas (empty)
+                  (userData.name || '').toUpperCase(),        // A2: UserName
+                  (userData.surname || '').toUpperCase(),     // B2: UserSurname
+                  (userData.email || '').toUpperCase(),       // C2: UserEmail
+                  '',                                         // D2: UserPhone (empty)
+                  (userData.birth || '').toUpperCase(),       // E2: UserBirth
+                  userData.uuid || '',                        // F2: UUID (AUTO) 🔒
+                  '',                                         // G2: TrainingCredit (empty)
+                  '',                                         // H2: TreiningsScheduled (empty)
+                  '',                                         // H2: TreiningsScheduled (empty)
+                  '-',                                        // I2: DebtValue (default: -)
+                  '-',                                        // J2: Paid? (default: -)
+                  '',                                         // K2: Q1 (empty)
+                  '',                                         // L2: Q2 (empty)
+                  '',                                         // M2: Q3 (empty)
+                  ''                                          // N2: Notas (empty)
                 ]],
               },
             });
-            console.log(`✅ [Google Sheets] Empty data row filled with infoData`);
-            
+            console.log(`✅ [Google Sheets] Empty data row filled with infoData (including UUID)`);
+
             // Clear cache for this user since we just updated their sheet
             clearUserCache(email);
           } else {
@@ -118,7 +119,7 @@ export async function getOrCreateUserSheet(email: string, userData: InfoDataRow)
         } catch (error) {
           console.warn(`⚠️ [Google Sheets] Could not check data row, assuming it has data:`, error);
         }
-        
+
         return; // Sheet exists, done
       }
     } catch (error) {
@@ -130,20 +131,29 @@ export async function getOrCreateUserSheet(email: string, userData: InfoDataRow)
     // Simple, fast, and reliable - no Drive API or XLSX needed!
     if (!sheetExists) {
       console.log(`📝 [Google Sheets] Creating new user sheet from template: ${userSheetName}`);
-      
-      // Prepare data values for row 2
+
+      // Prepare data values for row 2 (A2:N2)
       const dataValues = [
-        (userData.name || '').toUpperCase(),        // UserName
-        (userData.surname || '').toUpperCase(),     // UserSurname
-        (userData.email || '').toUpperCase(),       // UserEmail
-        '',                                         // UserPhone (empty)
-        (userData.birth || '').toUpperCase(),       // UserBirth
-        '', '', '', '', '', '', '', '', ''          // Remaining fields (empty)
+        (userData.name || '').toUpperCase(),        // A2: UserName
+        (userData.surname || '').toUpperCase(),     // B2: UserSurname
+        (userData.email || '').toUpperCase(),       // C2: UserEmail
+        '',                                         // D2: UserPhone (empty)
+        (userData.birth || '').toUpperCase(),       // E2: UserBirth
+        userData.uuid || '',                        // F2: UUID (AUTO) 🔒
+        '',                                         // G2: TrainingCredit (empty)
+        '',                                         // H2: TreiningsScheduled (empty)
+        '',                                         // H2: TreiningsScheduled (empty)
+        '-',                                        // I2: DebtValue (default: -)
+        '-',                                        // J2: Paid? (default: -)
+        '',                                         // K2: Q1 (empty)
+        '',                                         // L2: Q2 (empty)
+        '',                                         // M2: Q3 (empty)
+        ''                                          // N2: Notas (empty)
       ];
-      
+
       // Copy template sheet - this preserves 100% of formatting, styles, formulas, etc.
       const sheetId = await copyTemplateSheet(userSheetName);
-      
+
       // Combine rename + data population in single batchUpdate for maximum performance
       // This reduces API calls from 2 to 1, significantly improving speed
       await sheets.spreadsheets.batchUpdate({
@@ -181,9 +191,9 @@ export async function getOrCreateUserSheet(email: string, userData: InfoDataRow)
           ],
         },
       });
-      
+
       console.log(`✅ [Google Sheets] User sheet created, renamed, and populated: ${userSheetName}`);
-      
+
       console.log(`✅ [Google Sheets] User data inserted successfully to row 2: ${userSheetName}`);
       clearUserCache(email);
     }

@@ -24,6 +24,7 @@ export const ModalBase = ({ isOpen, onClose, children, title, titleId, size = 'm
     const dialogRef = useRef<HTMLDivElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
+    const mouseDownTargetRef = useRef<EventTarget | null>(null);
 
     const sizeClass = size === 'lg' ? 'max-w-lg' : 'max-w-md';
 
@@ -89,13 +90,30 @@ export const ModalBase = ({ isOpen, onClose, children, title, titleId, size = 'm
     if (!isMounted) return null;
 
     return createPortal(
-        <div ref={backdropRef} className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center ${zIndex} overscroll-y-none`} onClick={handleClose} style={{ opacity: 0 }}>
+        <div
+            ref={backdropRef}
+            className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center ${zIndex} overscroll-y-none`}
+            onMouseDown={(e) => {
+                // Track where the mouse down started
+                mouseDownTargetRef.current = e.target;
+            }}
+            onClick={(e) => {
+                // Only close if both mousedown and click happened on the backdrop itself
+                // This prevents closing when scrolling inside the dialog triggers a click
+                if (e.target === backdropRef.current && mouseDownTargetRef.current === backdropRef.current) {
+                    handleClose();
+                }
+                mouseDownTargetRef.current = null;
+            }}
+            style={{ opacity: 0 }}
+        >
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
                 className={`relative bg-[var(--background)] border-theme rounded-2xl shadow-2xl w-full m-4 ${sizeClass} ${className || ''} max-h-[90vh] overflow-y-auto custom-scrollbar font-montserrat text-[var(--foreground)] overscroll-contain`}
+                onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => e.stopPropagation()}
                 style={{ opacity: 0, transform: 'scale(0.95)' }}
             >

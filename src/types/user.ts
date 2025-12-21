@@ -4,7 +4,7 @@ export interface User {
   email: string;
   password: string; // Will be hashed before storing
   birth: string;
-  age?: string;
+  uuid?: string; // Unique user identifier
 }
 
 export interface RegisterData {
@@ -13,7 +13,6 @@ export interface RegisterData {
   email: string;
   password: string;
   birth: string;
-  age?: string;
 }
 
 export interface LoginData {
@@ -27,6 +26,7 @@ export interface InfoDataRow {
   email: string;
   password: string;
   birth: string;
-  age?: string;
+  uuid?: string; // Unique user identifier (column F)
 }
+
 

@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, useCallback, useRef } from "react";
 import type { UserSheetData } from "@/lib/googleSheets/types";
+import { useSession } from "./useAuth";
 
 // Polling intervals (in milliseconds)
 const ACTIVE_INTERVAL = 30 * 1000;    // 30 seconds when tab is active
@@ -50,9 +51,12 @@ function useDocumentVisibility() {
  */
 export function useUserData(forceRefresh: boolean = false) {
   const queryClient = useQueryClient();
+  const { data: sessionData } = useSession();
   const isVisible = useDocumentVisibility();
   const wasHiddenRef = useRef(false);
   const lastRefetchTimeRef = useRef(Date.now());
+
+  const userId = sessionData?.user?.email || 'guest';
 
   // Track when tab becomes hidden
   useEffect(() => {
@@ -81,7 +85,7 @@ export function useUserData(forceRefresh: boolean = false) {
     : (isVisible ? ACTIVE_INTERVAL : BACKGROUND_INTERVAL);
 
   return useQuery<UserSheetData, Error>({
-    queryKey: ["userData", forceRefresh ? Date.now() : "default"],
+    queryKey: ["userData", userId, forceRefresh ? Date.now() : "default"],
     queryFn: async () => {
       // Update last refetch time
       lastRefetchTimeRef.current = Date.now();
@@ -122,6 +126,7 @@ export function useUserData(forceRefresh: boolean = false) {
  */
 export function useRefreshData() {
   const queryClient = useQueryClient();
+  const { data: sessionData } = useSession();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const cooldownRef = useRef<NodeJS.Timeout | null>(null);
@@ -172,9 +177,27 @@ export function useRefreshData() {
     const MIN_SPINNER_TIME = 800; // Minimum time to show spinner (ms)
 
     try {
-      // Force refresh by clearing cache and refetching
+      // Force refresh by manually fetching with refresh=true
+      // We do this manually to bypass the query cache logic completely for this specific request
+      // invalidateQueries isn't enough because the queryFn defaults forceRefresh to false
+      const refreshUrl = `/api/user/data?refresh=true&t=${Date.now()}`;
+      const response = await fetch(refreshUrl, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh data');
+      }
+
+      const newData = await response.json();
+
+      // Update the cache directly with the new data
+      const userId = sessionData?.user?.email || 'guest';
+      queryClient.setQueryData(["userData", userId, "default"], newData);
+
+      // Also invalidate to ensure related queries like "userData", <timestamp> are also refreshed if needed
       await queryClient.invalidateQueries({ queryKey: ["userData"] });
-      await queryClient.refetchQueries({ queryKey: ["userData"] });
 
       // Start cooldown and save to localStorage
       localStorage.setItem(STORAGE_KEY, Date.now().toString());
@@ -191,19 +214,21 @@ export function useRefreshData() {
         });
       }, 100);
 
-      // Ensure spinner shows for minimum time
+      // Ensure spinner shows for minimum time (300ms for snappy feel)
       const elapsed = Date.now() - startTime;
-      if (elapsed < MIN_SPINNER_TIME) {
-        await new Promise(resolve => setTimeout(resolve, MIN_SPINNER_TIME - elapsed));
+      const SNAP_SPINNER_TIME = 300;
+      if (elapsed < SNAP_SPINNER_TIME) {
+        await new Promise(resolve => setTimeout(resolve, SNAP_SPINNER_TIME - elapsed));
       }
 
       return { success: true };
     } catch (error) {
+      console.error("Refresh failed:", error);
       return { success: false, reason: "error", error };
     } finally {
       setIsRefreshing(false);
     }
-  }, [queryClient, cooldownRemaining, isRefreshing]);
+  }, [queryClient, cooldownRemaining, isRefreshing, sessionData]);
 
   return {
     refresh,

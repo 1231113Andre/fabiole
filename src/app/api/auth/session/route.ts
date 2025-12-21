@@ -41,7 +41,7 @@ const getSessionHandler = new BaseRouteHandler()
               birth: cached.birth,
             },
           },
-          { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' }
+          { 'Cache-Control': 'private, no-cache, no-store, must-revalidate' }
         );
       }
 
@@ -79,7 +79,7 @@ const getSessionHandler = new BaseRouteHandler()
             birth: payload.birth,
           },
         },
-        { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' }
+        { 'Cache-Control': 'private, no-cache, no-store, must-revalidate' }
       );
     } catch (error) {
       return ApiResponse.custom(
@@ -107,10 +107,12 @@ const deleteSessionHandler = new BaseRouteHandler()
 
     // Delete the session cookie
     cookieStore.delete('auth_session');
+    cookieStore.delete('has_session');
 
     return ApiResponse.success(
       { message: 'Logged out successfully' },
-      200
+      200,
+      { 'Clear-Site-Data': '"cache", "cookies", "storage"' }
     );
   });
 

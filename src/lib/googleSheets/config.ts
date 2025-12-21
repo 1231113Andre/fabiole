@@ -14,6 +14,7 @@
  * @default '11Z4m5MKXFxb4TgRdUpO9diZncI1NdOkFwxWkr501H40'
  */
 export const ACCOUNT_DATA_SHEET_ID = process.env.GOOGLE_SHEET_ID || '11Z4m5MKXFxb4TgRdUpO9diZncI1NdOkFwxWkr501H40';
+export const INFO_SHEET_ID = ACCOUNT_DATA_SHEET_ID;
 
 /**
  * InfoData Sheet Name

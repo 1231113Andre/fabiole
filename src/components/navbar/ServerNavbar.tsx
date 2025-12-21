@@ -37,8 +37,11 @@ export default async function ServerNavbar() {
         const cookieStore = await cookies();
         const sessionCookie = cookieStore.get('auth_session');
 
+        console.log('[ServerNavbar] Cookie found:', !!sessionCookie?.value);
+
         if (sessionCookie?.value) {
             const payload = await verifySession(sessionCookie.value);
+            console.log('[ServerNavbar] Payload verified:', !!payload);
             if (payload) {
                 initialUser = {
                     name: payload.name as string,
@@ -48,6 +51,7 @@ export default async function ServerNavbar() {
             }
         }
     } catch (error) {
+        console.error('[ServerNavbar] Error verifying session:', error);
         // Fail silently - user will be treated as guest
     }
 

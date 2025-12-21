@@ -5,6 +5,7 @@
  */
 
 import { SignJWT, jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
 
 /**
  * Secret key for signing sessions
@@ -24,6 +25,7 @@ export interface SessionPayload {
   name: string;
   surname: string;
   birth: string;
+  uuid?: string; // Unique user identifier
   iat?: number;
   exp?: number;
 }
@@ -46,6 +48,7 @@ export async function signSession(
     name: payload.name,
     surname: payload.surname,
     birth: payload.birth,
+    uuid: payload.uuid,
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt(now)
@@ -70,6 +73,7 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
       name: payload.name as string,
       surname: payload.surname as string,
       birth: payload.birth as string,
+      uuid: payload.uuid as string | undefined,
       iat: payload.iat as number,
       exp: payload.exp as number,
     };
@@ -92,3 +96,22 @@ export function isSessionExpired(payload: SessionPayload): boolean {
   return payload.exp < now;
 }
 
+/**
+ * Get current session from cookies (server-side only)
+ * @returns Session payload if valid, null otherwise
+ */
+export async function getSession(): Promise<SessionPayload | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_session')?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const session = await verifySession(token);
+  if (!session || isSessionExpired(session)) {
+    return null;
+  }
+
+  return session;
+}

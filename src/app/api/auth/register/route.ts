@@ -31,7 +31,7 @@ const registerHandler = new BaseRouteHandler()
       };
 
       const user = await AuthService.register(userData);
-      const sessionCookie = await AuthService.createSessionCookie(user);
+      const sessionCookies = await AuthService.createSessionCookie(user);
 
       const response = ApiResponse.success(
         {
@@ -41,8 +41,8 @@ const registerHandler = new BaseRouteHandler()
         201
       );
 
-      // Add session cookie (auto-login after registration)
-      response.cookies = [sessionCookie];
+      // Add session cookies (auto-login after registration)
+      response.cookies = sessionCookies;
 
       // Force re-render of SSR components (navbar)
       revalidatePath('/', 'layout');
@@ -50,7 +50,7 @@ const registerHandler = new BaseRouteHandler()
       return response;
     } catch (error) {
       if (error instanceof Error && error.message.includes('already exists')) {
-        return ApiResponse.conflict('User with this email already exists');
+        return ApiResponse.conflict('Este email já está registado. Tenta iniciar sessão.');
       }
       throw error; // Re-throw to be handled by BaseRouteHandler
     }

@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 // ============================================
 // TYPES
 // ============================================
-type NotificationType = 'success' | 'error' | 'info';
+type NotificationType = 'success' | 'error' | 'info' | 'warning' | 'loading';
 
 export type NotificationDetails = string[] | Record<string, string[]>;
 
@@ -47,6 +47,20 @@ const TOAST_CONFIG: Readonly<Record<NotificationType, ToastConfigItem>> = {
         borderColor: "border-blue-500/30",
         bgClass: "bg-blue-950/95 shadow-blue-900/20",
         title: "INFORMAÇÃO",
+    },
+    warning: {
+        icon: "fa-duotone fa-triangle-exclamation",
+        iconColor: "text-amber-300",
+        borderColor: "border-amber-500/30",
+        bgClass: "bg-amber-950/95 shadow-amber-900/20",
+        title: "AVISO",
+    },
+    loading: {
+        icon: "fa-duotone fa-spinner-third fa-spin",
+        iconColor: "text-purple-300",
+        borderColor: "border-purple-500/30",
+        bgClass: "bg-purple-950/95 shadow-purple-900/20",
+        title: "CARREGANDO",
     },
 } as const;
 
@@ -138,11 +152,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         const now = new Date();
         const timestamp = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
 
+        // Map our custom types to react-toastify supported types
+        const toastType = type === 'warning' ? 'warning' : type === 'loading' ? 'info' : type;
+
         toast(
             <ToastContent type={type} message={message} details={details} timestamp={timestamp} />,
             {
                 ...BASE_TOAST_OPTIONS,
-                type,
+                type: toastType as 'success' | 'error' | 'info' | 'warning',
                 icon: false,
                 className: `!${bgClass} !backdrop-blur-md !border ${borderColor} !rounded-lg !shadow-lg !p-3 !min-h-0 !mb-2`,
             }

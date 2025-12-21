@@ -9,12 +9,14 @@ import { LoginInput } from '../validators/auth.validator';
 import { RegisterInput } from '../validators/auth.validator';
 import { hashPassword } from '@/lib/security/password';
 import { signSession } from '@/lib/security/session';
+import { randomUUID } from 'crypto';
 
 export interface UserResponse {
   name: string;
   surname: string;
   email: string;
   birth: string;
+  uuid?: string;
 }
 
 /**
@@ -36,12 +38,27 @@ export class AuthService {
       throw new Error('Invalid email or password');
     }
 
+    // Auto-generate UUID if missing (for manually added users)
+    let userUUID = user.uuid;
+    if (!userUUID) {
+      userUUID = randomUUID();
+      console.log(`🔧 [AuthService] Auto-generating missing UUID for: ${email}`);
+
+      // Import dynamically to avoid circular dependency
+      const { updateUserUUID } = await import('@/lib/googleSheets/updateUserUUID');
+      const updated = await updateUserUUID(email, userUUID);
+      if (updated) {
+        console.log(`✅ [AuthService] UUID auto-generated for: ${email}`);
+      }
+    }
+
     // Don't send password back in response
     const { password: _, ...userResponse } = user;
+    userResponse.uuid = userUUID;
 
     // Create user sheet if it doesn't exist (non-blocking)
     try {
-      await getOrCreateUserSheet(email, user);
+      await getOrCreateUserSheet(email, { ...user, uuid: userUUID });
       console.log(`✅ [AuthService] User sheet ready for: ${email}`);
     } catch (err) {
       console.error('⚠️ [AuthService] Sheet creation/check failed (non-blocking):', err);
@@ -67,13 +84,17 @@ export class AuthService {
     // Hash password before storing
     const hashedPassword = await hashPassword(userData.password);
 
-    // Add new user to infoData with hashed password
+    // Generate unique UUID for this user
+    const userUUID = randomUUID();
+
+    // Add new user to infoData with hashed password and UUID
     const newUser = await addUserToInfoData({
       name: userData.name,
       surname: userData.surname,
       email: userData.email,
       password: hashedPassword,
       birth: userData.birth,
+      uuid: userUUID,
     });
 
     // Don't send password back in response
@@ -94,7 +115,7 @@ export class AuthService {
   /**
    * Set session cookie with signed JWT
    */
-  static async createSessionCookie(user: UserResponse): Promise<{
+  static async createSessionCookie(user: UserResponse): Promise<Array<{
     name: string;
     value: string;
     options: {
@@ -104,25 +125,47 @@ export class AuthService {
       maxAge: number;
       path: string;
     };
-  }> {
-    // Sign session with JWT
-    const token = await signSession({
-      email: user.email,
-      name: user.name,
-      surname: user.surname,
-      birth: user.birth,
-    });
+  }>> {
+    const maxAge = 60 * 60 * 24 * 7; // 7 days
 
-    return {
-      name: 'auth_session',
-      value: token,
-      options: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: '/',
+    // Sign session with JWT
+    const token = await signSession(
+      {
+        email: user.email,
+        name: user.name,
+        surname: user.surname,
+        birth: user.birth,
+        uuid: user.uuid,
       },
-    };
+      maxAge
+    );
+
+    return [
+      // 1. Secure Session Cookie (HttpOnly) - for server-side auth
+      {
+        name: 'auth_session',
+        value: token,
+        options: {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge,
+          path: '/',
+        },
+      },
+      // 2. Session Indicator Cookie (Not HttpOnly) - for client-side check
+      // This allows the client to know if a session exists without making a request
+      {
+        name: 'has_session',
+        value: '1',
+        options: {
+          httpOnly: false, // Accessible by JS
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          maxAge,
+          path: '/',
+        },
+      },
+    ];
   }
 }

@@ -25,21 +25,26 @@ export function parsePersonalInfo(row: any[]): UserSheetData['personalInfo'] {
     userEmail: row[2] || '',
     userPhone: row[3] || '',
     userBirth: row[4] || '',
-    trainingCredit: row[5] || '',
-    trainingsScheduled: row[6] || '',
-    debtValue: row[7] || '',
-    paid: row[8] || '',
-    q1: row[9] || '',
-    q2: row[10] || '',
-    q3: row[11] || '',
-    q4: row[12] || '',
-    // Column N (index 13) is empty/unused in current template
-    goals: row[14] || '',       // Column O: OBJETIVO 📝
-    notes: row[15] || '',       // Column P: NOTES 📝
-    age: row[16] || '',         // Column Q: IDADE/ALTURA (if exists)
+    // Column F (index 5) is UUID - skip
+    trainingCredit: (() => {
+      const val = row[6] || '';
+      console.log(`🔍 [Parsing] Row[6] Training Credit raw value: "${val}" (Type: ${typeof val})`);
+      return val;
+    })(),       // Column G: TRAINING CREDIT 🧮
+    trainingsScheduled: row[7] || '',   // Column H: SCHEDULED TRAININGS 🗓️
+    debtValue: row[8] || '',            // Column I: DEBT VALUE 💰
+    paid: row[9] || '',                 // Column J: PAID? ✅
+    q1: row[10] || '',                  // Column K: Q1
+    q2: row[11] || '',                  // Column L: Q2
+    q3: row[12] || '',                  // Column M: Q3
+    q4: row[13] || '',                  // Column N: Q4
+    // Column O (index 14) is empty/unused
+    goals: row[15] || '',               // Column P: OBJETIVO 📝
+    notes: row[16] || '',               // Column Q: NOTES 📝
+    age: '',                            // Age is calculated from birth date in read.ts
     // Legacy fields for backward compatibility
-    notas: row[14] || '',
-    inicio: row[15] || '',
+    notas: row[15] || '',
+    inicio: row[16] || '',
   };
 }
 
