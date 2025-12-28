@@ -21,39 +21,71 @@ function validateOrigin(request: NextRequest): boolean {
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
   const host = request.headers.get('host');
-  
+
   // If no origin/referer and we have host, it's same-origin (acceptable)
   if (!origin && !referer && host) {
     return true;
   }
-  
+
   // Extract host from request URL
   const requestHost = request.nextUrl.host;
   const requestProtocol = request.nextUrl.protocol;
-  
+
+  // Helper to normalize host (remove www. prefix for comparison)
+  const normalizeHost = (h: string) => h.replace(/^www\./, '').toLowerCase();
+
   try {
     // Validate origin if present
     if (origin) {
       const originUrl = new URL(origin);
-      // Origin should match request protocol and host
-      if (originUrl.protocol !== requestProtocol || originUrl.host !== requestHost) {
+      const originHost = normalizeHost(originUrl.host);
+      const reqHost = normalizeHost(requestHost);
+
+      // Check protocol (allow http in dev, require https in prod)
+      const protocolMatch = process.env.NODE_ENV === 'development'
+        || originUrl.protocol === requestProtocol
+        || (originUrl.protocol === 'https:' && requestProtocol === 'https:');
+
+      // Host should match (with www normalization)
+      if (!protocolMatch || originHost !== reqHost) {
+        console.error('[CSRF] Origin validation failed:', {
+          originHost,
+          reqHost,
+          originProtocol: originUrl.protocol,
+          requestProtocol,
+        });
         return false;
       }
     }
-    
+
     // Validate referer if present (and no origin)
     if (!origin && referer) {
       const refererUrl = new URL(referer);
-      // Referer should match request protocol and host
-      if (refererUrl.protocol !== requestProtocol || refererUrl.host !== requestHost) {
+      const refererHost = normalizeHost(refererUrl.host);
+      const reqHost = normalizeHost(requestHost);
+
+      // Check protocol
+      const protocolMatch = process.env.NODE_ENV === 'development'
+        || refererUrl.protocol === requestProtocol
+        || (refererUrl.protocol === 'https:' && requestProtocol === 'https:');
+
+      // Host should match (with www normalization)
+      if (!protocolMatch || refererHost !== reqHost) {
+        console.error('[CSRF] Referer validation failed:', {
+          refererHost,
+          reqHost,
+          refererProtocol: refererUrl.protocol,
+          requestProtocol,
+        });
         return false;
       }
     }
   } catch (error) {
     // Invalid URL format - reject
+    console.error('[CSRF] URL parsing error:', error);
     return false;
   }
-  
+
   return true;
 }
 
