@@ -153,7 +153,7 @@ export async function getAdminUsers(): Promise<AdminUser[]> {
         orderBy: { name: 'asc' }
     });
 
-    return users.map(u => ({
+    return users.map((u: typeof users[number]) => ({
         id: u.id,
         name: u.name,
         surname: u.surname,
@@ -187,7 +187,7 @@ export async function getRecentSignups(): Promise<RecentUser[]> {
         }
     });
 
-    return recentSignups.map(u => ({
+    return recentSignups.map((u: typeof recentSignups[number]) => ({
         id: u.id,
         name: u.name,
         surname: u.surname,
@@ -221,7 +221,7 @@ export async function getRecentPesagens(): Promise<RecentPesagem[]> {
         }
     });
 
-    return recentPesagens.map(p => ({
+    return recentPesagens.map((p: typeof recentPesagens[number]) => ({
         id: p.id,
         userId: p.user_uuid,
         date: p.date.toISOString(),
@@ -332,7 +332,7 @@ export async function getAdminUserById(userId: string): Promise<AdminUserDetail 
         paid: user.paid ?? 'PENDENTE',
         avatarUrl: user.avatarUrl,
         updatedAt: user.updatedAt.toISOString(),
-        pesagens: user.pesagens.map(p => ({
+        pesagens: user.pesagens.map((p: typeof user.pesagens[number]) => ({
             id: p.id,
             date: p.date.toISOString(),
             peso: p.peso ? Number(p.peso) : null,
@@ -348,7 +348,7 @@ export async function getAdminUserById(userId: string): Promise<AdminUserDetail 
             resultadoPercentMG: p.resultadoPercentMG,
             notas: p.notas
         })),
-        perimetros: user.perimetros.map(p => ({
+        perimetros: user.perimetros.map((p: typeof user.perimetros[number]) => ({
             id: p.id,
             date: p.date.toISOString(),
             msRight: p.msRight ? Number(p.msRight) : null,
@@ -362,7 +362,7 @@ export async function getAdminUserById(userId: string): Promise<AdminUserDetail 
             thighR: p.thighR ? Number(p.thighR) : null,
             thighL: p.thighL ? Number(p.thighL) : null
         })),
-        avaliacoes: user.avaliacoes.map(a => ({
+        avaliacoes: user.avaliacoes.map((a: typeof user.avaliacoes[number]) => ({
             id: a.id,
             date: a.date.toISOString(),
             pushUps: a.pushUps,

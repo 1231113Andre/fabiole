@@ -100,7 +100,7 @@ export class UserService {
       // User gender for %MG classification
       const userGender = userDB.gender || 'M';
 
-      const pesagens: Pesagem[] = userDB.pesagens.map(p => {
+      const pesagens: Pesagem[] = userDB.pesagens.map((p: typeof userDB.pesagens[number]) => {
         // Auto-calculate BMI if not present but we have weight and height
         let imcValue: number | null = p.imc ? Number(p.imc) : null;
         if (imcValue === null && p.peso && p.height) {
@@ -130,7 +130,7 @@ export class UserService {
         };
       });
 
-      const perimetros: PerimetroCorporal[] = userDB.perimetros.map(p => ({
+      const perimetros: PerimetroCorporal[] = userDB.perimetros.map((p: typeof userDB.perimetros[number]) => ({
         date: p.date ? format(p.date, 'dd/MM/yyyy') : '',
         msRight: p.msRight?.toString().replace('.', ',') || '',
         msRightFlex: p.msRightFlex?.toString().replace('.', ',') || '',
@@ -144,7 +144,7 @@ export class UserService {
         thighL: p.thighL?.toString().replace('.', ',') || ''
       }));
 
-      const avaliacoes: AvaliacaoFisica[] = userDB.avaliacoes.map(a => ({
+      const avaliacoes: AvaliacaoFisica[] = userDB.avaliacoes.map((a: typeof userDB.avaliacoes[number]) => ({
         date: a.date ? format(a.date, 'dd/MM/yyyy') : '',
         pushUps: a.pushUps?.toString() || '',
         sitUps: a.sitUps?.toString() || '',
