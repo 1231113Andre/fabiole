@@ -5,7 +5,6 @@ import { requestIdMiddleware } from '@/lib/api/middleware/RequestIdMiddleware';
 import { timeoutMiddleware } from '@/lib/api/middleware/TimeoutMiddleware';
 import { compressionMiddleware } from '@/lib/api/middleware/CompressionMiddleware';
 import { rateLimitMiddleware } from '@/lib/api/middleware/RateLimitMiddleware';
-import { csrfMiddleware } from '@/lib/api/middleware/CsrfMiddleware';
 import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware';
 import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddleware';
 import { loginSchema } from '@/lib/api/validators/auth.validator';
@@ -18,12 +17,13 @@ import {
   getClientIp,
 } from '@/lib/security/accountLockout';
 
+// Login handler - CSRF not required as this is anonymous endpoint
+// Protected by: rate limiting, account lockout, password hashing
 const loginHandler = new BaseRouteHandler()
   .use(requestIdMiddleware)
   .use(timeoutMiddleware(30000))
   .use(compressionMiddleware)
   .use(rateLimitMiddleware(RATE_LIMITS.AUTH)) // Strict rate limiting for auth
-  .use(csrfMiddleware)
   .use(validationMiddleware(loginSchema))
   .use(sanitizationMiddleware)
   .handle(async (context) => {
