@@ -66,7 +66,7 @@ export class AvaliacaoRepository extends BaseRepository {
     async createMany(records: CreateAvaliacaoDTO[]): Promise<Result<number>> {
         return this.execute(async () => {
             const result = await this.db.avaliacaoFisica.createMany({
-                data: records.map(r => ({
+                data: records.map((r: CreateAvaliacaoDTO) => ({
                     user_uuid: r.userId,
                     date: r.date,
                     pushUps: r.pushUps,
@@ -167,7 +167,7 @@ export class AvaliacaoRepository extends BaseRepository {
             take: limit,
         });
 
-        return records.map(r => ({
+        return records.map((r: typeof records[number]) => ({
             date: r.date,
             pushUps: r.pushUps,
             sitUps: r.sitUps,

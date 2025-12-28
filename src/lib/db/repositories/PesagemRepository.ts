@@ -80,7 +80,7 @@ export class PesagemRepository extends BaseRepository {
     async createMany(records: CreatePesagemDTO[]): Promise<Result<number>> {
         return this.execute(async () => {
             const result = await this.db.pesagem.createMany({
-                data: records.map(r => ({
+                data: records.map((r: CreatePesagemDTO) => ({
                     user_uuid: r.userId,
                     date: r.date,
                     peso: r.peso,
@@ -208,7 +208,7 @@ export class PesagemRepository extends BaseRepository {
             take: limit,
         });
 
-        return records.map(r => ({
+        return records.map((r: typeof records[number]) => ({
             date: r.date,
             peso: r.peso ? Number(r.peso) : null,
         }));

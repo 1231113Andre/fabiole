@@ -76,7 +76,7 @@ export class PerimetroRepository extends BaseRepository {
     async createMany(records: CreatePerimetroDTO[]): Promise<Result<number>> {
         return this.execute(async () => {
             const result = await this.db.perimetroCorporal.createMany({
-                data: records.map(r => ({
+                data: records.map((r: CreatePerimetroDTO) => ({
                     user_uuid: r.userId,
                     date: r.date,
                     msRight: r.msRight,
@@ -182,7 +182,7 @@ export class PerimetroRepository extends BaseRepository {
             take: limit,
         });
 
-        return records.map(r => ({
+        return records.map((r: typeof records[number]) => ({
             date: r.date,
             waist: r.waist ? Number(r.waist) : null,
         }));
