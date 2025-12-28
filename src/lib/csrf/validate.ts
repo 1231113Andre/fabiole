@@ -27,58 +27,51 @@ function validateOrigin(request: NextRequest): boolean {
     return true;
   }
 
-  // Extract host from request URL
-  const requestHost = request.nextUrl.host;
-  const requestProtocol = request.nextUrl.protocol;
+  // Helper to normalize host (remove www. prefix and port for comparison)
+  const normalizeHost = (h: string) => h.replace(/^www\./, '').split(':')[0].toLowerCase();
 
-  // Helper to normalize host (remove www. prefix for comparison)
-  const normalizeHost = (h: string) => h.replace(/^www\./, '').toLowerCase();
+  // Get the expected host from environment or request
+  const expectedHost = normalizeHost(
+    process.env.NEXT_PUBLIC_SITE_URL
+      ? new URL(process.env.NEXT_PUBLIC_SITE_URL).host
+      : host || request.nextUrl.host
+  );
 
   try {
     // Validate origin if present
     if (origin) {
       const originUrl = new URL(origin);
       const originHost = normalizeHost(originUrl.host);
-      const reqHost = normalizeHost(requestHost);
 
-      // Check protocol (allow http in dev, require https in prod)
-      const protocolMatch = process.env.NODE_ENV === 'development'
-        || originUrl.protocol === requestProtocol
-        || (originUrl.protocol === 'https:' && requestProtocol === 'https:');
-
-      // Host should match (with www normalization)
-      if (!protocolMatch || originHost !== reqHost) {
+      // Only check host match - Vercel's internal routing may change protocol
+      if (originHost !== expectedHost) {
         console.error('[CSRF] Origin validation failed:', {
           originHost,
-          reqHost,
-          originProtocol: originUrl.protocol,
-          requestProtocol,
+          expectedHost,
+          origin,
+          host,
         });
         return false;
       }
+      return true;
     }
 
     // Validate referer if present (and no origin)
-    if (!origin && referer) {
+    if (referer) {
       const refererUrl = new URL(referer);
       const refererHost = normalizeHost(refererUrl.host);
-      const reqHost = normalizeHost(requestHost);
 
-      // Check protocol
-      const protocolMatch = process.env.NODE_ENV === 'development'
-        || refererUrl.protocol === requestProtocol
-        || (refererUrl.protocol === 'https:' && requestProtocol === 'https:');
-
-      // Host should match (with www normalization)
-      if (!protocolMatch || refererHost !== reqHost) {
+      // Only check host match
+      if (refererHost !== expectedHost) {
         console.error('[CSRF] Referer validation failed:', {
           refererHost,
-          reqHost,
-          refererProtocol: refererUrl.protocol,
-          requestProtocol,
+          expectedHost,
+          referer,
+          host,
         });
         return false;
       }
+      return true;
     }
   } catch (error) {
     // Invalid URL format - reject
