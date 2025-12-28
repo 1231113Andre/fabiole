@@ -39,6 +39,7 @@ const getSessionHandler = new BaseRouteHandler()
               name: cached.name,
               surname: cached.surname,
               birth: cached.birth,
+              avatarUrl: cached.avatarUrl,
             },
           },
           { 'Cache-Control': 'private, no-cache, no-store, must-revalidate' }
@@ -77,6 +78,7 @@ const getSessionHandler = new BaseRouteHandler()
             name: payload.name,
             surname: payload.surname,
             birth: payload.birth,
+            avatarUrl: payload.avatarUrl,
           },
         },
         { 'Cache-Control': 'private, no-cache, no-store, must-revalidate' }

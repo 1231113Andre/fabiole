@@ -73,7 +73,7 @@ const VARIANTS = {
   new_primary_no_bg_rounded:
     "bg-transparent text-popover-foreground rounded-lg " +
     "font-medium text-base px-6 disabled:opacity-60 " +
-    "hover:bg-primary hover:text-white hover:shadow-2xl " +
+    "hover:shadow-2xl " +
     "active:shadow-lg " +
     "transition-all duration-200 ease-out " +
     "border-2 border-orange-400",
@@ -115,6 +115,15 @@ const VARIANTS = {
     "font-medium text-base px-4 disabled:opacity-60 " +
     "hover:bg-muted/80 " +
     "transition-all duration-200 ease-out",
+
+  new_destructive_rounded:
+    "bg-red-600 text-white rounded-lg shadow-md " +
+    "font-medium text-base px-6 disabled:opacity-60 " +
+    "hover:!bg-transparent hover:border-red-600 hover:!text-red-600 " +
+    "hover:shadow-[0_10px_24px_rgba(220,38,38,0.35)] " +
+    "active:shadow-lg " +
+    "transition-all duration-200 ease-out " +
+    "border-2 border-red-600",
 
 
   // Order status buttons - using exact same CSS variables as status badges
@@ -250,6 +259,36 @@ const VARIANTS = {
     "transition-all duration-200 ease-out " +
     "border-2 border-red-500 cursor-pointer " +
     "!h-auto",
+
+  // Wariant dla statusu PAGO (zielony)
+  new_paid_rounded:
+    "bg-emerald-600 text-white rounded-lg shadow-md " +
+    "font-bold text-base px-6 disabled:opacity-60 " +
+    "hover:!bg-transparent hover:border-emerald-600 hover:!text-emerald-600 " +
+    "hover:shadow-[0_10px_24px_rgba(16,185,129,0.35)] " +
+    "active:shadow-lg " +
+    "transition-all duration-200 ease-out " +
+    "border-2 border-emerald-600",
+
+  // Wariant dla statusu PENDENTE (czerwony)
+  new_pendente_rounded:
+    "bg-red-600 text-white rounded-lg shadow-md " +
+    "font-bold text-base px-6 disabled:opacity-60 " +
+    "hover:!bg-transparent hover:border-red-600 hover:!text-red-600 " +
+    "hover:shadow-[0_10px_24px_rgba(220,38,38,0.35)] " +
+    "active:shadow-lg " +
+    "transition-all duration-200 ease-out " +
+    "border-2 border-red-600",
+
+  // Wariant dla statusu EM ANÁLISE (żółty/bursztynowy)
+  new_analise_rounded:
+    "bg-amber-500 text-white rounded-lg shadow-md " +
+    "font-bold text-base px-6 disabled:opacity-60 " +
+    "hover:!bg-transparent hover:border-amber-500 hover:!text-amber-600 " +
+    "hover:shadow-[0_10px_24px_rgba(245,158,11,0.35)] " +
+    "active:shadow-lg " +
+    "transition-all duration-200 ease-out " +
+    "border-2 border-amber-500",
 
   // ✅ NOWE WARIANTY DLA PRZYCISKÓW LOGOWANIA SPOŁECZNOŚCIOWEGO
   login_google:

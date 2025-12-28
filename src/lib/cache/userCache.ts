@@ -17,7 +17,7 @@ const CacheKeys = {
  * Cache TTLs (in milliseconds)
  */
 const TTL = {
-  USER_DATA: 5 * 60 * 1000, // 5 minutes
+  USER_DATA: 1 * 60 * 1000, // 1 minute (short TTL for fresh data)
   REFERENCE_TABLES: 30 * 60 * 1000, // 30 minutes
 };
 

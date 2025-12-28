@@ -129,6 +129,7 @@ export default function DashboardLayout({
         userName={user?.name}
         userSurname={user?.surname}
         userEmail={user?.email}
+        avatarUrl={user?.avatarUrl}
         onRefresh={handleRefresh}
         isRefreshing={isManualRefreshing || isDataRefreshing}
         cooldownProgress={cooldownProgress}

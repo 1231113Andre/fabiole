@@ -14,7 +14,7 @@ export default function ConditionalLayoutWrapper({
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith("/dashboard");
 
-  if (isDashboard) {
+  if (isDashboard || pathname?.startsWith("/admin")) {
     return <>{children}</>;
   }
 

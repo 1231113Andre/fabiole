@@ -7,10 +7,11 @@ import { ChangePasswordSection } from "./components/ChangePasswordSection";
 import { ChangeEmailSection } from "./components/ChangeEmailSection";
 import { DeleteAccountSection } from "./components/DeleteAccountSection";
 import { LoginHistorySection } from "./components/LoginHistorySection";
+import { ProfileAvatarSection } from "./components/ProfileAvatarSection";
 
 export default function SettingsPage() {
     const { user } = useDashboardData();
-    const [activeSection, setActiveSection] = useState<string | null>("password");
+    const [activeSection, setActiveSection] = useState<string | null>("avatar");
 
     return (
         <>
@@ -45,6 +46,12 @@ export default function SettingsPage() {
 
             {/* Settings Sections */}
             <div className="space-y-6">
+                {/* Profile Avatar */}
+                <ProfileAvatarSection
+                    isOpen={activeSection === "avatar"}
+                    onToggle={() => setActiveSection(activeSection === "avatar" ? null : "avatar")}
+                />
+
                 {/* Change Password */}
                 <ChangePasswordSection
                     isOpen={activeSection === "password"}

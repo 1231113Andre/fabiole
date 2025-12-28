@@ -10,6 +10,7 @@ interface User {
   surname: string;
   email: string;
   birth: string;
+  avatarUrl?: string;
 }
 
 interface SessionResponse {
@@ -33,6 +34,7 @@ interface RegisterData {
   email: string;
   password: string;
   birth: string;
+  gender: string;
 }
 
 interface RegisterResponse {

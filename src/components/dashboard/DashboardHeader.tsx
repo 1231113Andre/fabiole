@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { Avatar } from "@/components/Avatar";
 
 interface DashboardHeaderProps {
     onMenuClick: () => void;
     userName?: string;
     userSurname?: string;
     userEmail?: string;
+    avatarUrl?: string | null;
     onRefresh?: () => void;
     isRefreshing?: boolean;
     cooldownProgress?: number; // 0-1, where 1 is full cooldown
@@ -20,6 +23,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     userName = "User",
     userSurname = "",
     userEmail = "",
+    avatarUrl = null,
     onRefresh,
     isRefreshing = false,
     cooldownProgress = 0,
@@ -27,8 +31,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     onLogout,
     isLoggingOut = false,
 }) => {
+    const router = useRouter();
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const pathname = usePathname();
+    const isAdminArea = pathname?.startsWith('/admin');
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -44,9 +51,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-
-    const initials =
-        `${userName?.[0] || ""}${userSurname?.[0] || ""}`.toUpperCase() || "U";
 
     return (
         <header className="fixed top-0 left-0 right-0 lg:left-[var(--sidebar-width,290px)] h-[72px] bg-white shadow-sm z-[998] flex items-center px-6 transition-[left] duration-300 border-b border-transparent">
@@ -74,7 +78,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             {/* Info tooltip */}
                             <div className="absolute top-full left-0 mt-2 px-3 py-2 bg-gray-900 text-white text-[11px] rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-lg w-56">
                                 <p className="leading-relaxed">
-                                    Atualização automática de dados a cada <span className="text-primary font-semibold">30 segundos</span>. Para atualizar manualmente, clique no <span className="text-primary font-semibold">Spinner</span> ao lado.
+                                    Atualização automática a cada <span className="text-primary font-semibold">30s</span> (ativo) ou <span className="text-primary font-semibold">5m</span> (fundo). Clique para atualizar agora.
                                 </p>
                                 <div className="absolute bottom-full left-2 border-4 border-transparent border-b-gray-900"></div>
                             </div>
@@ -135,60 +139,80 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         className="flex items-center gap-3 py-1 px-1.5 bg-white border border-transparent hover:border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:bg-gray-50"
                         onClick={() => setShowDropdown(!showDropdown)}
                     >
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-bold text-sm shadow-md shadow-primary/20">
-                            {initials}
-                        </div>
+                        <Avatar
+                            src={avatarUrl}
+                            name={userName}
+                            surname={userSurname}
+                            size={36}
+                            className="shadow-sm border-2 border-primary/20"
+                        />
                         <div className="text-left hidden md:block">
                             <div className="text-sm font-bold text-gray-900 leading-tight">
                                 {userName} {userSurname}
                             </div>
-                            <div className="text-[11px] font-medium text-gray-500">Cliente</div>
+                            <div className="text-[11px] font-medium text-gray-500">{isAdminArea ? 'Administrator' : 'Cliente'}</div>
                         </div>
                         <i className="fa-duotone fa-chevron-down text-xs text-gray-400 hidden md:block px-2"></i>
                     </button>
 
                     {/* Dropdown Menu */}
                     {showDropdown && (
-                        <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-boxdark rounded-xl shadow-xl border border-border dark:border-strokedark overflow-hidden z-50">
-                            {/* User Info */}
-                            <div className="px-4 py-3 bg-muted dark:bg-meta-4 border-b border-border dark:border-strokedark">
-                                <div className="font-semibold text-foreground dark:text-white text-sm">
+                        <div className="absolute right-0 top-full mt-1.5 w-52 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden z-50">
+                            {/* User Info - Compact */}
+                            <div className="px-3 py-2.5 bg-gray-50/80 border-b border-gray-100">
+                                <div className="font-semibold text-gray-900 text-[13px] leading-tight truncate">
                                     {userName} {userSurname}
                                 </div>
-                                <div className="text-xs text-muted-foreground dark:text-bodydark2 truncate mt-0.5">
+                                <div className="text-[11px] text-gray-500 truncate mt-0.5">
                                     {userEmail}
                                 </div>
                             </div>
 
-                            {/* Menu Items */}
-                            <div className="py-2">
+                            {/* Menu Items - Compact */}
+                            <div className="py-1">
                                 <button
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground dark:text-bodydark1 hover:bg-muted dark:hover:bg-meta-4 transition-colors border-none bg-transparent cursor-pointer text-left"
-                                    onClick={() => setShowDropdown(false)}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-150 border-none bg-transparent cursor-pointer text-left group"
+                                    onClick={() => {
+                                        setShowDropdown(false);
+                                        router.push('/dashboard/personal-data');
+                                    }}
                                 >
-                                    <i className="fas fa-user-circle w-4 text-center text-muted-foreground dark:text-bodydark2"></i>
+                                    <i className="fa-duotone fa-circle-user w-4 text-center text-gray-400 group-hover:text-primary transition-colors"></i>
                                     <span>Meu Perfil</span>
                                 </button>
                                 <button
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground dark:text-bodydark1 hover:bg-muted dark:hover:bg-meta-4 transition-colors border-none bg-transparent cursor-pointer text-left"
-                                    onClick={() => setShowDropdown(false)}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-150 border-none bg-transparent cursor-pointer text-left group"
+                                    onClick={() => {
+                                        setShowDropdown(false);
+                                        router.push('/dashboard');
+                                    }}
                                 >
-                                    <i className="fas fa-cog w-4 text-center text-muted-foreground dark:text-bodydark2"></i>
+                                    <i className="fa-duotone fa-grid-2 w-4 text-center text-gray-400 group-hover:text-primary transition-colors"></i>
+                                    <span>Dashboard</span>
+                                </button>
+                                <button
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-150 border-none bg-transparent cursor-pointer text-left group"
+                                    onClick={() => {
+                                        setShowDropdown(false);
+                                        router.push('/dashboard/settings');
+                                    }}
+                                >
+                                    <i className="fa-duotone fa-gear w-4 text-center text-gray-400 group-hover:text-primary transition-colors"></i>
                                     <span>Configurações</span>
                                 </button>
                             </div>
 
-                            {/* Logout */}
-                            <div className="border-t border-border dark:border-strokedark py-2">
+                            {/* Logout - Compact with accent */}
+                            <div className="border-t border-gray-100 py-1">
                                 <button
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 transition-colors border-none bg-transparent cursor-pointer text-left disabled:opacity-50"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-150 border-none bg-transparent cursor-pointer text-left disabled:opacity-50 group"
                                     onClick={() => {
                                         setShowDropdown(false);
                                         onLogout?.();
                                     }}
                                     disabled={isLoggingOut}
                                 >
-                                    <i className="fas fa-right-from-bracket w-4 text-center"></i>
+                                    <i className="fas fa-right-from-bracket w-4 text-center group-hover:translate-x-0.5 transition-transform"></i>
                                     <span>{isLoggingOut ? "A sair..." : "Sair"}</span>
                                 </button>
                             </div>

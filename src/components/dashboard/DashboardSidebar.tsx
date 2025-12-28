@@ -23,8 +23,11 @@ interface DashboardSidebarProps {
     menuItems: MenuItem[];
     brandName?: string;
     brandIcon?: string;
+    brandLogo?: string;
     userName?: string;
     userSurname?: string;
+    backLink?: string;
+    backLabel?: string;
 }
 
 // ============================================
@@ -33,28 +36,49 @@ interface DashboardSidebarProps {
 const SIDEBAR_WIDTH_EXPANDED = "290px";
 const SIDEBAR_WIDTH_COLLAPSED = "90px";
 
-// ============================================
-// COMPONENTS
-// ============================================
-
 /** Brand logo section */
 const BrandSection = memo(function BrandSection({
     brandIcon,
+    brandLogo,
     brandName,
     isCollapsed
 }: {
     brandIcon: string;
+    brandLogo?: string;
     brandName: string;
     isCollapsed: boolean;
 }) {
     return (
         <div className={`flex items-center gap-3 px-6 py-6 border-b border-gray-200 ${isCollapsed ? "justify-center" : ""}`}>
-            <div className="w-11 h-11 min-w-11 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white text-lg shadow-lg shadow-primary/25">
-                <i className={`fa-duotone ${brandIcon}`} aria-hidden="true" />
+            <div className="w-11 h-11 min-w-11 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white text-lg shadow-lg shadow-primary/25 overflow-hidden relative">
+                {brandLogo ? (
+                    <div className="w-full h-full p-2 flex items-center justify-center bg-white/10 backdrop-blur-sm">
+                        <Image
+                            src={brandLogo}
+                            alt="Logo"
+                            width={32}
+                            height={32}
+                            className="w-auto h-auto max-w-full max-h-full object-contain"
+                        />
+                    </div>
+                ) : (
+                    <i className={`fa-duotone ${brandIcon}`} aria-hidden="true" />
+                )}
             </div>
             {!isCollapsed && (
                 <span className="text-xl font-extrabold text-gray-900 tracking-tight">
-                    {brandName}
+                    {brandName.includes("FABIOLE") ? (
+                        <div className="flex flex-col leading-none">
+                            <span className="text-lg font-black bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent">
+                                FABIOLE
+                            </span>
+                            <span className="text-[10px] font-bold text-gray-400 mt-0.5 tracking-[0.2em] uppercase">
+                                {brandName.split("FABIOLE")[1].trim()}
+                            </span>
+                        </div>
+                    ) : (
+                        brandName
+                    )}
                 </span>
             )}
         </div>
@@ -151,8 +175,11 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     menuItems,
     brandName = "Dashboard",
     brandIcon = "fa-chart-line",
+    brandLogo,
     userName,
     userSurname,
+    backLink = "/",
+    backLabel = "Voltar ao Overview"
 }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -218,6 +245,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 {/* Brand */}
                 <BrandSection
                     brandIcon={brandIcon}
+                    brandLogo={brandLogo}
                     brandName={brandName}
                     isCollapsed={isCollapsed}
                 />
@@ -244,7 +272,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
                     {/* Back to Site Link */}
                     <Link
-                        href="/"
+                        href={backLink}
                         className={`
                             group flex items-center gap-3.5 px-5 py-3 mx-3 rounded-xl 
                             border-none text-[15px] font-semibold text-left cursor-pointer 
@@ -253,7 +281,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                             no-underline
                             ${isCollapsed ? "justify-center px-3 mx-2" : ""}
                         `}
-                        title={isCollapsed ? "Voltar ao Overview" : ""}
+                        title={isCollapsed ? backLabel : ""}
                     >
                         <i
                             className={`fa-duotone fa-house text-xl transition-colors duration-200 
@@ -261,7 +289,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                                 text-gray-500 group-hover:text-primary`}
                             aria-hidden="true"
                         />
-                        {!isCollapsed && <span className="flex-1">Voltar ao Overview</span>}
+                        {!isCollapsed && <span className="flex-1">{backLabel}</span>}
                     </Link>
 
                     {/* Beta Notice with Version */}

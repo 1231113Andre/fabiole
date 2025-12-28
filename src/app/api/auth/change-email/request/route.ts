@@ -4,7 +4,8 @@ import { ApiResponse } from '@/lib/api/core/ApiResponse';
 import { z } from 'zod';
 import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware';
 import { VerificationCodeService } from '@/lib/email/VerificationCodeService';
-import { findUserInInfoData, userExistsInInfoData } from '@/lib/googleSheets';
+import { db } from '@/lib/db/client';
+import { comparePassword } from '@/lib/security/password';
 
 // Validation schema
 const requestChangeEmailSchema = z.object({
@@ -38,21 +39,31 @@ const handler = new BaseRouteHandler()
             }
 
             // 3. Verify current password
-            // We can reuse findUserInInfoData to verify credentials
-            const user = await findUserInInfoData(currentEmail, currentPassword);
-            if (!user) {
+            const userDB = await db.user.findUnique({
+                where: { email: currentEmail }
+            });
+
+            if (!userDB) {
+                return ApiResponse.unauthorized("Utilizador não encontrado.");
+            }
+
+            const isPasswordValid = await comparePassword(currentPassword, userDB.password);
+            if (!isPasswordValid) {
                 return ApiResponse.unauthorized("Password incorreta.");
             }
 
             // 4. Check if new email is already taken
-            const emailExists = await userExistsInInfoData(nextEmail);
-            if (emailExists) {
+            const existingEmail = await db.user.findUnique({
+                where: { email: nextEmail }
+            });
+
+            if (existingEmail) {
                 return ApiResponse.conflict("Este email já está em uso por outra conta.");
             }
 
             // 5. Send verification code to CURRENT email
             // We send it to the current email to verify identity before allowing changes
-            const result = await VerificationCodeService.sendVerificationCode(currentEmail, user.name);
+            const result = await VerificationCodeService.sendVerificationCode(currentEmail, userDB.name);
 
             if (!result.success) {
                 throw new Error(result.error || "Falha ao enviar código de verificação.");

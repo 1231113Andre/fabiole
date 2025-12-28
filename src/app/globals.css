@@ -279,3 +279,12 @@ body::-webkit-scrollbar-thumb:hover {
   -webkit-font-smoothing: antialiased;
   display: inline-block;
 }
+
+/* Custom UI Elements */
+.custom-divider {
+  height: 1px;
+  width: 100%;
+  background-color: var(--color-stroke);
+  margin: 1rem 0;
+  opacity: 0.7;
+}

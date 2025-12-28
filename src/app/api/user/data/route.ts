@@ -21,13 +21,18 @@ const getUserDataHandler = new BaseRouteHandler()
     }
 
     try {
-      // Check if refresh is requested (query parameter ?refresh=true)
       const { searchParams } = new URL(context.request.url);
       const forceRefresh = searchParams.get('refresh') === 'true';
 
+      console.log(`📊 [UserData API] Fetching data for: ${context.user.email}`);
+
+      // forceRefresh is handled by UserService.getUserData
+      // Cache invalidation for route handlers is handled via forceRefresh parameter
       const data = await UserService.getUserData(context.user.email, {
         forceRefresh,
       });
+
+      console.log(`✅ [UserData API] Data fetched successfully for: ${context.user.email}`);
 
       // Use private cache with short TTL for client-side caching
       // Server-side cache is handled by UserService
@@ -40,9 +45,33 @@ const getUserDataHandler = new BaseRouteHandler()
         }
       );
     } catch (error) {
-      if (error instanceof Error && error.message === 'User sheet not found') {
-        return ApiResponse.notFound('User sheet not found');
+      console.error(`❌ [UserData API] Error for ${context.user.email}:`, error);
+      
+      if (error instanceof Error) {
+        console.error(`   Error message: ${error.message}`);
+        
+        if (error.message.includes('USER_NOT_MIGRATED')) {
+          console.log(`   Returning 503: User needs migration from Google Sheets`);
+          return ApiResponse.custom(
+            503,
+            {
+              success: false,
+              error: 'User data migration required',
+              message: 'Your account exists in Google Sheets but needs to be migrated to the database. Please contact support or wait for automatic migration.',
+              requiresMigration: true
+            },
+            {
+              'Content-Type': 'application/json',
+            }
+          );
+        }
+        
+        if (error.message === 'User sheet not found' || error.message.includes('not found')) {
+          console.log(`   Returning 404: User not found`);
+          return ApiResponse.notFound('User not found in database. Please ensure your account has been migrated.');
+        }
       }
+      
       throw error; // Re-throw to be handled by BaseRouteHandler
     }
   });

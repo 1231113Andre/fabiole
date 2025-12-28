@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/security/session';
 import { comparePassword } from '@/lib/security/password';
-import { getAllInfoDataUsers, findUserByUUID } from '@/lib/googleSheets';
-import { getSheetsAPI } from '@/lib/googleSheets/auth';
-import { ACCOUNT_DATA_SHEET_ID, INFO_DATA_SHEET_NAME } from '@/lib/googleSheets/config';
-import { clearInfoDataCache } from '@/lib/googleSheets/cache';
+import { db } from '@/lib/db/client';
 
 export async function DELETE(request: NextRequest) {
     try {
@@ -39,71 +36,31 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        // Find user - prefer UUID if available, fallback to email
-        let user;
-        let userIndex;
+        // 1. Find user in Prisma
+        const userDB = await db.user.findUnique({
+            where: { email: session.email }
+        });
 
-        if (session.uuid) {
-            const result = await findUserByUUID(session.uuid);
-            if (result) {
-                user = result.user;
-                userIndex = result.rowIndex;
-            }
-        }
-
-        // Fallback to email lookup
-        if (!user) {
-            const users = await getAllInfoDataUsers();
-            userIndex = users.findIndex(
-                (u) => u.email.toLowerCase() === session.email.toLowerCase()
-            );
-            if (userIndex !== -1) {
-                user = users[userIndex];
-            }
-        }
-
-        if (!user || userIndex === undefined) {
+        if (!userDB) {
             return NextResponse.json(
                 { success: false, error: 'Utilizador não encontrado' },
                 { status: 404 }
             );
         }
 
-        // Verify password
-        const isHashed = user.password.startsWith('$2a$') ||
-            user.password.startsWith('$2b$') ||
-            user.password.startsWith('$2y$');
-
-        let passwordMatches = false;
-        if (isHashed) {
-            passwordMatches = await comparePassword(password, user.password);
-        } else {
-            passwordMatches = user.password === password;
-        }
-
-        if (!passwordMatches) {
+        // 2. Verify password
+        const isPasswordValid = await comparePassword(password, userDB.password);
+        if (!isPasswordValid) {
             return NextResponse.json(
                 { success: false, error: 'Password incorreta' },
                 { status: 400 }
             );
         }
 
-        // Delete user row from Google Sheets
-        // We'll clear the row contents instead of deleting to avoid shifting rows
-        const rowNumber = userIndex + 11;
-        const sheets = await getSheetsAPI();
-
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-            range: `${INFO_DATA_SHEET_NAME}!A${rowNumber}:G${rowNumber}`,
-            valueInputOption: 'RAW',
-            requestBody: {
-                values: [['', '', '', '', '', '', '']], // 7 columns: A-G
-            },
+        // 3. Delete from Prisma
+        await db.user.delete({
+            where: { id: userDB.id }
         });
-
-        // Clear cache
-        clearInfoDataCache();
 
         // Clear session cookie
         const response = NextResponse.json({

@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useSession } from "@/lib/react-query/hooks/useAuth";
 import AuthModal from "@/components/auth/AuthModal";
 import NewButton from "@/app/components/newButton";
+import { ASSETS } from "@/lib/constants/assets";
 
 // Move navItems outside component to prevent recreation on each render
 const navItems = [
@@ -85,7 +86,7 @@ const Navbar = memo(function Navbar({ initialSession }: NavbarProps) {
             href="/"
             className="flex items-center transition-transform duration-200 hover:scale-105 active:scale-95"
           >
-            <Image src="/images/logo.png" alt="Logo" width={44} height={44} priority />
+            <Image src={ASSETS.logo} alt="Logo" width={44} height={44} priority />
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -172,7 +173,7 @@ const Navbar = memo(function Navbar({ initialSession }: NavbarProps) {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--border)]">
             <Link href="/" className="flex items-center" onClick={closeMobileMenu}>
-              <Image src="/images/logo.png" alt="Logo" width={40} height={40} />
+              <Image src={ASSETS.logo} alt="Logo" width={40} height={40} />
             </Link>
             <button
               className="rounded-lg p-2 text-[var(--foreground)] transition-colors duration-200 hover:bg-[var(--muted)]"

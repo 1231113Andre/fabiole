@@ -58,6 +58,7 @@ export const registerSchema = z.object({
     .string()
     .min(1, 'Birth date is required')
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Birth date must be in YYYY-MM-DD format'),
+  gender: z.enum(['Masculino', 'Feminino', 'Outro']),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

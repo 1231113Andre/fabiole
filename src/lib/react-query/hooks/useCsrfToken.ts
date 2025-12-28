@@ -31,9 +31,29 @@ function getCookie(name: string): string | null {
 }
 
 /**
+ * Fetch CSRF token from API endpoint
+ * This replaces middleware-based token generation for Next.js 16 compatibility
+ */
+async function fetchCsrfToken(): Promise<string | null> {
+  try {
+    const response = await fetch('/api/csrf', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data.token || null;
+    }
+  } catch (error) {
+    console.error('Failed to fetch CSRF token:', error);
+  }
+  return null;
+}
+
+/**
  * Hook to get CSRF token from cookie (reactive)
- * Token is set by middleware and accessible via document.cookie
- * Automatically updates when cookie changes
+ * Token is set by /api/csrf endpoint and accessible via document.cookie
+ * Automatically fetches token if not present
  * @returns {string | null} CSRF token or null if not available
  */
 export function useCsrfToken(): string | null {
@@ -46,14 +66,22 @@ export function useCsrfToken(): string | null {
       setToken(currentToken);
     }
 
-    // Poll for token changes (in case middleware updates it)
-    // Use longer interval since token is session-based (24h), not per-request
+    // If no token, fetch it from API
+    if (!currentToken) {
+      fetchCsrfToken().then(newToken => {
+        if (newToken) {
+          setToken(newToken);
+        }
+      });
+    }
+
+    // Poll for token changes (token is session-based, 24h)
     const interval = setInterval(() => {
       const newToken = getCookie('csrf-token');
       if (newToken !== token) {
         setToken(newToken);
       }
-    }, 1000); // Check every second (token changes rarely)
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [token]);

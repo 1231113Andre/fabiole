@@ -1,0 +1,234 @@
+import { getReferenceTableData } from '@/lib/googleSheets';
+import { db } from '@/lib/db/client';
+import { UserSheetData, PersonalInfo, Pesagem, PerimetroCorporal, AvaliacaoFisica } from '@/lib/googleSheets/types';
+import { calculateAge } from '@/lib/googleSheets/utils';
+import { classifyBMI, classifyBodyFat, calculateBMI } from '@/lib/utils/bodyMetrics';
+import { format } from 'date-fns';
+import {
+  getUserData as getCachedUserData,
+  setUserData as setCachedUserData,
+  clearUserData as clearCachedUserData,
+  getReferenceTables as getCachedReferenceTables,
+  setReferenceTables as setCachedReferenceTables,
+} from '@/lib/cache/userCache';
+import { deduplicateRequest } from '@/lib/cache/requestDeduplication';
+
+export interface GetUserDataOptions {
+  /** Force refresh (bypass cache) */
+  forceRefresh?: boolean;
+}
+
+/**
+ * User service
+ * Handles user data operations with caching and request deduplication
+ */
+export class UserService {
+  /**
+   * Get user sheet data with caching and request deduplication
+   */
+  static async getUserData(email: string, options: GetUserDataOptions = {}) {
+    // TEMPORARY: Force refresh to debug IMC decimal issue
+    const forceRefresh = true; // options.forceRefresh ?? false;
+
+    // If force refresh, clear cache
+    if (forceRefresh) {
+      clearCachedUserData(email);
+      // clearUserCache(email); // No longer relevant as we don't use Sheet cache
+      console.log(`🔄 [UserService] Force refresh requested for: ${email}`);
+    }
+
+    // Check cache first (unless force refresh)
+    if (!forceRefresh) {
+      const cached = getCachedUserData(email);
+      if (cached) {
+        console.log(`📦 [UserService] Returning cached data for: ${email}`);
+        return cached;
+      }
+    }
+
+    // Use request deduplication to prevent duplicate API calls
+    const cacheKey = `user:data:${email.toLowerCase()}`;
+    return deduplicateRequest(cacheKey, async () => {
+      // 1. Fetch User from Prisma
+      console.log(`🔍 [UserService] Looking up user in Prisma: ${email}`);
+      let userDB = await db.user.findUnique({
+        where: { email },
+        include: {
+          pesagens: { orderBy: { date: 'asc' } },
+          perimetros: { orderBy: { date: 'asc' } },
+          avaliacoes: { orderBy: { date: 'asc' } }
+        }
+      });
+
+      // If user doesn't exist in Prisma, try to import from Google Sheets
+      if (!userDB) {
+        console.log(`⚠️ [UserService] User not found in Prisma, attempting import from Google Sheets: ${email}`);
+        try {
+          // Try to get user from Google Sheets InfoData
+          const { getUserByEmail } = await import('@/lib/googleSheets');
+          const sheetUser = await getUserByEmail(email);
+
+          if (sheetUser) {
+            console.log(`📥 [UserService] Found user in Google Sheets, importing to Prisma...`);
+            // Import user to Prisma (this will be handled by import script, but we can create basic user here)
+            // For now, throw error with helpful message
+            throw new Error('USER_NOT_MIGRATED: User exists in Google Sheets but not in Prisma. Please run import script.');
+          } else {
+            console.error(`❌ [UserService] User not found in Prisma or Google Sheets: ${email}`);
+            throw new Error('User not found in database');
+          }
+        } catch (importError) {
+          // Re-throw with original error if it's already our error
+          if (importError instanceof Error && importError.message.includes('USER_NOT_MIGRATED')) {
+            throw importError;
+          }
+          // Otherwise, user doesn't exist anywhere
+          console.error(`❌ [UserService] Failed to import user: ${importError}`);
+          throw new Error('User not found in database');
+        }
+      }
+
+      console.log(`✅ [UserService] User found: ${userDB.name} ${userDB.surname}`);
+      console.log(`   📊 Data counts: ${userDB.pesagens.length} pesagens, ${userDB.perimetros.length} perimetros, ${userDB.avaliacoes.length} avaliacoes`);
+
+      // 2. Fetch References (Keep from Sheets/Cache for now)
+      const referenceTables = await (async () => {
+        let tables = getCachedReferenceTables();
+        if (!tables) {
+          tables = await getReferenceTableData(!forceRefresh);
+          if (tables) {
+            setCachedReferenceTables(tables);
+          }
+        }
+        return tables;
+      })();
+
+      // 3. Map Prisma -> UserSheetData
+      const personalInfo: PersonalInfo = {
+        userName: userDB.name,
+        userSurname: userDB.surname,
+        userEmail: userDB.email,
+        userPhone: userDB.phone || '',
+        userBirth: userDB.birth ? format(userDB.birth, 'dd/MM/yyyy') : '',
+        trainingCredit: userDB.trainingCredit.toString().replace('.', ','),
+        trainingsScheduled: userDB.trainingsScheduled.toString(),
+        debtValue: userDB.debtValue.toString().replace('.', ','),
+        paid: userDB.paid,
+        q1: userDB.q1 || '',
+        q2: userDB.q2 || '',
+        q3: userDB.q3 || '',
+        q4: userDB.q4 || '',
+        goals: userDB.goals || '',
+        notes: userDB.notes || '',
+        age: userDB.birth ? calculateAge(format(userDB.birth, 'dd/MM/yyyy')) : '',
+        // Legacy
+        notas: userDB.notes || '',
+        inicio: userDB.gender || ''
+      };
+
+      // User gender for %MG classification
+      const userGender = userDB.gender || 'M';
+
+      const pesagens: Pesagem[] = userDB.pesagens.map(p => {
+        // Auto-calculate BMI if not present but we have weight and height
+        // Note: p.imc is Prisma Decimal, need to convert to number
+        let imcValue: number | null = p.imc ? Number(p.imc) : null;
+        if (imcValue === null && p.peso && p.height) {
+          imcValue = calculateBMI(Number(p.peso), Number(p.height));
+        }
+
+        const mgValue = p.percentualMG ? Number(p.percentualMG) : null;
+
+        // Use existing result if available, otherwise auto-classify
+        const resultadoIMC = p.resultadoIMC || classifyBMI(imcValue);
+        const resultadoPercentualMG = p.resultadoPercentMG || classifyBodyFat(mgValue, userGender);
+
+        return {
+          data: p.date ? format(p.date, 'dd/MM/yyyy') : '',
+          peso: p.peso ? Number(p.peso).toFixed(1).replace('.', ',') : '',
+          percentualMG: p.percentualMG ? Number(p.percentualMG).toFixed(1).replace('.', ',') : '',
+          MM: p.mm ? Number(p.mm).toFixed(1).replace('.', ',') : '',
+          H2O: p.h2o ? Number(p.h2o).toFixed(1).replace('.', ',') : '',
+          IMC: imcValue !== null ? imcValue.toFixed(1).replace('.', ',') : '',
+          gordVisceral: p.gordVisceral ? Number(p.gordVisceral).toFixed(0) : '',
+          IDMetabolica: p.idMetabolica ? Number(p.idMetabolica).toFixed(0) : '',
+          massaOssea: p.massaOssea ? Number(p.massaOssea).toFixed(1).replace('.', ',') : '',
+          height: p.height ? Number(p.height).toFixed(0) : '',
+          resultadoIMC,
+          resultadoPercentualMG,
+          notas: p.notas || ''
+        };
+      });
+
+      const perimetros: PerimetroCorporal[] = userDB.perimetros.map(p => ({
+        date: p.date ? format(p.date, 'dd/MM/yyyy') : '',
+        msRight: p.msRight?.toString().replace('.', ',') || '',
+        msRightFlex: p.msRightFlex?.toString().replace('.', ',') || '',
+        msLeft: p.msLeft?.toString().replace('.', ',') || '',
+        msLeftFlex: p.msLeftFlex?.toString().replace('.', ',') || '',
+        chest: p.chest?.toString().replace('.', ',') || '',
+        waist: p.waist?.toString().replace('.', ',') || '',
+        abdomen: p.abdomen?.toString().replace('.', ',') || '',
+        hips: p.hips?.toString().replace('.', ',') || '',
+        thighR: p.thighR?.toString().replace('.', ',') || '',
+        thighL: p.thighL?.toString().replace('.', ',') || ''
+      }));
+
+      const avaliacoes: AvaliacaoFisica[] = userDB.avaliacoes.map(a => ({
+        date: a.date ? format(a.date, 'dd/MM/yyyy') : '',
+        pushUps: a.pushUps?.toString() || '',
+        sitUps: a.sitUps?.toString() || '',
+        mile: a.mile || '',
+        mileResult: a.mileResult || '',
+        notes: a.notes || ''
+      }));
+
+      const result: UserSheetData = {
+        personalInfo,
+        pesagens,
+        perimetros,
+        avaliacoes,
+        referenceTables: referenceTables || {},
+      };
+
+      // Cache the result
+      setCachedUserData(email, result);
+
+      return result;
+    });
+  }
+
+  /**
+   * Refresh user data in background (for stale-while-revalidate)
+   * Only refreshes sheet data, reference tables are refreshed separately with longer TTL
+   */
+  private static async refreshUserDataInBackground(email: string): Promise<void> {
+    try {
+      // In background refresh, we re-fetch from Prisma
+      const userDB = await db.user.findUnique({
+        where: { email },
+        include: { pesagens: true, perimetros: true, avaliacoes: true }
+      });
+      // Note: Full refresh logic would duplicate mapping logic. 
+      // For architecture simplicity, we might skip background refresh implementation or unify it.
+      // But let's just invalidate cache which triggers next fetch.
+      // Or we can just let cache expire.
+      // For now, let's just do nothing here to avoid code duplication, 
+      // OR we reuse getUserData with forceRefresh=true logic but ignoring return.
+      // The current cache logic relies on this method to update "stale" cache.
+
+      // Let's rely on cache expiry for simplicity in this phase, or call the main method?
+      // Calling main method might recurse if not careful.
+      // I'll make this method empty for now.
+      await UserService.getUserData(email, { forceRefresh: true });
+    } catch (error) {
+      // Silently fail - we already have cached data
+      // Removed console.error from hot path
+    }
+  }
+}
+
+
+
+
+

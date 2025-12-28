@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                 String              @id @default(uuid()) @db.Uuid
+  email              String              @unique @db.VarChar(255)
+  password           String              @db.VarChar(255)
+  name               String              @db.VarChar(100)
+  surname            String              @db.VarChar(100)
+  phone              String?             @db.VarChar(20)
+  birth              DateTime            @db.Date
+  trainingCredit     Decimal             @default(0) @db.Decimal(10, 2)
+  trainingsScheduled Int                 @default(0)
+  debtValue          Decimal             @default(0) @db.Decimal(10, 2)
+  paid               String              @default("-") @db.VarChar(10)
+  q1                 String?
+  q2                 String?
+  q3                 String?
+  q4                 String?
+  goals              String?
+  notes              String?
+  gender             String?             @db.VarChar(20)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime            @updatedAt @db.Timestamptz(6)
+  role               String              @default("USER") @db.VarChar(20)
+  avatarUrl          String?             @db.VarChar(512)
+  avaliacoes         AvaliacaoFisica[]
+  perimetros         PerimetroCorporal[]
+  pesagens           Pesagem[]
+
+  @@index([email])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Pesagem {
+  id                 Int      @id @default(autoincrement())
+  date               DateTime @db.Date
+  peso               Decimal? @db.Decimal(5, 2)
+  percentualMG       Decimal? @db.Decimal(5, 2)
+  mm                 Decimal? @db.Decimal(5, 2)
+  h2o                Decimal? @db.Decimal(5, 2)
+  imc                Decimal? @db.Decimal(5, 2)
+  gordVisceral       Decimal? @db.Decimal(5, 2)
+  idMetabolica       Decimal? @db.Decimal(5, 2)
+  massaOssea         Decimal? @db.Decimal(5, 2)
+  height             Decimal? @db.Decimal(5, 2)
+  resultadoIMC       String?  @db.VarChar(50)
+  resultadoPercentMG String?  @db.VarChar(50)
+  notas              String?
+  createdAt          DateTime @default(now()) @db.Timestamptz(6)
+  user_uuid          String   @map("user_uuid") @db.Uuid
+  user               User     @relation(fields: [user_uuid], references: [id], onDelete: Cascade)
+
+  @@index([user_uuid])
+  @@index([user_uuid, date])
+  @@map("pesagens")
+}
+
+model PerimetroCorporal {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @db.Date
+  msRight     Decimal? @db.Decimal(5, 2)
+  msRightFlex Decimal? @db.Decimal(5, 2)
+  msLeft      Decimal? @db.Decimal(5, 2)
+  msLeftFlex  Decimal? @db.Decimal(5, 2)
+  chest       Decimal? @db.Decimal(5, 2)
+  waist       Decimal? @db.Decimal(5, 2)
+  abdomen     Decimal? @db.Decimal(5, 2)
+  hips        Decimal? @db.Decimal(5, 2)
+  thighR      Decimal? @db.Decimal(5, 2)
+  thighL      Decimal? @db.Decimal(5, 2)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  user_uuid   String   @map("user_uuid") @db.Uuid
+  user        User     @relation(fields: [user_uuid], references: [id], onDelete: Cascade)
+
+  @@index([user_uuid])
+  @@index([user_uuid, date])
+  @@map("perimetros")
+}
+
+model AvaliacaoFisica {
+  id         Int      @id @default(autoincrement())
+  date       DateTime @db.Date
+  pushUps    Int?
+  sitUps     Int?
+  mile       String?  @db.VarChar(20)
+  mileResult String?  @db.VarChar(50)
+  notes      String?
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  user_uuid  String   @map("user_uuid") @db.Uuid
+  user       User     @relation(fields: [user_uuid], references: [id], onDelete: Cascade)
+
+  @@index([user_uuid])
+  @@index([user_uuid, date])
+  @@map("avaliacoes")
+}

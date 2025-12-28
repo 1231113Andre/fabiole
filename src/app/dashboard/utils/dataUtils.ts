@@ -2,6 +2,9 @@
  * Date parsing utilities for dashboard data
  */
 
+// Re-export BMI calculation from central location
+export { calculateBMI } from "@/lib/utils/bodyMetrics";
+
 /**
  * Parse date string in DD/MM/YYYY or DD.MM.YYYY format to timestamp
  * @param dateStr - Date string to parse
@@ -24,7 +27,9 @@ export function parseDate(dateStr: string): number {
  */
 export function parseNumber(value: string | number | undefined): number {
     if (typeof value === 'number') return value;
-    return parseFloat(String(value)) || 0;
+    // Handle comma as decimal separator (European format like "115,2")
+    const normalized = String(value).replace(',', '.');
+    return parseFloat(normalized) || 0;
 }
 
 /**
@@ -46,16 +51,4 @@ export function parseInt(value: string | number | undefined): number {
 export function round(value: number, decimals: number = 1): number {
     const factor = Math.pow(10, decimals);
     return Math.round(value * factor) / factor;
-}
-
-/**
- * Calculate BMI from weight and height
- * @param weightKg - Weight in kilograms
- * @param heightCm - Height in centimeters
- * @returns BMI value rounded to 1 decimal, or 0 if invalid input
- */
-export function calculateBMI(weightKg: number, heightCm: number): number {
-    if (weightKg <= 0 || heightCm <= 0) return 0;
-    const heightM = heightCm / 100;
-    return round(weightKg / (heightM * heightM));
 }

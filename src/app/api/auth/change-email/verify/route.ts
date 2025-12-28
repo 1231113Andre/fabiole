@@ -4,7 +4,7 @@ import { ApiResponse } from '@/lib/api/core/ApiResponse';
 import { z } from 'zod';
 import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware';
 import { VerificationCodeService } from '@/lib/email/VerificationCodeService';
-import { updateUserEmailCommand } from '@/lib/googleSheets/updateUser';
+import { db } from '@/lib/db/client';
 import { AuthService } from '@/lib/api/services/AuthService';
 import { revalidatePath } from 'next/cache';
 
@@ -42,11 +42,11 @@ const handler = new BaseRouteHandler()
                 return ApiResponse.badRequest("Código incorreto.");
             }
 
-            // 3. Update Email in Google Sheets (search by UUID for reliability)
-            const updated = await updateUserEmailCommand(session.uuid, currentEmail, nextEmail);
-            if (!updated) {
-                throw new Error("Falha ao atualizar email no sistema.");
-            }
+            // 3. Update Email in Prisma
+            await db.user.update({
+                where: { id: session.uuid },
+                data: { email: nextEmail }
+            });
 
             // 4. Update Session - Create new session cookie with new email
             const updatedUser = {

@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/security/session';
 import { comparePassword } from '@/lib/security/password';
-import { getAllInfoDataUsers, userExistsInInfoData, renameUserSheet, findUserByUUID } from '@/lib/googleSheets';
-import { getSheetsAPI } from '@/lib/googleSheets/auth';
-import { ACCOUNT_DATA_SHEET_ID, INFO_DATA_SHEET_NAME } from '@/lib/googleSheets/config';
-import { clearInfoDataCache } from '@/lib/googleSheets/cache';
+import { db } from '@/lib/db/client';
 
 export async function POST(request: NextRequest) {
     try {
@@ -39,8 +36,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if new email is already in use
-        const emailExists = await userExistsInInfoData(newEmail);
+        // 1. Check if new email is already in use (in Prisma)
+        const emailExists = await db.user.findUnique({ where: { email: newEmail.toLowerCase() } });
         if (emailExists) {
             return NextResponse.json(
                 { success: false, error: 'Este email já está registado' },
@@ -48,48 +45,20 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Find user - prefer UUID if available, fallback to email
-        let user;
-        let userIndex;
+        // 2. Find user in Prisma
+        const user = await db.user.findUnique({
+            where: session.uuid ? { id: session.uuid } : { email: session.email }
+        });
 
-        if (session.uuid) {
-            const result = await findUserByUUID(session.uuid);
-            if (result) {
-                user = result.user;
-                userIndex = result.rowIndex;
-            }
-        }
-
-        // Fallback to email lookup
         if (!user) {
-            const users = await getAllInfoDataUsers();
-            userIndex = users.findIndex(
-                (u) => u.email.toLowerCase() === session.email.toLowerCase()
-            );
-            if (userIndex !== -1) {
-                user = users[userIndex];
-            }
-        }
-
-        if (!user || userIndex === undefined) {
             return NextResponse.json(
                 { success: false, error: 'Utilizador não encontrado' },
                 { status: 404 }
             );
         }
 
-        // Verify password
-        const isHashed = user.password.startsWith('$2a$') ||
-            user.password.startsWith('$2b$') ||
-            user.password.startsWith('$2y$');
-
-        let passwordMatches = false;
-        if (isHashed) {
-            passwordMatches = await comparePassword(password, user.password);
-        } else {
-            passwordMatches = user.password === password;
-        }
-
+        // 3. Verify password
+        const passwordMatches = await comparePassword(password, user.password);
         if (!passwordMatches) {
             return NextResponse.json(
                 { success: false, error: 'Password incorreta' },
@@ -99,36 +68,13 @@ export async function POST(request: NextRequest) {
 
         const oldEmail = session.email;
 
-        // 1. Update email in infoData sheet
-        const rowNumber = userIndex + 11;
-        const sheets = await getSheetsAPI();
-
-        await sheets.spreadsheets.values.update({
-            spreadsheetId: ACCOUNT_DATA_SHEET_ID,
-            range: `${INFO_DATA_SHEET_NAME}!C${rowNumber}`,
-            valueInputOption: 'RAW',
-            requestBody: {
-                values: [[newEmail.toLowerCase()]],
-            },
+        // 4. Update email in Prisma
+        await db.user.update({
+            where: { id: user.id },
+            data: { email: newEmail.toLowerCase() }
         });
 
-        // 2. Rename user's personal data sheet (if it exists)
-        try {
-            const sheetRenamed = await renameUserSheet(oldEmail, newEmail);
-            if (sheetRenamed) {
-                console.log(`✅ [Change Email] User sheet renamed from ${oldEmail} to ${newEmail}`);
-            } else {
-                console.log(`ℹ️ [Change Email] User sheet not found for ${oldEmail} (may not exist yet)`);
-            }
-        } catch (renameError) {
-            // Non-blocking - log error but don't fail the operation
-            console.error(`⚠️ [Change Email] Failed to rename user sheet:`, renameError);
-        }
-
-        // Clear cache
-        clearInfoDataCache();
-
-        console.log(`✅ [Change Email] Email changed from ${oldEmail} to ${newEmail}`);
+        console.log(`✅ [Change Email] Email updated in Prisma: ${oldEmail} -> ${newEmail}`);
 
         // Clear session cookie to force re-login with new email
         const response = NextResponse.json({
@@ -153,4 +99,3 @@ export async function POST(request: NextRequest) {
         );
     }
 }
-

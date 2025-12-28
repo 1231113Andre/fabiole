@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, useCallback, useRef } from "react";
-import type { UserSheetData } from "@/lib/googleSheets/types";
+import type { UserSheetData } from "@/lib/types/dashboard";
 import { useSession } from "./useAuth";
 
 // Polling intervals (in milliseconds)
@@ -49,7 +49,7 @@ function useDocumentVisibility() {
  * 
  * @param forceRefresh - If true, forces a refresh by adding ?refresh=true to the URL
  */
-export function useUserData(forceRefresh: boolean = false) {
+export function useUserData(forceRefresh: boolean = false, initialData?: UserSheetData) {
   const queryClient = useQueryClient();
   const { data: sessionData } = useSession();
   const isVisible = useDocumentVisibility();
@@ -109,9 +109,10 @@ export function useUserData(forceRefresh: boolean = false) {
 
       return response.json();
     },
-    staleTime: forceRefresh ? 0 : 30 * 1000, // 30 seconds (faster updates)
+    initialData: initialData, // Hydrate with server data
+    staleTime: forceRefresh ? 0 : 5 * 60 * 1000, // 5 minutes (matches server cache)
     gcTime: 10 * 60 * 1000, // 10 minutes cache retention
-    refetchOnMount: true,
+    refetchOnMount: false, // Don't refetch immediately if we have initialData
     refetchOnWindowFocus: true,
     refetchInterval,
     retry: 2,

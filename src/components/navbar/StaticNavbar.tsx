@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import InteractiveAuthButtons from './InteractiveAuthButtons';
+import { ASSETS } from '@/lib/constants/assets';
 
 // Nav items for fabiole
 const navItems = [
@@ -63,7 +64,7 @@ export default function StaticNavbar({ initialUser }: StaticNavbarProps) {
           >
             <Image
               id="main-logo-image"
-              src="/images/logo.png"
+              src={ASSETS.logo}
               alt="Fábio Lé Logo"
               width={80}
               height={80}
@@ -98,7 +99,7 @@ export default function StaticNavbar({ initialUser }: StaticNavbarProps) {
           prefetch={true}
         >
           <Image
-            src="/images/logo.png"
+            src={ASSETS.logo}
             alt="Fábio Lé Logo"
             width={64}
             height={64}

@@ -28,6 +28,7 @@ const registerHandler = new BaseRouteHandler()
         email: string;
         password: string;
         birth: string;
+        gender: 'Masculino' | 'Feminino' | 'Outro';
       };
 
       const user = await AuthService.register(userData);

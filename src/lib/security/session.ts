@@ -25,6 +25,7 @@ export interface SessionPayload {
   name: string;
   surname: string;
   birth: string;
+  avatarUrl?: string;
   uuid?: string; // Unique user identifier
   iat?: number;
   exp?: number;
@@ -48,6 +49,7 @@ export async function signSession(
     name: payload.name,
     surname: payload.surname,
     birth: payload.birth,
+    avatarUrl: payload.avatarUrl,
     uuid: payload.uuid,
   })
     .setProtectedHeader({ alg: 'HS256' })
@@ -73,6 +75,7 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
       name: payload.name as string,
       surname: payload.surname as string,
       birth: payload.birth as string,
+      avatarUrl: payload.avatarUrl as string | undefined,
       uuid: payload.uuid as string | undefined,
       iat: payload.iat as number,
       exp: payload.exp as number,

@@ -1,6 +1,8 @@
 /**
  * @fileoverview Generic in-memory cache with TTL and LRU eviction
  * @description Provides a memory-efficient cache with automatic cleanup
+ * 
+ * IMPORTANT: Uses Symbol.for() to ensure single instance across HMR
  */
 
 interface CacheEntry<T> {
@@ -135,6 +137,19 @@ class MemoryCache {
   }
 }
 
-// Singleton instance
-export const memoryCache = new MemoryCache(10000);
+// Use Symbol.for() to ensure single instance across HMR/hot reload
+const CACHE_KEY = Symbol.for('app.memory.cache');
 
+const globalStore = globalThis as unknown as {
+  [CACHE_KEY]?: MemoryCache;
+};
+
+function getMemoryCache(): MemoryCache {
+  if (!globalStore[CACHE_KEY]) {
+    globalStore[CACHE_KEY] = new MemoryCache(10000);
+    console.log('🧠 [MemoryCache] Created new singleton instance');
+  }
+  return globalStore[CACHE_KEY];
+}
+
+export const memoryCache = getMemoryCache();

@@ -57,7 +57,12 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden xl:table-cell">ID Metab.</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden xl:table-cell">Massa Óssea</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Resultado IMC</th>
-                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">Resultado %MG</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">
+                                            <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-violet-500/20 to-purple-500/20 text-violet-700 px-3 py-1.5 rounded-full border border-violet-200 shadow-sm">
+                                                <span className="text-sm">🤖</span>
+                                                <span className="font-bold text-xs uppercase tracking-wide">Resultado %MG (AUTO)</span>
+                                            </span>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -99,7 +104,7 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                                 <span className="text-gray-700">{pesagem.H2O || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center">
-                                                <span className="font-semibold text-gray-900">{pesagem.IMC || "-"}</span>
+                                                <span className="font-semibold text-gray-900">{pesagem.IMC ? pesagem.IMC.toFixed(1).replace('.', ',') : "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden lg:table-cell">
                                                 <span className="text-gray-700">{pesagem.gordVisceral || "-"}</span>
@@ -111,22 +116,36 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                                 <span className="text-gray-700">{pesagem.massaOssea || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center">
-                                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${pesagem.resultadoIMC?.toLowerCase().includes('excelente') ? 'bg-emerald-100 text-emerald-700' :
-                                                    pesagem.resultadoIMC?.toLowerCase().includes('bom') ? 'bg-blue-100 text-blue-700' :
-                                                        pesagem.resultadoIMC?.toLowerCase().includes('médio') || pesagem.resultadoIMC?.toLowerCase().includes('medio') ? 'bg-amber-100 text-amber-700' :
-                                                            pesagem.resultadoIMC?.toLowerCase().includes('mau') ? 'bg-red-100 text-red-700' :
-                                                                'bg-gray-100 text-gray-600'
+                                                <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${pesagem.resultadoIMC?.toLowerCase().includes('baixo peso') ? 'bg-sky-100 text-sky-700 border border-sky-200' :
+                                                    pesagem.resultadoIMC?.toLowerCase().includes('peso normal') ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                                                        pesagem.resultadoIMC?.toLowerCase().includes('pré-obesidade') ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                                                            pesagem.resultadoIMC?.toLowerCase().includes('obesidade grau i') && !pesagem.resultadoIMC?.toLowerCase().includes('grau ii') ? 'bg-orange-100 text-orange-700 border border-orange-200' :
+                                                                pesagem.resultadoIMC?.toLowerCase().includes('obesidade grau ii') && !pesagem.resultadoIMC?.toLowerCase().includes('grau iii') ? 'bg-red-100 text-red-600 border border-red-200' :
+                                                                    pesagem.resultadoIMC?.toLowerCase().includes('obesidade grau iii') ? 'bg-red-200 text-red-800 border border-red-300' :
+                                                                        'bg-gray-100 text-gray-600'
                                                     }`}>
+                                                    {pesagem.resultadoIMC?.toLowerCase().includes('baixo peso') && <i className="fa-duotone fa-arrow-down" />}
+                                                    {pesagem.resultadoIMC?.toLowerCase().includes('peso normal') && <i className="fa-duotone fa-check-circle" />}
+                                                    {pesagem.resultadoIMC?.toLowerCase().includes('pré-obesidade') && <i className="fa-duotone fa-exclamation-triangle" />}
+                                                    {pesagem.resultadoIMC?.toLowerCase().includes('obesidade grau i') && !pesagem.resultadoIMC?.toLowerCase().includes('grau ii') && <i className="fa-duotone fa-triangle-exclamation" />}
+                                                    {pesagem.resultadoIMC?.toLowerCase().includes('obesidade grau ii') && !pesagem.resultadoIMC?.toLowerCase().includes('grau iii') && <i className="fa-duotone fa-circle-exclamation" />}
+                                                    {pesagem.resultadoIMC?.toLowerCase().includes('obesidade grau iii') && <i className="fa-duotone fa-octagon-exclamation" />}
                                                     {pesagem.resultadoIMC || "-"}
                                                 </span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden md:table-cell">
-                                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${pesagem.resultadoPercentualMG?.toLowerCase().includes('excelente') ? 'bg-emerald-100 text-emerald-700' :
-                                                    pesagem.resultadoPercentualMG?.toLowerCase().includes('bom') ? 'bg-blue-100 text-blue-700' :
-                                                        pesagem.resultadoPercentualMG?.toLowerCase().includes('médio') || pesagem.resultadoPercentualMG?.toLowerCase().includes('medio') ? 'bg-amber-100 text-amber-700' :
-                                                            pesagem.resultadoPercentualMG?.toLowerCase().includes('mau') ? 'bg-red-100 text-red-700' :
-                                                                'bg-gray-100 text-gray-600'
+                                                <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${pesagem.resultadoPercentualMG?.toLowerCase().includes('gordura vital') ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                                                    pesagem.resultadoPercentualMG?.toLowerCase().includes('muito magro') ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                                                        pesagem.resultadoPercentualMG?.toLowerCase().includes('saudável') || pesagem.resultadoPercentualMG?.toLowerCase().includes('boa forma') ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' :
+                                                            pesagem.resultadoPercentualMG?.toLowerCase().includes('nível médio') || pesagem.resultadoPercentualMG?.toLowerCase().includes('atenção') ? 'bg-amber-100 text-amber-700 border border-amber-200' :
+                                                                pesagem.resultadoPercentualMG?.toLowerCase().includes('elevado') || pesagem.resultadoPercentualMG?.toLowerCase().includes('risco') ? 'bg-red-100 text-red-700 border border-red-200' :
+                                                                    'bg-gray-100 text-gray-600'
                                                     }`}>
+                                                    {pesagem.resultadoPercentualMG?.toLowerCase().includes('gordura vital') && <i className="fa-duotone fa-heart-pulse" />}
+                                                    {pesagem.resultadoPercentualMG?.toLowerCase().includes('muito magro') && <i className="fa-duotone fa-feather" />}
+                                                    {(pesagem.resultadoPercentualMG?.toLowerCase().includes('saudável') || pesagem.resultadoPercentualMG?.toLowerCase().includes('boa forma')) && <i className="fa-duotone fa-check-circle" />}
+                                                    {(pesagem.resultadoPercentualMG?.toLowerCase().includes('nível médio') || pesagem.resultadoPercentualMG?.toLowerCase().includes('atenção')) && <i className="fa-duotone fa-exclamation-triangle" />}
+                                                    {(pesagem.resultadoPercentualMG?.toLowerCase().includes('elevado') || pesagem.resultadoPercentualMG?.toLowerCase().includes('risco')) && <i className="fa-duotone fa-triangle-exclamation" />}
                                                     {pesagem.resultadoPercentualMG || "-"}
                                                 </span>
                                             </td>

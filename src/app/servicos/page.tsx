@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { ASSETS } from "@/lib/constants/assets";
 
 export default function ServicosPage() {
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -151,7 +152,7 @@ export default function ServicosPage() {
             {/* Logo */}
             <div className="mb-6 flex justify-center">
               <Image
-                src="/images/logo.png"
+                src={ASSETS.logo}
                 alt="Fábio Lé Logo"
                 width={120}
                 height={120}

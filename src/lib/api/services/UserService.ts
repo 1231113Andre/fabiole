@@ -1,16 +1,26 @@
-import { getUserSheetData, clearUserCache, getReferenceTableData } from '@/lib/googleSheets';
+import { db } from '@/lib/db/client';
+import { UserSheetData, PersonalInfo, Pesagem, PerimetroCorporal, AvaliacaoFisica } from '@/lib/types/dashboard';
+import { classifyBMI, classifyBodyFat, calculateBMI } from '@/lib/utils/bodyMetrics';
+import { format, differenceInYears } from 'date-fns';
 import {
   getUserData as getCachedUserData,
   setUserData as setCachedUserData,
   clearUserData as clearCachedUserData,
-  getReferenceTables as getCachedReferenceTables,
-  setReferenceTables as setCachedReferenceTables,
 } from '@/lib/cache/userCache';
 import { deduplicateRequest } from '@/lib/cache/requestDeduplication';
 
 export interface GetUserDataOptions {
   /** Force refresh (bypass cache) */
   forceRefresh?: boolean;
+}
+
+/**
+ * Calculates age from date string or Date object
+ */
+function calculateAge(birthDate: string | Date | null): string {
+  if (!birthDate) return '';
+  const date = typeof birthDate === 'string' ? new Date(birthDate) : birthDate;
+  return differenceInYears(new Date(), date).toString();
 }
 
 /**
@@ -21,55 +31,134 @@ export class UserService {
   /**
    * Get user sheet data with caching and request deduplication
    */
-  static async getUserData(email: string, options: GetUserDataOptions = {}) {
-    const { forceRefresh = false } = options;
+  static async getUserData(email: string, options: GetUserDataOptions = {}): Promise<UserSheetData> {
+    const forceRefresh = options.forceRefresh ?? false;
 
     // If force refresh, clear cache
     if (forceRefresh) {
-      clearUserCache(email);
       clearCachedUserData(email);
       console.log(`🔄 [UserService] Force refresh requested for: ${email}`);
     }
 
     // Check cache first (unless force refresh)
     if (!forceRefresh) {
-      const cached = getCachedUserData(email);
+      const cached = getCachedUserData<UserSheetData>(email);
       if (cached) {
-        // Return cached data, but refresh in background (stale-while-revalidate)
-        // Fire and forget - don't await to avoid blocking response
-        this.refreshUserDataInBackground(email).catch(() => {
-          // Silently fail - we already have cached data
-        });
+        console.log(`📦 [UserService] Returning cached data for: ${email}`);
         return cached;
       }
     }
 
     // Use request deduplication to prevent duplicate API calls
     const cacheKey = `user:data:${email.toLowerCase()}`;
-    return deduplicateRequest(cacheKey, async () => {
-      // Fetch sheet data and reference tables in parallel for better performance
-      const [sheetData, referenceTables] = await Promise.all([
-        getUserSheetData(email, !forceRefresh),
-        (async () => {
-          // Get reference tables (from cache or fetch)
-          let tables = getCachedReferenceTables();
-          if (!tables) {
-            tables = await getReferenceTableData(!forceRefresh);
-            if (tables) {
-              setCachedReferenceTables(tables);
-            }
-          }
-          return tables;
-        })(),
-      ]);
+    return deduplicateRequest<UserSheetData>(cacheKey, async () => {
+      // 1. Fetch User from Prisma
+      console.log(`🔍 [UserService] Looking up user in Prisma: ${email}`);
+      let userDB = await db.user.findUnique({
+        where: { email },
+        include: {
+          pesagens: { orderBy: { date: 'desc' } }, // Changed to desc for latest first, similar to Sheet logic typically
+          perimetros: { orderBy: { date: 'desc' } },
+          avaliacoes: { orderBy: { date: 'desc' } }
+        }
+      });
 
-      if (!sheetData) {
-        throw new Error('User sheet not found');
+      if (!userDB) {
+        console.error(`❌ [UserService] User not found in Prisma: ${email}`);
+        throw new Error('User not found in database');
       }
 
-      const result = {
-        ...sheetData,
-        referenceTables: referenceTables || {},
+      console.log(`✅ [UserService] User found: ${userDB.name} ${userDB.surname}`);
+      console.log(`   📊 Data counts: ${userDB.pesagens.length} pesagens, ${userDB.perimetros.length} perimetros, ${userDB.avaliacoes.length} avaliacoes`);
+
+      // 2. Reference Tables - skipping external fetch to remove GS dependency
+      const referenceTables = {};
+
+      // 3. Map Prisma -> UserSheetData
+      const personalInfo: PersonalInfo = {
+        userName: userDB.name,
+        userSurname: userDB.surname,
+        userEmail: userDB.email,
+        userPhone: userDB.phone || '',
+        userBirth: userDB.birth ? format(userDB.birth, 'dd/MM/yyyy') : '',
+        trainingCredit: userDB.trainingCredit.toString().replace('.', ','),
+        trainingsScheduled: userDB.trainingsScheduled.toString(),
+        debtValue: userDB.debtValue.toString().replace('.', ','),
+        paid: userDB.paid,
+        q1: userDB.q1 || '',
+        q2: userDB.q2 || '',
+        q3: userDB.q3 || '',
+        q4: userDB.q4 || '',
+        goals: userDB.goals || '',
+        notes: userDB.notes || '',
+        age: userDB.birth ? calculateAge(userDB.birth) : '',
+        // Legacy
+        notas: userDB.notes || '',
+        inicio: userDB.gender || ''
+      };
+
+      // User gender for %MG classification
+      const userGender = userDB.gender || 'M';
+
+      const pesagens: Pesagem[] = userDB.pesagens.map(p => {
+        // Auto-calculate BMI if not present but we have weight and height
+        let imcValue: number | null = p.imc ? Number(p.imc) : null;
+        if (imcValue === null && p.peso && p.height) {
+          imcValue = calculateBMI(Number(p.peso), Number(p.height));
+        }
+
+        const mgValue = p.percentualMG ? Number(p.percentualMG) : null;
+
+        // Use existing result if available, otherwise auto-classify
+        const resultadoIMC = p.resultadoIMC || classifyBMI(imcValue);
+        const resultadoPercentualMG = p.resultadoPercentMG || classifyBodyFat(mgValue, userGender);
+
+        return {
+          data: p.date ? format(p.date, 'dd/MM/yyyy') : '',
+          peso: p.peso ? Number(p.peso).toFixed(1).replace('.', ',') : '',
+          percentualMG: p.percentualMG ? Number(p.percentualMG).toFixed(1).replace('.', ',') : '',
+          MM: p.mm ? Number(p.mm).toFixed(1).replace('.', ',') : '',
+          H2O: p.h2o ? Number(p.h2o).toFixed(1).replace('.', ',') : '',
+          IMC: imcValue !== null ? imcValue.toFixed(1).replace('.', ',') : '',
+          gordVisceral: p.gordVisceral ? Number(p.gordVisceral).toFixed(0) : '',
+          IDMetabolica: p.idMetabolica ? Number(p.idMetabolica).toFixed(0) : '',
+          massaOssea: p.massaOssea ? Number(p.massaOssea).toFixed(1).replace('.', ',') : '',
+          height: p.height ? Number(p.height).toFixed(0) : '',
+          resultadoIMC,
+          resultadoPercentualMG,
+          notas: p.notas || ''
+        };
+      });
+
+      const perimetros: PerimetroCorporal[] = userDB.perimetros.map(p => ({
+        date: p.date ? format(p.date, 'dd/MM/yyyy') : '',
+        msRight: p.msRight?.toString().replace('.', ',') || '',
+        msRightFlex: p.msRightFlex?.toString().replace('.', ',') || '',
+        msLeft: p.msLeft?.toString().replace('.', ',') || '',
+        msLeftFlex: p.msLeftFlex?.toString().replace('.', ',') || '',
+        chest: p.chest?.toString().replace('.', ',') || '',
+        waist: p.waist?.toString().replace('.', ',') || '',
+        abdomen: p.abdomen?.toString().replace('.', ',') || '',
+        hips: p.hips?.toString().replace('.', ',') || '',
+        thighR: p.thighR?.toString().replace('.', ',') || '',
+        thighL: p.thighL?.toString().replace('.', ',') || ''
+      }));
+
+      const avaliacoes: AvaliacaoFisica[] = userDB.avaliacoes.map(a => ({
+        date: a.date ? format(a.date, 'dd/MM/yyyy') : '',
+        pushUps: a.pushUps?.toString() || '',
+        sitUps: a.sitUps?.toString() || '',
+        mile: a.mile || '',
+        mileResult: a.mileResult || '',
+        notes: a.notes || ''
+      }));
+
+      const result: UserSheetData = {
+        personalInfo,
+        pesagens,
+        perimetros,
+        avaliacoes,
+        referenceTables,
       };
 
       // Cache the result
@@ -81,27 +170,14 @@ export class UserService {
 
   /**
    * Refresh user data in background (for stale-while-revalidate)
-   * Only refreshes sheet data, reference tables are refreshed separately with longer TTL
    */
   private static async refreshUserDataInBackground(email: string): Promise<void> {
     try {
-      // Only refresh sheet data - reference tables have longer TTL and don't need frequent refresh
-      const sheetData = await getUserSheetData(email, true);
-      
-      if (sheetData) {
-        // Get existing reference tables from cache (don't fetch again)
-        const referenceTables = getCachedReferenceTables() || {};
-        
-        const result = {
-          ...sheetData,
-          referenceTables,
-        };
-        setCachedUserData(email, result);
-        // Removed console.log from hot path for better performance
-      }
+      // In background refresh, we just invalidate cache or re-fetch
+      // For now, simpler to just invalidate so next request fetches fresh
+      clearCachedUserData(email);
     } catch (error) {
-      // Silently fail - we already have cached data
-      // Removed console.error from hot path
+      // Ignore
     }
   }
 }

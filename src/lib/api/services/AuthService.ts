@@ -1,13 +1,6 @@
-import {
-  findUserInInfoData,
-  addUserToInfoData,
-  getOrCreateUserSheet,
-  initializeInfoDataSheet,
-  userExistsInInfoData,
-} from '@/lib/googleSheets';
-import { LoginInput } from '../validators/auth.validator';
-import { RegisterInput } from '../validators/auth.validator';
-import { hashPassword } from '@/lib/security/password';
+import { RegisterInput } from '@/lib/api/validators/auth.validator';
+import { db } from '@/lib/db/client';
+import { comparePassword, hashPassword } from '@/lib/security/password';
 import { signSession } from '@/lib/security/session';
 import { randomUUID } from 'crypto';
 
@@ -16,6 +9,7 @@ export interface UserResponse {
   surname: string;
   email: string;
   birth: string;
+  avatarUrl?: string;
   uuid?: string;
 }
 
@@ -28,42 +22,40 @@ export class AuthService {
    * Login user
    */
   static async login(email: string, password: string): Promise<UserResponse> {
-    // Initialize infoData sheet headers if needed
-    await initializeInfoDataSheet();
-
-    // Find user in infoData by email and password
-    const user = await findUserInInfoData(email, password);
+    // 1. Find user in Prisma
+    const user = await db.user.findUnique({
+      where: { email },
+    });
 
     if (!user) {
       throw new Error('Invalid email or password');
     }
 
-    // Auto-generate UUID if missing (for manually added users)
-    let userUUID = user.uuid;
-    if (!userUUID) {
-      userUUID = randomUUID();
-      console.log(`🔧 [AuthService] Auto-generating missing UUID for: ${email}`);
+    // 2. Verify password
+    let isPasswordValid = await comparePassword(password, user.password);
 
-      // Import dynamically to avoid circular dependency
-      const { updateUserUUID } = await import('@/lib/googleSheets/updateUserUUID');
-      const updated = await updateUserUUID(email, userUUID);
-      if (updated) {
-        console.log(`✅ [AuthService] UUID auto-generated for: ${email}`);
+    // Fallback for legacy plain text passwords from migration
+    // If bcrypt compare fails (because password is not hashed), try direct comparison
+    if (!isPasswordValid) {
+      isPasswordValid = user.password === password;
+      if (isPasswordValid) {
+        console.log(`⚠️ [Auth] Using plain text password for: ${email} - consider migrating to hash`);
       }
     }
 
-    // Don't send password back in response
-    const { password: _, ...userResponse } = user;
-    userResponse.uuid = userUUID;
-
-    // Create user sheet if it doesn't exist (non-blocking)
-    try {
-      await getOrCreateUserSheet(email, { ...user, uuid: userUUID });
-      console.log(`✅ [AuthService] User sheet ready for: ${email}`);
-    } catch (err) {
-      console.error('⚠️ [AuthService] Sheet creation/check failed (non-blocking):', err);
-      // Don't block login - sheet will be created on next login or when user accesses dashboard
+    if (!isPasswordValid) {
+      throw new Error('Invalid email or password');
     }
+
+    // 3. User Response
+    const userResponse: UserResponse = {
+      name: user.name,
+      surname: user.surname,
+      email: user.email,
+      birth: user.birth ? user.birth.toISOString() : '',
+      avatarUrl: user.avatarUrl || undefined,
+      uuid: user.id
+    };
 
     return userResponse;
   }
@@ -72,44 +64,41 @@ export class AuthService {
    * Register new user
    */
   static async register(userData: RegisterInput): Promise<UserResponse> {
-    // Initialize infoData sheet headers if needed
-    await initializeInfoDataSheet();
-
-    // Check if user already exists
-    const exists = await userExistsInInfoData(userData.email);
-    if (exists) {
+    // 1. Check if user exists in DB
+    const existing = await db.user.findUnique({ where: { email: userData.email } });
+    if (existing) {
       throw new Error('User with this email already exists');
     }
 
-    // Hash password before storing
+    // 2. Hash password
     const hashedPassword = await hashPassword(userData.password);
 
-    // Generate unique UUID for this user
-    const userUUID = randomUUID();
-
-    // Add new user to infoData with hashed password and UUID
-    const newUser = await addUserToInfoData({
-      name: userData.name,
-      surname: userData.surname,
-      email: userData.email,
-      password: hashedPassword,
-      birth: userData.birth,
-      uuid: userUUID,
-    });
-
-    // Don't send password back in response
-    const { password: _, ...userResponse } = newUser;
-
-    // Create user sheet and fill with data (non-blocking)
-    try {
-      await getOrCreateUserSheet(userData.email, newUser);
-      console.log(`✅ [AuthService] User sheet ready for: ${userData.email}`);
-    } catch (err) {
-      console.error('⚠️ [AuthService] Sheet creation/check failed (non-blocking):', err);
-      // Don't block registration - sheet will be created on next login or when user accesses dashboard
+    // 3. Create in DB
+    const birthDate = new Date(userData.birth);
+    if (isNaN(birthDate.getTime())) {
+      throw new Error('Invalid birth date');
     }
 
-    return userResponse;
+    const newUser = await db.user.create({
+      data: {
+        name: userData.name,
+        surname: userData.surname,
+        email: userData.email,
+        password: hashedPassword,
+        birth: birthDate,
+        gender: userData.gender,
+        avatarUrl: '/images/avatars/default.png'
+      }
+    });
+
+    return {
+      name: newUser.name,
+      surname: newUser.surname,
+      email: newUser.email,
+      birth: userData.birth,
+      avatarUrl: newUser.avatarUrl || undefined,
+      uuid: newUser.id
+    };
   }
 
   /**
@@ -135,6 +124,7 @@ export class AuthService {
         name: user.name,
         surname: user.surname,
         birth: user.birth,
+        avatarUrl: user.avatarUrl,
         uuid: user.uuid,
       },
       maxAge

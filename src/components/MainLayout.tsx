@@ -18,8 +18,8 @@ export default function MainLayout({ children, navbar }: MainLayoutProps) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith('/dashboard');
 
-  // Don't render navbar on dashboard pages
-  if (isDashboard) {
+  // Don't render navbar on dashboard or admin pages
+  if (isDashboard || pathname?.startsWith('/admin')) {
     return <>{children}</>;
   }
 

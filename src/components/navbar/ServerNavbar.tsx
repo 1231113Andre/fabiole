@@ -1,10 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { headers, cookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/security/session';
+import { getServerPathname } from '@/lib/utils/pathname';
 import ClientAuthButtons from './ClientAuthButtons';
 import ClientMobileMenu from './ClientMobileMenu';
+import { ASSETS } from '@/lib/constants/assets';
 
 // Nav items for fabiole
 const navItems = [
@@ -26,9 +28,8 @@ interface User {
  * - Client: useSession hook reacts to login/logout instantly
  */
 export default async function ServerNavbar() {
-    // Get current path from headers (server-side)
-    const headersList = await headers();
-    const pathname = headersList.get('x-pathname') || '/';
+    // Get current path from headers (server-side) - Next.js 16 compatible
+    const pathname = await getServerPathname();
     const isTransparentBase = pathname === '/' || pathname === '/sobre';
 
     // SSR Auth Check - for instant render without loading spinner
@@ -76,7 +77,7 @@ export default async function ServerNavbar() {
                         >
                             <Image
                                 id="main-logo-image"
-                                src="/images/logo.png"
+                                src={ASSETS.logo}
                                 alt="Fábio Lé Logo"
                                 width={80}
                                 height={80}
@@ -111,7 +112,7 @@ export default async function ServerNavbar() {
                         prefetch={true}
                     >
                         <Image
-                            src="/images/logo.png"
+                            src={ASSETS.logo}
                             alt="Fábio Lé Logo"
                             width={64}
                             height={64}

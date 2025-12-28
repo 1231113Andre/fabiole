@@ -1,0 +1,63 @@
+/**
+ * @fileoverview Database client singleton
+ * @description Prisma client with pg adapter for Prisma Postgres
+ * 
+ * IMPORTANT: Uses globalThis to ensure single instance across HMR
+ */
+
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+
+// Use Symbol to ensure unique key across HMR
+const PRISMA_KEY = Symbol.for('app.prisma.client');
+const POOL_KEY = Symbol.for('app.postgres.pool');
+
+const globalStore = globalThis as unknown as {
+    [PRISMA_KEY]?: PrismaClient;
+    [POOL_KEY]?: Pool;
+};
+
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+    throw new Error('DATABASE_URL environment variable is not set');
+}
+
+function getPool(): Pool {
+    if (!globalStore[POOL_KEY]) {
+        globalStore[POOL_KEY] = new Pool({
+            connectionString,
+            max: 10, // Connection pool size
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 10000,
+        });
+    }
+    return globalStore[POOL_KEY];
+}
+
+function createPrismaClient(): PrismaClient {
+    if (!globalStore[PRISMA_KEY]) {
+        const pool = getPool();
+        const adapter = new PrismaPg(pool);
+
+        globalStore[PRISMA_KEY] = new PrismaClient({
+            adapter,
+            log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+        });
+    }
+    return globalStore[PRISMA_KEY];
+}
+
+export const db = createPrismaClient();
+
+/**
+ * Graceful shutdown handler
+ */
+export async function disconnectDB(): Promise<void> {
+    if (globalStore[PRISMA_KEY]) {
+        await globalStore[PRISMA_KEY].$disconnect();
+    }
+    if (globalStore[POOL_KEY]) {
+        await globalStore[POOL_KEY].end();
+    }
+}

@@ -43,3 +43,4 @@ yarn-error.log*
 # secrets
 service-account.json
 opiumboost-67924b32aa91.json
+/src/generated/prisma

@@ -67,21 +67,16 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                     </div>
                     <div className="flex items-end justify-between">
-                        <span className="text-2xl font-bold text-black">{personalInfo?.trainingCredit || '0'}</span>
-                        {Number(personalInfo?.trainingCredit || 0) > 5 ? (
+                        <span className="text-2xl font-bold text-black">{personalInfo?.trainingCredit && personalInfo.trainingCredit !== '0' ? personalInfo.trainingCredit : '0€'}</span>
+                        {Number(personalInfo?.trainingCredit || 0) > 0 ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                                <i className="fas fa-coins text-[10px]"></i>
-                                Ativo
-                            </span>
-                        ) : Number(personalInfo?.trainingCredit || 0) > 0 ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                                <i className="fas fa-exclamation text-[10px]"></i>
-                                Baixo
+                                <i className="fas fa-check-circle text-[10px]"></i>
+                                Disponível
                             </span>
                         ) : (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
                                 <i className="fas fa-ban text-[10px]"></i>
-                                Esgotado
+                                Sem Saldo
                             </span>
                         )}
                     </div>
@@ -120,13 +115,17 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                 {/* Paid Status */}
                 <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
                     <div className="flex flex-col items-center text-center gap-4 mb-6">
-                        <div className={`flex h-14 w-14 items-center justify-center rounded-full ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes')
-                            ? 'bg-emerald-50 text-emerald-500'
-                            : 'bg-amber-50 text-amber-500'
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-full ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes' || personalInfo?.paid?.toLowerCase() === 'pago')
+                                ? 'bg-emerald-50 text-emerald-500'
+                                : (personalInfo?.paid?.toLowerCase() === 'pendente')
+                                    ? 'bg-red-50 text-red-500'
+                                    : 'bg-amber-50 text-amber-500'
                             }`}>
-                            <i className={`fa-duotone ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes')
-                                ? 'fa-shield-check'
-                                : 'fa-shield-exclamation'
+                            <i className={`fa-duotone ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes' || personalInfo?.paid?.toLowerCase() === 'pago')
+                                    ? 'fa-shield-check'
+                                    : (personalInfo?.paid?.toLowerCase() === 'pendente')
+                                        ? 'fa-circle-exclamation'
+                                        : 'fa-hourglass-half'
                                 } text-2xl`}></i>
                         </div>
                         <div>
@@ -138,16 +137,23 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                     </div>
                     <div className="flex items-end justify-between">
-                        <span className={`text-2xl font-bold ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes')
-                            ? 'text-emerald-500'
-                            : 'text-amber-500'
+                        <span className={`text-2xl font-bold ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes' || personalInfo?.paid?.toLowerCase() === 'pago')
+                                ? 'text-emerald-500'
+                                : (personalInfo?.paid?.toLowerCase() === 'pendente')
+                                    ? 'text-red-500'
+                                    : 'text-amber-500'
                             }`}>
                             {personalInfo?.paid || 'N/A'}
                         </span>
-                        {(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes') ? (
+                        {(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes' || personalInfo?.paid?.toLowerCase() === 'pago') ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                                 <i className="fas fa-shield-check text-[10px]"></i>
                                 Pago
+                            </span>
+                        ) : (personalInfo?.paid?.toLowerCase() === 'pendente') ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-red-500 to-rose-500 px-3 py-1 text-xs font-semibold text-white shadow-sm animate-pulse">
+                                <i className="fas fa-circle-exclamation text-[10px]"></i>
+                                Pendente
                             </span>
                         ) : (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-3 py-1 text-xs font-semibold text-white shadow-sm">
@@ -287,7 +293,7 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             </div>
                             <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                                 <span className="text-sm font-medium text-slate-500">IMC</span>
-                                <span className="text-lg font-bold text-black">{stats.latestPesagem.IMC}</span>
+                                <span className="text-lg font-bold text-black">{stats.latestPesagem.IMC ? stats.latestPesagem.IMC.toFixed(1).replace('.', ',') : '-'}</span>
                             </div>
                         </div>
                     </div>
