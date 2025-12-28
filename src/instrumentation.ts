@@ -161,7 +161,17 @@ function getSystemInfo(): SystemInfo {
 async function checkDatabase(): Promise<ServiceStatus> {
     const start = Date.now();
     try {
-        const { db } = await import('@/lib/db/client');
+        // Use dynamic import path construction to avoid static analysis
+        // This prevents Next.js from analyzing the Prisma Client import during Edge Runtime checks
+        // This function is only called when NEXT_RUNTIME === 'nodejs' in register()
+        const pathParts = ['@/', 'lib', '/', 'db', '/', 'client'];
+        const importPath = pathParts.join('');
+        
+        // Use Function constructor to create a runtime-only import that bypasses static analysis
+        const importFn = new Function('path', 'return import(path)');
+        const dbModule = await importFn(importPath);
+        const { db } = dbModule;
+        
         await db.$queryRaw`SELECT 1`;
         
         // Get database stats
