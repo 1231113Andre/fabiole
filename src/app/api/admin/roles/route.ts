@@ -21,7 +21,10 @@ export async function GET() {
         });
 
         // Always ensure USER and ADMINISTRATOR are in the list if they aren't in the DB yet
-        const roleValues = new Set(roles.map(r => r.role));
+        interface RoleItem {
+            role: string;
+        }
+        const roleValues = new Set<string>(roles.map((r: RoleItem) => r.role));
         roleValues.add('USER');
         roleValues.add('ADMINISTRATOR');
 

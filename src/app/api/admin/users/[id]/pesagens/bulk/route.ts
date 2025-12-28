@@ -20,7 +20,23 @@ async function checkAdmin() {
     return user?.role === 'ADMINISTRATOR' ? session : null;
 }
 
-function sanitizeValue(value: any): number | null {
+interface PesagemRecord {
+    date: string;
+    peso?: unknown;
+    height?: unknown;
+    percentualMG?: unknown;
+    mm?: unknown;
+    h2o?: unknown;
+    imc?: unknown;
+    gordVisceral?: unknown;
+    idMetabolica?: unknown;
+    massaOssea?: unknown;
+    resultadoIMC?: string | null;
+    resultadoPercentMG?: string | null;
+    notas?: string | null;
+}
+
+function sanitizeValue(value: unknown): number | null {
     if (value === null || value === undefined || value === '') {
         return null;
     }
@@ -54,7 +70,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Validate all records have date
-    const invalidRecords = body.filter((r: any) => !r.date);
+    const invalidRecords = body.filter((r: PesagemRecord) => !r.date);
     if (invalidRecords.length > 0) {
         return NextResponse.json({ 
             error: `${invalidRecords.length} records missing required 'date' field` 
@@ -63,7 +79,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     try {
         // Prepare all records for batch insert
-        const records = body.map((record: any) => ({
+        const records = body.map((record: PesagemRecord) => ({
             user_uuid,
             date: new Date(record.date),
             peso: sanitizeValue(record.peso),

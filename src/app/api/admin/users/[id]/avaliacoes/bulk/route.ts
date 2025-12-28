@@ -20,11 +20,20 @@ async function checkAdmin() {
     return user?.role === 'ADMINISTRATOR' ? session : null;
 }
 
-function sanitizeInt(value: any): number | null {
+interface AvaliacaoRecord {
+    date: string;
+    pushUps?: unknown;
+    sitUps?: unknown;
+    mile?: string | null;
+    mileResult?: string | null;
+    notes?: string | null;
+}
+
+function sanitizeInt(value: unknown): number | null {
     if (value === null || value === undefined || value === '') {
         return null;
     }
-    const parsed = parseInt(value, 10);
+    const parsed = parseInt(String(value), 10);
     return isNaN(parsed) ? null : parsed;
 }
 
@@ -44,7 +53,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ error: 'Body must be a non-empty array' }, { status: 400 });
     }
 
-    const invalidRecords = body.filter((r: any) => !r.date);
+    const invalidRecords = body.filter((r: AvaliacaoRecord) => !r.date);
     if (invalidRecords.length > 0) {
         return NextResponse.json({ 
             error: `${invalidRecords.length} records missing required 'date' field` 
@@ -52,7 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     try {
-        const records = body.map((record: any) => ({
+        const records = body.map((record: AvaliacaoRecord) => ({
             user_uuid,
             date: new Date(record.date),
             pushUps: sanitizeInt(record.pushUps),

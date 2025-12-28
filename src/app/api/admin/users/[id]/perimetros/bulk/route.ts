@@ -20,7 +20,21 @@ async function checkAdmin() {
     return user?.role === 'ADMINISTRATOR' ? session : null;
 }
 
-function sanitizeValue(value: any): number | null {
+interface PerimetroRecord {
+    date: string;
+    msRight?: unknown;
+    msRightFlex?: unknown;
+    msLeft?: unknown;
+    msLeftFlex?: unknown;
+    chest?: unknown;
+    waist?: unknown;
+    abdomen?: unknown;
+    hips?: unknown;
+    thighR?: unknown;
+    thighL?: unknown;
+}
+
+function sanitizeValue(value: unknown): number | null {
     if (value === null || value === undefined || value === '') {
         return null;
     }
@@ -52,7 +66,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ error: 'Body must be a non-empty array' }, { status: 400 });
     }
 
-    const invalidRecords = body.filter((r: any) => !r.date);
+    const invalidRecords = body.filter((r: PerimetroRecord) => !r.date);
     if (invalidRecords.length > 0) {
         return NextResponse.json({ 
             error: `${invalidRecords.length} records missing required 'date' field` 
@@ -60,7 +74,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     try {
-        const records = body.map((record: any) => ({
+        const records = body.map((record: PerimetroRecord) => ({
             user_uuid,
             date: new Date(record.date),
             msRight: sanitizeValue(record.msRight),
