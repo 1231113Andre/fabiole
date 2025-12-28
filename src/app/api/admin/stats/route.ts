@@ -94,7 +94,7 @@ export async function GET() {
             }
         });
 
-        const formattedUsers = users.map(u => ({
+        const formattedUsers = users.map((u: typeof users[number]) => ({
             id: u.id,
             name: u.name,
             surname: u.surname,
@@ -120,7 +120,7 @@ export async function GET() {
             userBirth: p.user?.birth?.toISOString() || null
         }));
 
-        const formattedRecentSignups = recentSignups.map(u => ({
+        const formattedRecentSignups = recentSignups.map((u: typeof recentSignups[number]) => ({
             ...u,
             createdAt: u.createdAt.toISOString(),
             birth: u.birth ? u.birth.toISOString() : null
