@@ -61,7 +61,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             notes: user.notes || '',
             paid: user.paid || '-',
             avatarUrl: user.avatarUrl,
-            pesagens: user.pesagens.map(p => ({
+            pesagens: user.pesagens.map((p: typeof user.pesagens[number]) => ({
                 id: p.id,
                 date: p.date.toISOString(),
                 peso: p.peso ? Number(p.peso) : null,
@@ -77,7 +77,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 resultadoPercentMG: p.resultadoPercentMG,
                 notas: p.notas
             })),
-            perimetros: user.perimetros.map(p => ({
+            perimetros: user.perimetros.map((p: typeof user.perimetros[number]) => ({
                 id: p.id,
                 date: p.date.toISOString(),
                 msRight: p.msRight ? Number(p.msRight) : null,
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
                 thighR: p.thighR ? Number(p.thighR) : null,
                 thighL: p.thighL ? Number(p.thighL) : null
             })),
-            avaliacoes: user.avaliacoes.map(a => ({
+            avaliacoes: user.avaliacoes.map((a: typeof user.avaliacoes[number]) => ({
                 id: a.id,
                 date: a.date.toISOString(),
                 pushUps: a.pushUps,
