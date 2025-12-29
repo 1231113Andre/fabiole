@@ -29,13 +29,7 @@ interface AvaliacaoRecord {
     notes?: string | null;
 }
 
-function sanitizeInt(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') {
-        return null;
-    }
-    const parsed = parseInt(String(value), 10);
-    return isNaN(parsed) ? null : parsed;
-}
+import { sanitizeInt } from "@/lib/utils/sanitizers";
 
 /**
  * Bulk create avaliacoes - much faster than sequential inserts
@@ -55,8 +49,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const invalidRecords = body.filter((r: AvaliacaoRecord) => !r.date);
     if (invalidRecords.length > 0) {
-        return NextResponse.json({ 
-            error: `${invalidRecords.length} records missing required 'date' field` 
+        return NextResponse.json({
+            error: `${invalidRecords.length} records missing required 'date' field`
         }, { status: 400 });
     }
 
@@ -76,8 +70,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             skipDuplicates: false
         });
 
-        return NextResponse.json({ 
-            success: true, 
+        return NextResponse.json({
+            success: true,
             count: result.count,
             message: `${result.count} avaliacoes created successfully`
         });

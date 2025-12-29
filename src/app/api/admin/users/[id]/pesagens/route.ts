@@ -21,20 +21,7 @@ async function checkAdmin() {
     return user?.role === 'ADMINISTRATOR' ? session : null;
 }
 
-// Helper function to convert empty strings to null and parse numbers
-function sanitizeValue(value: any): number | null | string {
-    if (value === null || value === undefined || value === '') {
-        return null;
-    }
-    if (typeof value === 'string' && value.trim() === '') {
-        return null;
-    }
-    // For numeric fields, try to parse
-    if (typeof value === 'string' && !isNaN(parseFloat(value))) {
-        return parseFloat(value);
-    }
-    return value;
-}
+import { sanitizeValue, sanitizeStringValue } from "@/lib/utils/sanitizers";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const admin = await checkAdmin();
@@ -64,9 +51,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
                 gordVisceral: sanitizeValue(body.gordVisceral),
                 idMetabolica: sanitizeValue(body.idMetabolica),
                 massaOssea: sanitizeValue(body.massaOssea),
-                resultadoIMC: body.resultadoIMC || null,
-                resultadoPercentMG: body.resultadoPercentMG || null,
-                notas: body.notas || null,
+                resultadoIMC: sanitizeStringValue(body.resultadoIMC),
+                resultadoPercentMG: sanitizeStringValue(body.resultadoPercentMG),
+                notas: sanitizeStringValue(body.notas),
             }
         });
 

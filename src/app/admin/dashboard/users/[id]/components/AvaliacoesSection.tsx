@@ -9,7 +9,7 @@ import { useParams } from "next/navigation";
 
 interface AvaliacoesSectionProps {
     avaliacoes: Avaliacao[];
-    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number) => Promise<void>;
+    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Avaliacao) => Promise<void>;
     onBulkSave?: (data: any[]) => Promise<void>;
     onDelete: (id: number) => Promise<void>;
 }
@@ -38,7 +38,7 @@ export const AvaliacoesSection: React.FC<AvaliacoesSectionProps> = ({
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await onSave(e, editingRecord?.id);
+            await onSave(e, editingRecord?.id, editingRecord || undefined);
             setIsModalOpen(false);
             setEditingRecord(null);
         } catch (err: any) {

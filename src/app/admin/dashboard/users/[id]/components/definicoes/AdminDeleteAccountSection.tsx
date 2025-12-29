@@ -9,25 +9,26 @@ import { useNotification } from "@/components/NotificationContext";
 import NewButton from "@/app/components/newButton";
 import { LoadingSpinner } from "@/components/ui/spinner";
 
-const deleteAccountSchema = z.object({
-    confirmText: z.string().refine((val) => val === "ELIMINAR", {
-        message: "Escreve 'ELIMINAR' para confirmar",
-    }),
-});
-
-type DeleteAccountForm = z.infer<typeof deleteAccountSchema>;
-
 interface Props {
     userId: string;
     userName: string;
+    userEmail: string;
     isOpen: boolean;
     onToggle: () => void;
 }
 
-export function AdminDeleteAccountSection({ userId, userName, isOpen, onToggle }: Props) {
+export function AdminDeleteAccountSection({ userId, userName, userEmail, isOpen, onToggle }: Props) {
     const router = useRouter();
     const { notify } = useNotification();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const deleteAccountSchema = z.object({
+        confirmText: z.string().refine((val) => val === userEmail, {
+            message: "O email introduzido não corresponde ao email do utilizador",
+        }),
+    });
+
+    type DeleteAccountForm = z.infer<typeof deleteAccountSchema>;
 
     const { register, handleSubmit, formState: { errors } } = useForm<DeleteAccountForm>({
         resolver: zodResolver(deleteAccountSchema),
@@ -67,7 +68,7 @@ export function AdminDeleteAccountSection({ userId, userName, isOpen, onToggle }
                     </div>
                     <div>
                         <h3 className="text-xl font-bold text-red-600">Eliminar Conta</h3>
-                        <p className="text-sm text-muted-foreground">Elimina permanentemente a conta de {userName}</p>
+                        <p className="text-sm text-gray-500">Eliminar permanentemente a conta e todos os dados associados</p>
                     </div>
                 </div>
                 <i className={`fa-duotone fa-chevron-down text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}></i>
@@ -76,48 +77,57 @@ export function AdminDeleteAccountSection({ userId, userName, isOpen, onToggle }
             <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
                 <div className="overflow-hidden">
                     <div className="px-6 pb-6 border-t border-red-200">
-                        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-sm text-red-800 font-medium">
-                                <i className="fa-duotone fa-triangle-exclamation mr-2"></i>
-                                <strong>Atenção:</strong> Esta ação é irreversível!
+                        <div className="mt-6 p-5 bg-red-50/50 border border-red-200 rounded-xl">
+                            <h4 className="text-base font-bold text-red-900 flex items-center gap-2 mb-3">
+                                <i className="fa-duotone fa-triangle-exclamation text-red-600"></i>
+                                Ação Irreversível - Zona de Perigo
+                            </h4>
+                            <p className="text-sm text-red-800 leading-relaxed">
+                                Ao eliminar esta conta, <strong>todos os dados serão apagados permanentemente</strong> dos nossos servidores.
+                                Isto inclui o histórico de pesagens, perímetros, avaliações, fotografias e notas pessoais.
                             </p>
-                            <ul className="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
-                                <li>Todos os dados do utilizador serão eliminados permanentemente</li>
-                                <li>Pesagens, perímetros e avaliações serão removidos</li>
-                                <li>Esta ação não pode ser desfeita</li>
-                            </ul>
+                            <p className="mt-2 text-sm text-red-800 font-medium">
+                                Esta ação não pode ser desfeita nem os dados recuperados.
+                            </p>
                         </div>
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4 max-w-md">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Escreve <span className="font-bold text-red-600">ELIMINAR</span> para confirmar
-                                </label>
-                                <input
-                                    type="text"
-                                    {...register("confirmText")}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-black focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all placeholder:text-gray-400"
-                                    placeholder="ELIMINAR"
-                                    disabled={isSubmitting}
-                                />
-                                {errors.confirmText && (
-                                    <p className="mt-1 text-sm text-destructive">{errors.confirmText.message}</p>
-                                )}
-                            </div>
-
-                            <div className="flex justify-center mt-4">
-                                <NewButton
-                                    type="submit"
-                                    variant="destructive"
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? <LoadingSpinner size="h-5 w-5" /> : (
-                                        <>
-                                            <i className="fa-duotone fa-trash-can mr-2"></i>
-                                            Eliminar Conta
-                                        </>
+                        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 max-w-lg">
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Para confirmar, digite o email do utilizador: <span className="font-bold select-all text-gray-900">{userEmail}</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        {...register("confirmText")}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-black focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all placeholder:text-gray-400"
+                                        placeholder={userEmail}
+                                        disabled={isSubmitting}
+                                        autoComplete="off"
+                                    />
+                                    {errors.confirmText && (
+                                        <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1.5">
+                                            <i className="fa-solid fa-circle-exclamation text-xs"></i>
+                                            {errors.confirmText.message}
+                                        </p>
                                     )}
-                                </NewButton>
+                                </div>
+
+                                <div className="flex justify-center pt-2">
+                                    <NewButton
+                                        type="submit"
+                                        variant="destructive"
+                                        disabled={isSubmitting}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        {isSubmitting ? <LoadingSpinner size="h-5 w-5" /> : (
+                                            <>
+                                                <i className="fa-duotone fa-trash-can mr-2 ml-2"></i>
+                                                Eliminar Conta Permanentemente
+                                            </>
+                                        )}
+                                    </NewButton>
+                                </div>
                             </div>
                         </form>
                     </div>

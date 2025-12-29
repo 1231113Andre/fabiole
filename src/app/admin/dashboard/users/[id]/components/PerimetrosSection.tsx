@@ -9,7 +9,7 @@ import { useParams } from "next/navigation";
 
 interface PerimetrosSectionProps {
     perimetros: Perimetro[];
-    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number) => Promise<void>;
+    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Perimetro) => Promise<void>;
     onBulkSave?: (data: any[]) => Promise<void>;
     onDelete: (id: number) => Promise<void>;
 }
@@ -38,7 +38,7 @@ export const PerimetrosSection: React.FC<PerimetrosSectionProps> = ({
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await onSave(e, editingRecord?.id);
+            await onSave(e, editingRecord?.id, editingRecord || undefined);
             setIsModalOpen(false);
             setEditingRecord(null);
         } catch (err: any) {

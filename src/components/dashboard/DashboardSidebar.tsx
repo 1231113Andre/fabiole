@@ -52,7 +52,7 @@ const BrandSection = memo(function BrandSection({
         <div className={`flex items-center gap-3 px-6 py-6 border-b border-gray-200 ${isCollapsed ? "justify-center" : ""}`}>
             <div className="w-11 h-11 min-w-11 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white text-lg shadow-lg shadow-primary/25 overflow-hidden relative">
                 {brandLogo ? (
-                    <div className="w-full h-full p-2 flex items-center justify-center bg-white/10 backdrop-blur-sm">
+                    <div className="w-full h-full p-2 flex items-center justify-center">
                         <Image
                             src={brandLogo}
                             alt="Logo"

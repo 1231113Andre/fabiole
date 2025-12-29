@@ -4,6 +4,7 @@ export interface BulkRow {
     id: string;
     date?: string;
     [key: string]: any;
+    overrides?: Record<string, boolean>;
 }
 
 export interface BulkAddClientProps {

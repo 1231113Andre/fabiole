@@ -36,21 +36,7 @@ interface PesagemRecord {
     notas?: string | null;
 }
 
-function sanitizeValue(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') {
-        return null;
-    }
-    if (typeof value === 'string' && value.trim() === '') {
-        return null;
-    }
-    if (typeof value === 'string' && !isNaN(parseFloat(value))) {
-        return parseFloat(value);
-    }
-    if (typeof value === 'number') {
-        return value;
-    }
-    return null;
-}
+import { sanitizeValue, sanitizeStringValue } from "@/lib/utils/sanitizers";
 
 /**
  * Bulk create pesagens - much faster than sequential inserts
@@ -72,8 +58,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Validate all records have date
     const invalidRecords = body.filter((r: PesagemRecord) => !r.date);
     if (invalidRecords.length > 0) {
-        return NextResponse.json({ 
-            error: `${invalidRecords.length} records missing required 'date' field` 
+        return NextResponse.json({
+            error: `${invalidRecords.length} records missing required 'date' field`
         }, { status: 400 });
     }
 
@@ -91,9 +77,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             gordVisceral: sanitizeValue(record.gordVisceral),
             idMetabolica: sanitizeValue(record.idMetabolica),
             massaOssea: sanitizeValue(record.massaOssea),
-            resultadoIMC: record.resultadoIMC || null,
-            resultadoPercentMG: record.resultadoPercentMG || null,
-            notas: record.notas || null,
+            resultadoIMC: sanitizeStringValue(record.resultadoIMC),
+            resultadoPercentMG: sanitizeStringValue(record.resultadoPercentMG),
+            notas: sanitizeStringValue(record.notas),
         }));
 
         // Single batch insert - much faster than individual inserts
@@ -102,8 +88,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             skipDuplicates: false
         });
 
-        return NextResponse.json({ 
-            success: true, 
+        return NextResponse.json({
+            success: true,
             count: result.count,
             message: `${result.count} pesagens created successfully`
         });

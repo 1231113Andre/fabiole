@@ -69,14 +69,14 @@ function timestamp(): string {
         second: '2-digit',
         hour12: false
     };
-    
+
     const formatter = new Intl.DateTimeFormat('pl-PL', cetOptions);
     const parts = formatter.formatToParts(now);
-    
+
     const date = `${parts.find(p => p.type === 'year')?.value}-${parts.find(p => p.type === 'month')?.value}-${parts.find(p => p.type === 'day')?.value}`;
     const time = `${parts.find(p => p.type === 'hour')?.value}:${parts.find(p => p.type === 'minute')?.value}:${parts.find(p => p.type === 'second')?.value}`;
     const ms = now.getMilliseconds().toString().padStart(3, '0');
-    
+
     return `${date} | ${time}.${ms}`;
 }
 
@@ -161,19 +161,13 @@ function getSystemInfo(): SystemInfo {
 async function checkDatabase(): Promise<ServiceStatus> {
     const start = Date.now();
     try {
-        // Use dynamic import path construction to avoid static analysis
-        // This prevents Next.js from analyzing the Prisma Client import during Edge Runtime checks
-        // This function is only called when NEXT_RUNTIME === 'nodejs' in register()
-        const pathParts = ['@/', 'lib', '/', 'db', '/', 'client'];
-        const importPath = pathParts.join('');
-        
-        // Use Function constructor to create a runtime-only import that bypasses static analysis
-        const importFn = new Function('path', 'return import(path)');
-        const dbModule = await importFn(importPath);
+        // Dynamic import using relative path from src/instrumentation.ts to src/lib/db/client
+        // We use a variable to prevent static analysis issues with Edge Runtime
+        const dbModule = await import('./lib/db/client');
         const { db } = dbModule;
-        
+
         await db.$queryRaw`SELECT 1`;
-        
+
         // Get database stats
         const [userCount, pesagemCount, perimetroCount, avaliacaoCount] = await Promise.all([
             db.user.count().catch(() => 0),
@@ -327,22 +321,22 @@ function getEnvVarsStatus(): EnvVarStatus[] {
     return [
         // Database
         { name: 'DATABASE_URL', configured: !!process.env.DATABASE_URL, value: maskValue(process.env.DATABASE_URL, 15) },
-        
+
         // Security
         { name: 'SESSION_SECRET', configured: !!process.env.SESSION_SECRET, value: process.env.SESSION_SECRET ? `${process.env.SESSION_SECRET.length} chars` : '(not set)' },
-        
+
         // R2 Storage
         { name: 'R2_ACCOUNT_ID', configured: !!process.env.R2_ACCOUNT_ID, value: maskValue(process.env.R2_ACCOUNT_ID) },
         { name: 'R2_ACCESS_KEY_ID', configured: !!process.env.R2_ACCESS_KEY_ID, value: maskValue(process.env.R2_ACCESS_KEY_ID) },
         { name: 'R2_SECRET_ACCESS_KEY', configured: !!process.env.R2_SECRET_ACCESS_KEY, value: process.env.R2_SECRET_ACCESS_KEY ? '***configured***' : '(not set)' },
         { name: 'R2_BUCKET_NAME', configured: !!process.env.R2_BUCKET_NAME, value: process.env.R2_BUCKET_NAME || '(not set)' },
         { name: 'NEXT_PUBLIC_R2_PUBLIC_URL', configured: !!process.env.NEXT_PUBLIC_R2_PUBLIC_URL, value: process.env.NEXT_PUBLIC_R2_PUBLIC_URL || '(not set)' },
-        
+
         // Email
         { name: 'RESEND_API_KEY', configured: !!process.env.RESEND_API_KEY, value: maskValue(process.env.RESEND_API_KEY) },
         { name: 'EMAIL_FROM_ADDRESS', configured: !!process.env.EMAIL_FROM_ADDRESS, value: process.env.EMAIL_FROM_ADDRESS || '(default)' },
         { name: 'EMAIL_SUPPORT', configured: !!process.env.EMAIL_SUPPORT, value: process.env.EMAIL_SUPPORT || '(not set)' },
-        
+
         // App
         { name: 'NODE_ENV', configured: !!process.env.NODE_ENV, value: process.env.NODE_ENV || 'development' },
         { name: 'NEXT_PUBLIC_VERSION', configured: !!process.env.NEXT_PUBLIC_VERSION, value: process.env.NEXT_PUBLIC_VERSION || '(not set)' },
@@ -356,7 +350,7 @@ function getEnvVarsStatus(): EnvVarStatus[] {
 async function runStartupChecks(): Promise<void> {
     const startTime = Date.now();
     const timings: TimingEntry[] = [];
-    
+
     const nodeEnv = process.env.NODE_ENV || 'development';
     const version = process.env.NEXT_PUBLIC_VERSION || '0.1.0';
     const commitId = process.env.NEXT_PUBLIC_COMMIT_ID || 'unknown';
@@ -443,7 +437,7 @@ async function runStartupChecks(): Promise<void> {
     const envStart = Date.now();
     console.log('[ENVIRONMENT VARIABLES]');
     console.log(separator('-'));
-    
+
     const envVars = getEnvVarsStatus();
     for (const env of envVars) {
         const status = env.configured ? 'OK  ' : 'MISS';
@@ -484,7 +478,7 @@ async function runStartupChecks(): Promise<void> {
     console.log(`  Services:     ${okServices}/${totalServices} OK${failServices > 0 ? `, ${failServices} FAILED` : ''}${warnServices > 0 ? `, ${warnServices} WARNINGS` : ''}`);
     console.log(`  Environment:  ${configuredEnvVars}/${totalEnvVars} configured`);
     console.log(separator('-'));
-    
+
     // Timing breakdown
     console.log('  [TIMINGS]');
     for (const timing of timings) {

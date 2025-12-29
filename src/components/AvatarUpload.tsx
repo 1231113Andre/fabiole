@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 import { Avatar } from "./Avatar";
 import NewButton from "@/app/components/newButton";
 
@@ -24,6 +25,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     size = 120,
     extraInfo,
 }) => {
+    const queryClient = useQueryClient();
     const [uploading, setUploading] = useState(false);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,6 +89,26 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             const { avatarUrl: newFullUrl } = await updateRes.json();
 
             toast.success("Avatar atualizado com sucesso!");
+
+            // Directly update the session cache with the new avatarUrl
+            // This is more reliable than invalidateQueries because the browser
+            // may still send the old cookie until the page is refreshed
+            queryClient.setQueryData(['session'], (oldData: { authenticated: boolean; user?: { name: string; surname: string; email: string; birth: string; avatarUrl?: string } } | undefined) => {
+                if (!oldData?.user) return oldData;
+                return {
+                    ...oldData,
+                    user: {
+                        ...oldData.user,
+                        avatarUrl: newFullUrl,
+                    },
+                };
+            });
+
+            // Also emit session-updated event for any listeners
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('session-updated'));
+            }
+
             if (onUploadSuccess) onUploadSuccess(newFullUrl);
 
             // Clear preview once done, we'll use the real URL now

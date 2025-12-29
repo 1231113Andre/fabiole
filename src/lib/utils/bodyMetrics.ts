@@ -46,16 +46,20 @@ export function calculateBMI(weightKg: number | null, heightCm: number | null): 
 /**
  * Calculate Muscle Mass (MM)
  * Formula: peso - (peso * %MG / 100) - massaOssea
+ * Returns null if peso is missing or result would be negative/zero
  */
 export function calculateMM(
     peso: number | null,
     percentualMG: number | null,
     massaOssea: number | null
 ): number | null {
-    if (!peso) return null;
-    const gordura = percentualMG ? (peso * percentualMG / 100) : 0;
-    const ossea = massaOssea || 0;
+    if (!peso || peso <= 0) return null;
+
+    const gordura = percentualMG && percentualMG > 0 ? (peso * percentualMG / 100) : 0;
+    const ossea = massaOssea && massaOssea > 0 ? massaOssea : 0;
     const mm = peso - gordura - ossea;
+
+    // Only return if the result is positive and makes sense
     return mm > 0 ? parseFloat(mm.toFixed(2)) : null;
 }
 
@@ -69,6 +73,68 @@ export function calculateH2O(peso: number | null, gender: Gender): number | null
     const isMale = g === 'MALE' || g === 'MASCULINO' || g === 'M';
     const percentage = isMale ? 0.60 : 0.50;
     return parseFloat((peso * percentage).toFixed(2));
+}
+
+/**
+ * Calculate all auto-calculated metrics at once
+ * Respects manual overrides if provided
+ */
+export interface AutoCalculatedMetrics {
+    imc: number | null;
+    mm: number | null;
+    h2o: number | null;
+    resultadoIMC: string;
+    resultadoPercentMG: string;
+}
+
+export interface CalculateAllMetricsInput {
+    peso: number | null;
+    height: number | null;
+    percentualMG: number | null;
+    massaOssea: number | null;
+    gender: Gender;
+    // Manual overrides - if set, use these instead of calculating
+    manualOverrides?: {
+        imc?: number | null;
+        mm?: number | null;
+        h2o?: number | null;
+        resultadoIMC?: string | null;
+        resultadoPercentMG?: string | null;
+    };
+}
+
+export function calculateAllMetrics(input: CalculateAllMetricsInput): AutoCalculatedMetrics {
+    const { peso, height, percentualMG, massaOssea, gender, manualOverrides = {} } = input;
+
+    // BMI calculation or use manual override
+    const calculatedBMI = calculateBMI(peso, height);
+    const imc = manualOverrides.imc !== undefined ? manualOverrides.imc : calculatedBMI;
+
+    // MM calculation or use manual override
+    const calculatedMM = calculateMM(peso, percentualMG, massaOssea);
+    const mm = manualOverrides.mm !== undefined ? manualOverrides.mm : calculatedMM;
+
+    // H2O calculation or use manual override
+    const calculatedH2O = calculateH2O(peso, gender);
+    const h2o = manualOverrides.h2o !== undefined ? manualOverrides.h2o : calculatedH2O;
+
+    // BMI classification - use IMC value (calculated or from input)
+    const resultadoIMC = manualOverrides.resultadoIMC !== undefined && manualOverrides.resultadoIMC !== null
+        ? manualOverrides.resultadoIMC
+        : classifyBMI(imc) || '';
+
+    // Body fat classification
+    const resultadoPercentMG = manualOverrides.resultadoPercentMG !== undefined && manualOverrides.resultadoPercentMG !== null
+        ? manualOverrides.resultadoPercentMG
+        : classifyBodyFat(percentualMG, gender) || '';
+
+    return {
+        imc,
+        mm,
+        h2o,
+        resultadoIMC,
+        resultadoPercentMG
+    };
 }
 
 // =============================================================================

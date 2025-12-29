@@ -10,6 +10,7 @@ interface BulkTableRowProps {
     canDelete: boolean;
     onUpdate: (id: string, field: string, value: string) => void;
     onDelete: (id: string) => void;
+    onToggleOverride: (id: string, field: string) => void;
 }
 
 // Memoized input component for better performance
@@ -40,21 +41,59 @@ const RowInput = memo(function RowInput({
     );
 });
 
-// Auto-calculated field display
-const AutoField = memo(function AutoField({ value }: { value: string }) {
+// Overridable field display
+const OverridableField = memo(function OverridableField({
+    value,
+    isOverride,
+    onToggle,
+    onChange
+}: {
+    value: string;
+    isOverride?: boolean;
+    onToggle: () => void;
+    onChange: (val: string) => void;
+}) {
     return (
-        <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-[10px] font-bold inline-block min-w-[3rem]">
-            {value || '-'}
-        </span>
+        <div className="flex items-center justify-center gap-1 group relative">
+            {isOverride ? (
+                <input
+                    type="number"
+                    step="0.01"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    className="w-16 text-center border border-emerald-300 rounded px-1 py-0.5 text-xs font-bold text-emerald-700 bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+            ) : (
+                <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-[10px] font-bold inline-block min-w-[3rem]">
+                    {value || '-'}
+                </span>
+            )}
+
+            <button
+                onClick={onToggle}
+                className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] transition-all cursor-pointer absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 ${isOverride
+                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                    : 'bg-violet-200 text-violet-700 hover:bg-violet-300'
+                    }`}
+                title={isOverride ? "Voltar para Auto" : "Mudar para Manual"}
+            >
+                <i className={`fa-solid ${isOverride ? 'fa-rotate-right' : 'fa-pen'}`}></i>
+            </button>
+            {isOverride && (
+                <div className="absolute -top-2 -right-2 w-4 h-4 rounded-full flex items-center justify-center text-[8px] bg-emerald-500 text-white pointer-events-none group-hover:opacity-0 transition-opacity">
+                    <i className="fa-solid fa-pen"></i>
+                </div>
+            )}
+        </div>
     );
 });
 
 // Classification badge
-const ClassBadge = memo(function ClassBadge({ 
-    value, 
-    colorFn 
-}: { 
-    value: string; 
+const ClassBadge = memo(function ClassBadge({
+    value,
+    colorFn
+}: {
+    value: string;
     colorFn: (v: string) => string;
 }) {
     return (
@@ -87,11 +126,13 @@ const DeleteButton = memo(function DeleteButton({
 const PesagensRow = memo(function PesagensRow({
     row,
     evolution,
-    onUpdate
+    onUpdate,
+    onToggleOverride
 }: {
     row: BulkRow;
     evolution: number | null;
     onUpdate: (field: string, value: string) => void;
+    onToggleOverride: (field: string) => void;
 }) {
     return (
         <>
@@ -107,9 +148,30 @@ const PesagensRow = memo(function PesagensRow({
             <td className="py-3 px-2">
                 <RowInput type="number" step="0.1" value={row.percentualMG || ''} onChange={(v) => onUpdate('percentualMG', v)} className="text-center font-semibold !text-gray-900" />
             </td>
-            <td className="py-3 px-2 text-center"><AutoField value={row.mm} /></td>
-            <td className="py-3 px-2 text-center"><AutoField value={row.h2o} /></td>
-            <td className="py-3 px-2 text-center"><AutoField value={row.imc} /></td>
+            <td className="py-3 px-2 text-center">
+                <OverridableField
+                    value={row.mm || ''}
+                    isOverride={row.overrides?.mm}
+                    onToggle={() => onToggleOverride('mm')}
+                    onChange={(v) => onUpdate('mm', v)}
+                />
+            </td>
+            <td className="py-3 px-2 text-center">
+                <OverridableField
+                    value={row.h2o || ''}
+                    isOverride={row.overrides?.h2o}
+                    onToggle={() => onToggleOverride('h2o')}
+                    onChange={(v) => onUpdate('h2o', v)}
+                />
+            </td>
+            <td className="py-3 px-2 text-center">
+                <OverridableField
+                    value={row.imc || ''}
+                    isOverride={row.overrides?.imc}
+                    onToggle={() => onToggleOverride('imc')}
+                    onChange={(v) => onUpdate('imc', v)}
+                />
+            </td>
             <td className="py-3 px-2">
                 <RowInput type="number" step="1" value={row.gordVisceral || ''} onChange={(v) => onUpdate('gordVisceral', v)} className="text-center !text-gray-600" />
             </td>
@@ -119,8 +181,40 @@ const PesagensRow = memo(function PesagensRow({
             <td className="py-3 px-2">
                 <RowInput type="number" step="0.01" value={row.massaOssea || ''} onChange={(v) => onUpdate('massaOssea', v)} className="text-center !text-gray-600" />
             </td>
-            <td className="py-3 px-2 text-center"><ClassBadge value={row.resultadoIMC} colorFn={getBmiClassColor} /></td>
-            <td className="py-3 px-2 text-center"><ClassBadge value={row.resultadoPercentMG} colorFn={getFatClassColor} /></td>
+            <td className="py-3 px-2 text-center">
+                {row.overrides?.resultadoIMC ? (
+                    <OverridableField
+                        value={row.resultadoIMC || ''}
+                        isOverride={true}
+                        onToggle={() => onToggleOverride('resultadoIMC')}
+                        onChange={(v) => onUpdate('resultadoIMC', v)}
+                    />
+                ) : (
+                    <div className="relative group">
+                        <ClassBadge value={row.resultadoIMC} colorFn={getBmiClassColor} />
+                        <button onClick={() => onToggleOverride('resultadoIMC')} className="absolute -top-1 -right-1 w-3 h-3 bg-violet-200 text-violet-700 rounded-full text-[8px] opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-violet-300">
+                            <i className="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                )}
+            </td>
+            <td className="py-3 px-2 text-center">
+                {row.overrides?.resultadoPercentMG ? (
+                    <OverridableField
+                        value={row.resultadoPercentMG || ''}
+                        isOverride={true}
+                        onToggle={() => onToggleOverride('resultadoPercentMG')}
+                        onChange={(v) => onUpdate('resultadoPercentMG', v)}
+                    />
+                ) : (
+                    <div className="relative group">
+                        <ClassBadge value={row.resultadoPercentMG} colorFn={getFatClassColor} />
+                        <button onClick={() => onToggleOverride('resultadoPercentMG')} className="absolute -top-1 -right-1 w-3 h-3 bg-violet-200 text-violet-700 rounded-full text-[8px] opacity-0 group-hover:opacity-100 flex items-center justify-center hover:bg-violet-300">
+                            <i className="fa-solid fa-pen"></i>
+                        </button>
+                    </div>
+                )}
+            </td>
         </>
     );
 });
@@ -173,7 +267,8 @@ export const BulkTableRow = memo(function BulkTableRow({
     evolution,
     canDelete,
     onUpdate,
-    onDelete
+    onDelete,
+    onToggleOverride
 }: BulkTableRowProps) {
     const handleFieldUpdate = useCallback((field: string, value: string) => {
         onUpdate(row.id, field, value);
@@ -194,7 +289,14 @@ export const BulkTableRow = memo(function BulkTableRow({
                 />
             </td>
 
-            {type === 'pesagens' && <PesagensRow row={row} evolution={evolution} onUpdate={handleFieldUpdate} />}
+            {type === 'pesagens' && (
+                <PesagensRow
+                    row={row}
+                    evolution={evolution}
+                    onUpdate={handleFieldUpdate}
+                    onToggleOverride={(field) => onToggleOverride(row.id, field)}
+                />
+            )}
             {type === 'perimetros' && <PerimetrosRow row={row} onUpdate={handleFieldUpdate} />}
             {type === 'avaliacoes' && <AvaliacoesRow row={row} onUpdate={handleFieldUpdate} />}
 

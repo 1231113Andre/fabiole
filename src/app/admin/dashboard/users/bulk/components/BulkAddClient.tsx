@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NewButton from "@/app/components/newButton";
 import { UserHeader } from "../../[id]/components/UserHeader";
 import { UserData, Tab } from "../../[id]/types";
 
+import { useQuery } from "@tanstack/react-query";
+
 // Local components and hooks
 import { BulkAddClientProps, TYPE_LABELS, TYPE_LABELS_PT, MAX_ROWS_PER_PAGE } from "./types";
 import { useBulkState } from "./useBulkState";
+import { useBulkMutations } from "../hooks/useBulkMutations";
 import { BulkTableHeader } from "./BulkTableHeader";
 import { BulkTableRow } from "./BulkTableRow";
 import { BulkPagination } from "./BulkPagination";
@@ -17,8 +20,18 @@ import { getDescription } from "./BulkDescriptions";
 
 export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
     const router = useRouter();
-    const [user, setUser] = useState<UserData>(initialUser);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { bulkSaveMutation } = useBulkMutations();
+
+    // Use React Query for fetching latest user data
+    const { data: userData } = useQuery({
+        queryKey: ['user', initialUser.id],
+        queryFn: async () => {
+            const response = await fetch(`/api/admin/users/${initialUser.id}`);
+            if (!response.ok) throw new Error("Failed to fetch user");
+            return response.json();
+        },
+        initialData: initialUser
+    });
 
     const {
         pages,
@@ -32,68 +45,42 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
         updateRow,
         addNewPage,
         getAllRows,
-        newRecordsCount
-    } = useBulkState(type, user.gender || '');
-
-    const fetchUser = useCallback(async () => {
-        try {
-            const response = await fetch(`/api/admin/users/${user.id}`);
-            if (response.ok) {
-                const data = await response.json();
-                setUser(data);
-            }
-        } catch (err) {
-            console.error("Fetch error:", err);
-        }
-    }, [user.id]);
+        newRecordsCount,
+        toggleOverride
+    } = useBulkState(type, userData.gender || '');
 
     const handleSave = useCallback(async () => {
         const allRows = getAllRows();
         const validRows = allRows.filter(r => r.date);
         if (validRows.length === 0) return;
 
-        setIsSubmitting(true);
-        try {
-            // Prepare all records for bulk insert
-            const records = validRows.map(record => {
-                const payload: Record<string, any> = { ...record };
-                delete payload.id;
-                Object.keys(payload).forEach(key => {
-                    if (key !== 'date' && key !== 'notas' && key !== 'notes' && key !== 'mile' && key !== 'mileResult' && payload[key]) {
-                        const val = parseFloat(payload[key].toString());
-                        if (!isNaN(val)) payload[key] = val;
-                    }
-                });
-                return payload;
+        // Prepare all records for bulk insert
+        const records = validRows.map(record => {
+            const payload: Record<string, any> = { ...record };
+            delete payload.id;
+            delete payload.overrides; // Remove overrides
+            Object.keys(payload).forEach(key => {
+                if (key !== 'date' && key !== 'notas' && key !== 'notes' && key !== 'mile' && key !== 'mileResult' && payload[key]) {
+                    const val = parseFloat(payload[key].toString());
+                    if (!isNaN(val)) payload[key] = val;
+                }
             });
+            return payload;
+        });
 
-            // Single bulk request - much faster than sequential
-            const response = await fetch(`/api/admin/users/${user.id}/${type}/bulk`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(records)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || "Erro ao guardar registos");
-            }
-
-            router.push(`/admin/dashboard/users/${user.id}`);
-        } catch (error: any) {
-            console.error(error);
-            alert(error.message || "Erro ao guardar alguns registos.");
-        } finally {
-            setIsSubmitting(false);
-        }
-    }, [getAllRows, user.id, type, router]);
+        bulkSaveMutation.mutate({
+            userId: userData.id,
+            type,
+            records
+        });
+    }, [getAllRows, userData.id, type, bulkSaveMutation]);
 
     // Calculate evolution for pesagens
     const getEvolution = useCallback((rowIndex: number): number | null => {
         if (type !== 'pesagens') return null;
         const peso = parseFloat(currentRows[rowIndex]?.peso);
         if (!peso) return null;
-        
+
         let prevPeso: number | null = null;
         if (rowIndex > 0) {
             prevPeso = parseFloat(currentRows[rowIndex - 1]?.peso);
@@ -101,21 +88,21 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
             const prevPageRows = pages[currentPage - 1];
             prevPeso = parseFloat(prevPageRows?.[prevPageRows.length - 1]?.peso);
         } else {
-            const sorted = [...user.pesagens].sort((a, b) => 
+            const sorted = [...userData.pesagens].sort((a, b) =>
                 new Date(b.date).getTime() - new Date(a.date).getTime()
             );
             prevPeso = sorted[0]?.peso ?? null;
         }
-        
+
         if (!prevPeso) return null;
         return peso - prevPeso;
-    }, [type, currentRows, currentPage, pages, user.pesagens]);
+    }, [type, currentRows, currentPage, pages, userData.pesagens]);
 
     const tabs: { id: Tab; label: string; icon: string; count?: number }[] = useMemo(() => [
-        { id: 'pesagens', label: 'Pesagens', icon: 'fa-weight-scale', count: user.pesagens.length },
-        { id: 'perimetros', label: 'Perímetros', icon: 'fa-ruler-combined', count: user.perimetros.length },
-        { id: 'avaliacoes', label: 'Avaliações', icon: 'fa-dumbbell', count: user.avaliacoes.length }
-    ], [user.pesagens.length, user.perimetros.length, user.avaliacoes.length]);
+        { id: 'pesagens', label: 'Pesagens', icon: 'fa-weight-scale', count: userData.pesagens.length },
+        { id: 'perimetros', label: 'Perímetros', icon: 'fa-ruler-combined', count: userData.perimetros.length },
+        { id: 'avaliacoes', label: 'Avaliações', icon: 'fa-dumbbell', count: userData.avaliacoes.length }
+    ], [userData.pesagens.length, userData.perimetros.length, userData.avaliacoes.length]);
 
     const typeLabel = TYPE_LABELS[type];
     const remainingSpace = MAX_ROWS_PER_PAGE - currentRows.length;
@@ -125,13 +112,15 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
     return (
         <div className="w-full">
             <UserHeader
-                user={user}
-                onUpdate={fetchUser}
+                user={userData}
+                onUpdate={() => {
+                    // Handled by React Query invalidation
+                }}
                 hidePaymentButtons={true}
                 customIcon="fa-layer-plus"
                 customTitle={`BULK MODE (${typeLabel.toUpperCase()})`}
                 customDescription={getDescription(type)}
-                backUrl={`/admin/dashboard/users/${user.id}`}
+                backUrl={`/admin/dashboard/users/${userData.id}`}
                 backLabel="VOLTAR PERFIL CLIENTE"
             />
 
@@ -148,7 +137,7 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
                             variant={isTabActive ? "new_primary_rounded" : "new_primary_no_bg_rounded"}
                             onClick={() => {
                                 if (!isTabActive) {
-                                    router.push(`/admin/dashboard/users/bulk/${tab.id}/${user.id}`);
+                                    router.push(`/admin/dashboard/users/bulk/${tab.id}/${userData.id}`);
                                 }
                             }}
                             icon={<i className={`fa-duotone ${tab.icon}`}></i>}
@@ -175,7 +164,7 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
                 const existingCount = activeTab?.count || 0;
                 const label = TYPE_LABELS_PT[type];
                 const recordLabel = newRecordsCount === 1 ? label.singular : label.plural;
-                
+
                 return (
                     <div className="mb-8 flex items-start gap-3 p-3 bg-blue-50 text-blue-800 rounded-lg border border-blue-100">
                         <i className="fa-duotone fa-layer-plus text-xl shrink-0 mt-0.5"></i>
@@ -224,6 +213,7 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
                                     canDelete={currentRows.length > 1}
                                     onUpdate={updateRow}
                                     onDelete={removeRow}
+                                    onToggleOverride={toggleOverride}
                                 />
                             ))}
                         </tbody>
@@ -233,19 +223,19 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
                 {/* Footer */}
                 <div className="mt-8 flex items-center justify-between">
                     <div className="flex gap-2">
-                        <NewButton 
-                            onClick={addRow} 
-                            variant="new_primary_no_bg_rounded" 
-                            className="font-medium" 
+                        <NewButton
+                            onClick={addRow}
+                            variant="new_primary_no_bg_rounded"
+                            className="font-medium"
                             icon={<i className="fa-duotone fa-plus"></i>}
                             disabled={currentRows.length >= MAX_ROWS_PER_PAGE}
                         >
                             Linha
                         </NewButton>
-                        <NewButton 
-                            onClick={addFiveRows} 
-                            variant="new_primary_no_bg_rounded" 
-                            className="font-medium" 
+                        <NewButton
+                            onClick={addFiveRows}
+                            variant="new_primary_no_bg_rounded"
+                            className="font-medium"
                             icon={<i className="fa-duotone fa-layer-plus"></i>}
                             disabled={remainingSpace <= 0}
                         >
@@ -254,19 +244,19 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <Link href={`/admin/dashboard/users/${user.id}`}>
+                        <Link href={`/admin/dashboard/users/${userData.id}`}>
                             <NewButton variant="new_primary_no_bg_rounded" className="font-medium" icon={<i className="fa-duotone fa-xmark"></i>}>
                                 Cancelar
                             </NewButton>
                         </Link>
                         <NewButton
                             onClick={handleSave}
-                            disabled={isSubmitting}
+                            disabled={bulkSaveMutation.isPending}
                             variant="new_primary_rounded"
-                            icon={isSubmitting ? <i className="fa-duotone fa-spinner-third animate-spin"></i> : <i className="fa-duotone fa-floppy-disk"></i>}
+                            icon={bulkSaveMutation.isPending ? <i className="fa-duotone fa-spinner-third animate-spin"></i> : <i className="fa-duotone fa-floppy-disk"></i>}
                             className="shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all"
                         >
-                            {isSubmitting ? 'A GUARDAR...' : `GUARDAR (${newRecordsCount}) REGISTOS`}
+                            {bulkSaveMutation.isPending ? 'A GUARDAR...' : `GUARDAR (${newRecordsCount}) REGISTOS`}
                         </NewButton>
                     </div>
                 </div>

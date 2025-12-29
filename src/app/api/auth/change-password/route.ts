@@ -49,7 +49,13 @@ export async function POST(request: NextRequest) {
         }
 
         // 2. Verify current password
-        const isPasswordValid = await comparePassword(currentPassword, userDB.password);
+        let isPasswordValid = await comparePassword(currentPassword, userDB.password);
+
+        // Fallback for legacy plain text passwords
+        if (!isPasswordValid) {
+            isPasswordValid = userDB.password === currentPassword;
+        }
+
         if (!isPasswordValid) {
             return NextResponse.json(
                 { success: false, error: 'Password atual incorreta' },

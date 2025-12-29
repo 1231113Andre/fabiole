@@ -22,22 +22,52 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
         <div className="space-y-8">
             {/* Top Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                {/* Trainings Scheduled */}
+                {/* Treinos em Crédito */}
                 <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
                     <div className="flex flex-col items-center text-center gap-4 mb-6">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
-                            <i className="fa-duotone fa-calendar-check text-2xl"></i>
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+                            <i className="fa-duotone fa-dumbbell text-2xl"></i>
                         </div>
                         <div>
-                            <h4 className="text-lg font-bold text-black">Scheduled</h4>
+                            <h4 className="text-lg font-bold text-black">Treinos em Crédito</h4>
                             <span className="text-xs font-medium text-slate-500 group">
                                 <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                The number of training sessions currently scheduled.
+                                Sessões não utilizadas transitam para o mês seguinte.
                             </span>
                         </div>
                     </div>
                     <div className="flex items-end justify-between">
-                        <span className="text-2xl font-bold text-black">{personalInfo?.trainingsScheduled || '0'}</span>
+                        <span className="text-2xl font-bold text-emerald-600">{personalInfo?.trainingCredit && personalInfo.trainingCredit !== '0' ? personalInfo.trainingCredit : '0'}</span>
+                        {Number(personalInfo?.trainingCredit || 0) > 0 ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                                <i className="fas fa-check-circle text-[10px]"></i>
+                                Disponível
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
+                                <i className="fas fa-ban text-[10px]"></i>
+                                Sem Crédito
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {/* Treinos Agendados */}
+                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex flex-col items-center text-center gap-4 mb-6">
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-full ${Number(personalInfo?.trainingsScheduled || 0) > 0 ? 'bg-blue-50 text-blue-500' : 'bg-gray-100 text-gray-400'}`}>
+                            <i className="fa-duotone fa-calendar-check text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 className="text-lg font-bold text-black">Treinos Agendados</h4>
+                            <span className="text-xs font-medium text-slate-500 group">
+                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
+                                Número de sessões atualmente marcadas.
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-end justify-between">
+                        <span className={`text-2xl font-bold ${Number(personalInfo?.trainingsScheduled || 0) > 0 ? 'text-blue-600' : 'text-gray-400'}`}>{personalInfo?.trainingsScheduled || '0'}</span>
                         {Number(personalInfo?.trainingsScheduled || 0) > 0 ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                                 <i className="fas fa-calendar-alt text-[10px]"></i>
@@ -52,52 +82,22 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                     </div>
                 </div>
 
-                {/* Training Credit */}
+                {/* Valor em Dívida */}
                 <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
                     <div className="flex flex-col items-center text-center gap-4 mb-6">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
-                            <i className="fa-duotone fa-coins text-2xl"></i>
-                        </div>
-                        <div>
-                            <h4 className="text-lg font-bold text-black">Training Credit</h4>
-                            <span className="text-xs font-medium text-slate-500 group">
-                                <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                Your remaining balance of prepaid training sessions.
-                            </span>
-                        </div>
-                    </div>
-                    <div className="flex items-end justify-between">
-                        <span className="text-2xl font-bold text-black">{personalInfo?.trainingCredit && personalInfo.trainingCredit !== '0' ? personalInfo.trainingCredit : '0€'}</span>
-                        {Number(personalInfo?.trainingCredit || 0) > 0 ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                                <i className="fas fa-check-circle text-[10px]"></i>
-                                Disponível
-                            </span>
-                        ) : (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-500">
-                                <i className="fas fa-ban text-[10px]"></i>
-                                Sem Saldo
-                            </span>
-                        )}
-                    </div>
-                </div>
-
-                {/* Debt Value - Highlighted if debt exists */}
-                <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex flex-col items-center text-center gap-4 mb-6">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/5 text-primary">
+                        <div className={`flex h-14 w-14 items-center justify-center rounded-full ${!personalInfo?.debtValue || personalInfo?.debtValue === '0€' || personalInfo?.debtValue === '0' ? 'bg-emerald-50 text-emerald-500' : 'bg-red-50 text-red-500'}`}>
                             <i className="fa-duotone fa-file-invoice-dollar text-2xl"></i>
                         </div>
                         <div>
-                            <h4 className="text-lg font-bold text-black">Debt Value</h4>
+                            <h4 className="text-lg font-bold text-black">Valor em Dívida (€)</h4>
                             <span className="text-xs font-medium text-slate-500 group">
                                 <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                Total amount currently outstanding on your account.
+                                Quantia pendente a regularizar.
                             </span>
                         </div>
                     </div>
                     <div className="flex items-end justify-between">
-                        <span className="text-2xl font-bold text-black">{personalInfo?.debtValue || '0€'}</span>
+                        <span className={`text-2xl font-bold ${!personalInfo?.debtValue || personalInfo?.debtValue === '0€' || personalInfo?.debtValue === '0' ? 'text-emerald-600' : 'text-red-500'}`}>{personalInfo?.debtValue ? (personalInfo.debtValue.includes('€') ? personalInfo.debtValue : `€${personalInfo.debtValue}`) : '€0'}</span>
                         {!personalInfo?.debtValue || personalInfo?.debtValue === '0€' || personalInfo?.debtValue === '0' ? (
                             <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                                 <i className="fas fa-check-circle text-[10px]"></i>
@@ -112,36 +112,36 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                     </div>
                 </div>
 
-                {/* Paid Status */}
+                {/* Estado de Pagamento */}
                 <div className="flex flex-col justify-between rounded-2xl border border-stroke bg-white p-6 shadow-default hover:shadow-lg transition-shadow duration-300">
                     <div className="flex flex-col items-center text-center gap-4 mb-6">
                         <div className={`flex h-14 w-14 items-center justify-center rounded-full ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes' || personalInfo?.paid?.toLowerCase() === 'pago')
-                                ? 'bg-emerald-50 text-emerald-500'
-                                : (personalInfo?.paid?.toLowerCase() === 'pendente')
-                                    ? 'bg-red-50 text-red-500'
-                                    : 'bg-amber-50 text-amber-500'
+                            ? 'bg-emerald-50 text-emerald-500'
+                            : (personalInfo?.paid?.toLowerCase() === 'pendente')
+                                ? 'bg-red-50 text-red-500'
+                                : 'bg-amber-50 text-amber-500'
                             }`}>
                             <i className={`fa-duotone ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes' || personalInfo?.paid?.toLowerCase() === 'pago')
-                                    ? 'fa-shield-check'
-                                    : (personalInfo?.paid?.toLowerCase() === 'pendente')
-                                        ? 'fa-circle-exclamation'
-                                        : 'fa-hourglass-half'
+                                ? 'fa-shield-check'
+                                : (personalInfo?.paid?.toLowerCase() === 'pendente')
+                                    ? 'fa-circle-exclamation'
+                                    : 'fa-hourglass-half'
                                 } text-2xl`}></i>
                         </div>
                         <div>
-                            <h4 className="text-lg font-bold text-black">Status</h4>
+                            <h4 className="text-lg font-bold text-black">Estado</h4>
                             <span className="text-xs font-medium text-slate-500 group">
                                 <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                Current status of your account monthly payment.
+                                Estado atual do pagamento mensal.
                             </span>
                         </div>
                     </div>
                     <div className="flex items-end justify-between">
                         <span className={`text-2xl font-bold ${(personalInfo?.paid?.toLowerCase() === 'sim' || personalInfo?.paid?.toLowerCase() === 'yes' || personalInfo?.paid?.toLowerCase() === 'pago')
-                                ? 'text-emerald-500'
-                                : (personalInfo?.paid?.toLowerCase() === 'pendente')
-                                    ? 'text-red-500'
-                                    : 'text-amber-500'
+                            ? 'text-emerald-500'
+                            : (personalInfo?.paid?.toLowerCase() === 'pendente')
+                                ? 'text-red-500'
+                                : 'text-amber-500'
                             }`}>
                             {personalInfo?.paid || 'N/A'}
                         </span>
@@ -175,7 +175,7 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             <h4 className="text-lg font-bold text-black">Pesagens</h4>
                             <span className="text-xs font-medium text-slate-500 group">
                                 <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                Total count of weight measurements recorded.
+                                Total de medições de peso registadas.
                             </span>
                         </div>
                     </div>
@@ -213,7 +213,7 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             <h4 className="text-lg font-bold text-black">Avaliações</h4>
                             <span className="text-xs font-medium text-slate-500 group">
                                 <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                Total number of physical assessments completed.
+                                Total de avaliações físicas realizadas.
                             </span>
                         </div>
                     </div>
@@ -243,7 +243,7 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             <h4 className="text-lg font-bold text-black">Perímetros</h4>
                             <span className="text-xs font-medium text-slate-500 group">
                                 <i className="fa-duotone fa-circle-info text-sm text-slate-400 group-hover:text-primary cursor-help transition-colors mr-1.5"></i>
-                                Total number of body measurements recorded.
+                                Total de medições corporais registadas.
                             </span>
                         </div>
                     </div>

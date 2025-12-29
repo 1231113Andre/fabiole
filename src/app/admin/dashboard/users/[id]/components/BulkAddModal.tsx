@@ -20,8 +20,13 @@ export function BulkAddModal({ isOpen, onClose, type, onSave, isSubmitting }: Bu
         0: [{ id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] }]
     });
     const [currentPage, setCurrentPage] = useState(0);
+    // Track manual overrides per row: { rowId: Set<fieldName> }
+    const [rowOverrides, setRowOverrides] = useState<Record<string, Set<string>>>({});
 
     const MAX_ROWS_PER_PAGE = 13;
+
+    // Auto-calculated fields for pesagens
+    const AUTO_FIELDS = ['mm', 'h2o', 'imc', 'resultadoIMC'];
 
     if (!isOpen) return null;
 
@@ -34,37 +39,56 @@ export function BulkAddModal({ isOpen, onClose, type, onSave, isSubmitting }: Bu
 
     const calculateAutoFields = (row: BulkRow, field: string, value: any): BulkRow => {
         const newRow = { ...row, [field]: value };
+        const overrides = rowOverrides[row.id] || new Set<string>();
 
         if (type === 'pesagens') {
             const peso = parseFloat(newRow.peso) || 0;
             const height = parseFloat(newRow.height) || 0;
+            const percentualMG = parseFloat(newRow.percentualMG) || 0;
+            const massaOssea = parseFloat(newRow.massaOssea) || 0;
 
-            // Auto-calculate IMC
-            if (field === 'peso' || field === 'height') {
+            // Auto-calculate IMC - only if not manually overridden
+            if ((field === 'peso' || field === 'height') && !overrides.has('imc')) {
                 if (peso > 0 && height > 0) {
                     const heightM = height / 100;
                     const imc = peso / (heightM * heightM);
                     newRow.imc = imc.toFixed(1);
-                    // IMC Result Text - replicating simplified logic for display
-                    let result = "";
-                    if (imc < 18.5) result = "Abaixo";
-                    else if (imc < 24.9) result = "Normal";
-                    else if (imc < 29.9) result = "Sobrepeso";
-                    else if (imc < 34.9) result = "Obes. I";
-                    else if (imc < 39.9) result = "Obes. II";
-                    else result = "Obes. III";
-                    newRow.resultadoIMC = result;
+                    // IMC Result Text
+                    if (!overrides.has('resultadoIMC')) {
+                        let result = "";
+                        if (imc < 18.5) result = "Abaixo";
+                        else if (imc < 24.9) result = "Normal";
+                        else if (imc < 29.9) result = "Sobrepeso";
+                        else if (imc < 34.9) result = "Obes. I";
+                        else if (imc < 39.9) result = "Obes. II";
+                        else result = "Obes. III";
+                        newRow.resultadoIMC = result;
+                    }
                 } else {
                     newRow.imc = '';
-                    newRow.resultadoIMC = '';
+                    if (!overrides.has('resultadoIMC')) {
+                        newRow.resultadoIMC = '';
+                    }
                 }
             }
 
-            // Auto-calculate other results if needed, e.g. Res %MG
-            // Assuming this logic mimics PesagemModal if it has specific rules,
-            // otherwise just taking input data for display.
-            // Using placeholder logic for demonstration if exact formula isn't in PesagemModal snippet provided.
+            // Auto-calculate MM (Muscle Mass) - only if not manually overridden
+            if ((field === 'peso' || field === 'percentualMG' || field === 'massaOssea') && !overrides.has('mm')) {
+                if (peso > 0 && percentualMG > 0) {
+                    const mm = peso * (1 - percentualMG / 100) - massaOssea;
+                    newRow.mm = mm > 0 ? mm.toFixed(2) : '';
+                }
+            }
 
+            // Auto-calculate H2O - only if not manually overridden
+            if (field === 'peso' && !overrides.has('h2o')) {
+                if (peso > 0) {
+                    // Simplified H2O calculation (approximately 60% for males, 55% for females)
+                    // This is a rough estimate; the actual hook uses gender
+                    const h2o = peso * 0.6; // Default to male approximation
+                    newRow.h2o = h2o.toFixed(1);
+                }
+            }
         }
         return newRow;
     };
@@ -97,6 +121,16 @@ export function BulkAddModal({ isOpen, onClose, type, onSave, isSubmitting }: Bu
     const updateRow = (id: string, field: string, value: any) => {
         const row = currentRows.find(r => r.id === id);
         if (!row) return;
+
+        // If user is directly editing an auto-calculated field, mark it as manually overridden
+        if (AUTO_FIELDS.includes(field)) {
+            setRowOverrides(prev => {
+                const existing = prev[id] || new Set<string>();
+                const updated = new Set(existing);
+                updated.add(field);
+                return { ...prev, [id]: updated };
+            });
+        }
 
         const updatedRow = calculateAutoFields(row, field, value);
         updatePage(currentPage, currentRows.map(r => r.id === id ? updatedRow : r));
@@ -143,8 +177,17 @@ export function BulkAddModal({ isOpen, onClose, type, onSave, isSubmitting }: Bu
     };
 
     const inputClass = "w-full px-2 py-2 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all";
-    const autoInputClass = "w-full px-2 py-2 text-xs border border-violet-200 bg-violet-50 text-violet-700 font-bold rounded outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition-all cursor-default";
+    const autoInputClass = "w-full px-2 py-2 text-xs border border-violet-200 bg-violet-50 text-violet-700 font-bold rounded outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 transition-all";
+    const manualInputClass = "w-full px-2 py-2 text-xs border border-amber-200 bg-amber-50 text-amber-700 font-bold rounded outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all";
     const readOnlyClass = "w-full px-2 py-2 text-xs border border-transparent bg-gray-50 text-gray-500 font-medium rounded outline-none cursor-default";
+
+    // Helper to get appropriate class for auto fields
+    const getAutoFieldClass = (rowId: string, field: string, hasValue: boolean) => {
+        const isOverridden = rowOverrides[rowId]?.has(field);
+        if (isOverridden) return manualInputClass;
+        if (hasValue) return inputClass;
+        return autoInputClass;
+    };
 
     const renderHeader = () => {
         switch (type) {
@@ -218,12 +261,34 @@ export function BulkAddModal({ isOpen, onClose, type, onSave, isSubmitting }: Bu
 
                         {/* Composition */}
                         <div className="relative">
-                            <input type="number" step="0.01" placeholder="kg" value={row.mm || ''} onChange={(e) => updateRow(row.id, 'mm', e.target.value)} className={row.mm ? inputClass : autoInputClass} />
-                            {!row.mm && <i className="fa-duotone fa-robot absolute right-2 top-1/2 -translate-y-1/2 text-violet-400 text-xs"></i>}
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="kg"
+                                value={row.mm || ''}
+                                onChange={(e) => updateRow(row.id, 'mm', e.target.value)}
+                                className={getAutoFieldClass(row.id, 'mm', !!row.mm)}
+                            />
+                            {rowOverrides[row.id]?.has('mm') ? (
+                                <i className="fa-duotone fa-pen-to-square absolute right-2 top-1/2 -translate-y-1/2 text-amber-400 text-xs" title="Manual"></i>
+                            ) : (
+                                <i className="fa-duotone fa-robot absolute right-2 top-1/2 -translate-y-1/2 text-violet-400 text-xs" title="Auto"></i>
+                            )}
                         </div>
                         <div className="relative">
-                            <input type="number" step="0.01" placeholder="%" value={row.h2o || ''} onChange={(e) => updateRow(row.id, 'h2o', e.target.value)} className={row.h2o ? inputClass : autoInputClass} />
-                            {!row.h2o && <i className="fa-duotone fa-robot absolute right-2 top-1/2 -translate-y-1/2 text-violet-400 text-xs"></i>}
+                            <input
+                                type="number"
+                                step="0.01"
+                                placeholder="%"
+                                value={row.h2o || ''}
+                                onChange={(e) => updateRow(row.id, 'h2o', e.target.value)}
+                                className={getAutoFieldClass(row.id, 'h2o', !!row.h2o)}
+                            />
+                            {rowOverrides[row.id]?.has('h2o') ? (
+                                <i className="fa-duotone fa-pen-to-square absolute right-2 top-1/2 -translate-y-1/2 text-amber-400 text-xs" title="Manual"></i>
+                            ) : (
+                                <i className="fa-duotone fa-robot absolute right-2 top-1/2 -translate-y-1/2 text-violet-400 text-xs" title="Auto"></i>
+                            )}
                         </div>
 
                         <input type="number" step="0.1" placeholder="Nív" value={row.gordVisceral || ''} onChange={(e) => updateRow(row.id, 'gordVisceral', e.target.value)} className={inputClass} />

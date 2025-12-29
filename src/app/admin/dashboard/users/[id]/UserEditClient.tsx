@@ -10,16 +10,16 @@ import { useUserEdit } from "./hooks/useUserEdit";
 import { useRecordOperations } from "./hooks/useRecordOperations";
 
 // Lazy load sections for better performance
-const PesagensSection = lazy(() => 
+const PesagensSection = lazy(() =>
     import("./components/PesagensSection").then(module => ({ default: module.PesagensSection }))
 );
-const PerimetrosSection = lazy(() => 
+const PerimetrosSection = lazy(() =>
     import("./components/PerimetrosSection").then(module => ({ default: module.PerimetrosSection }))
 );
-const AvaliacoesSection = lazy(() => 
+const AvaliacoesSection = lazy(() =>
     import("./components/AvaliacoesSection").then(module => ({ default: module.AvaliacoesSection }))
 );
-const DefinicoeSection = lazy(() => 
+const DefinicoeSection = lazy(() =>
     import("./components/DefinicoeSection").then(module => ({ default: module.DefinicoeSection }))
 );
 
@@ -51,6 +51,37 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
         handleSaveUser
     } = useUserEdit(userId, initialUser);
 
+    // Removed duplicate state declaration
+
+    const handleLocalUpdate = (endpoint: string, record: any, isDelete: boolean = false) => {
+        setUser(prev => {
+            const listKey = endpoint as keyof Pick<UserData, 'pesagens' | 'perimetros' | 'avaliacoes'>;
+            if (!prev[listKey]) return prev;
+
+            let newList: any[] = [...(prev[listKey] as any[])];
+
+            if (isDelete) {
+                newList = newList.filter(item => item.id !== record.id);
+            } else {
+                const index = newList.findIndex(item => item.id === record.id);
+                if (index >= 0) {
+                    newList[index] = record;
+                } else {
+                    // Add new record at the beginning (assuming desc order) or end?
+                    // Usually pesagens are sorted by date desc. 
+                    // Let's just prepend for visibility, or append?
+                    // PesagensTable sorts by date, so order in array doesn't matter strictly but prepending is safer for "recently added" feel if no sort.
+                    newList = [record, ...newList];
+                }
+            }
+
+            return {
+                ...prev,
+                [listKey]: newList
+            };
+        });
+    };
+
     const {
         isDeleting,
         handleSaveRecord,
@@ -58,7 +89,8 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
         executeDelete
     } = useRecordOperations({
         userId,
-        fetchUser,
+        fetchUser, // Keeping fetchUser for backup/background sync
+        onLocalUpdate: handleLocalUpdate,
         setSuccess,
         setError,
         setSaving
@@ -109,7 +141,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                 </div>
             )}
             {success && (
-                <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 flex items-center gap-2">
+                <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 flex items-start gap-3">
                     <i className="fa-duotone fa-check-circle"></i>
                     {success}
                 </div>
@@ -151,7 +183,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                     <Suspense fallback={<LoadingSection />}>
                         <PesagensSection
                             pesagens={user.pesagens}
-                            onSave={(e, id) => handleSaveRecord('pesagens', e, id)}
+                            onSave={(e, id, originalRecord) => handleSaveRecord('pesagens', e, id, originalRecord)}
                             onBulkSave={(data) => handleBulkSave('pesagens', data)}
                             onDelete={(id) => handleDeleteRecord('pesagens', id, "Tem a certeza que deseja eliminar esta pesagem?")}
                             gender={user.gender}
@@ -163,7 +195,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                     <Suspense fallback={<LoadingSection />}>
                         <PerimetrosSection
                             perimetros={user.perimetros}
-                            onSave={(e, id) => handleSaveRecord('perimetros', e, id)}
+                            onSave={(e, id, originalRecord) => handleSaveRecord('perimetros', e, id, originalRecord)}
                             onBulkSave={(data) => handleBulkSave('perimetros', data)}
                             onDelete={(id) => handleDeleteRecord('perimetros', id, "Tem a certeza que deseja eliminar este perímetro?")}
                         />
@@ -174,7 +206,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                     <Suspense fallback={<LoadingSection />}>
                         <AvaliacoesSection
                             avaliacoes={user.avaliacoes}
-                            onSave={(e, id) => handleSaveRecord('avaliacoes', e, id)}
+                            onSave={(e, id, originalRecord) => handleSaveRecord('avaliacoes', e, id, originalRecord)}
                             onBulkSave={(data) => handleBulkSave('avaliacoes', data)}
                             onDelete={(id) => handleDeleteRecord('avaliacoes', id, "Tem a certeza que deseja eliminar esta avaliação?")}
                         />

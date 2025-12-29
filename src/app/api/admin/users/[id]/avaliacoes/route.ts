@@ -21,18 +21,7 @@ async function checkAdmin() {
     return user?.role === 'ADMINISTRATOR' ? session : null;
 }
 
-// Helper to convert empty strings to null and parse integers
-function parseIntOrNull(value: any): number | null {
-    if (value === undefined || value === null || value === '') return null;
-    const parsed = parseInt(value, 10);
-    return isNaN(parsed) ? null : parsed;
-}
-
-// Helper to convert empty strings to null for string fields
-function parseStringOrNull(value: any): string | null {
-    if (value === undefined || value === null || value === '') return null;
-    return String(value);
-}
+import { sanitizeInt, sanitizeStringValue } from "@/lib/utils/sanitizers";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const admin = await checkAdmin();
@@ -53,11 +42,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             data: {
                 user_uuid,
                 date: new Date(body.date),
-                pushUps: parseIntOrNull(body.pushUps),
-                sitUps: parseIntOrNull(body.sitUps),
-                mile: parseStringOrNull(body.mile),
-                mileResult: parseStringOrNull(body.mileResult),
-                notes: parseStringOrNull(body.notes),
+                pushUps: sanitizeInt(body.pushUps),
+                sitUps: sanitizeInt(body.sitUps),
+                mile: sanitizeStringValue(body.mile),
+                mileResult: sanitizeStringValue(body.mileResult),
+                notes: sanitizeStringValue(body.notes),
             }
         });
 

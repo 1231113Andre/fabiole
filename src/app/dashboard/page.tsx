@@ -91,7 +91,7 @@ export default async function DashboardOverviewPage() {
                 iconPosition="left"
                 className="w-full sm:w-auto min-w-[200px] shadow-md uppercase font-bold pr-10"
               >
-                Painel Admin
+                Admin Panel
               </NewButton>
 
               {/* Tooltip Wrapper - Positioned Top Right */}

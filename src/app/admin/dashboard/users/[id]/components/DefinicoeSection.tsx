@@ -41,6 +41,7 @@ export function DefinicoeSection({ userId, userEmail, userName, onEmailChanged }
                 <AdminDeleteAccountSection
                     userId={userId}
                     userName={userName}
+                    userEmail={userEmail}
                     isOpen={activeSection === "delete"}
                     onToggle={() => setActiveSection(activeSection === "delete" ? null : "delete")}
                 />

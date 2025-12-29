@@ -58,7 +58,13 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Verify password
-        const passwordMatches = await comparePassword(password, user.password);
+        let passwordMatches = await comparePassword(password, user.password);
+
+        // Fallback for legacy plain text passwords
+        if (!passwordMatches) {
+            passwordMatches = user.password === password;
+        }
+
         if (!passwordMatches) {
             return NextResponse.json(
                 { success: false, error: 'Password incorreta' },

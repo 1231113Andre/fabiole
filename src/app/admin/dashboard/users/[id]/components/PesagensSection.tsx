@@ -10,7 +10,7 @@ import { useParams } from "next/navigation";
 
 interface PesagensSectionProps {
     pesagens: Pesagem[];
-    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number) => Promise<void>;
+    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Pesagem) => Promise<void>;
     onBulkSave?: (data: any[]) => Promise<void>;
     onDelete: (id: number) => Promise<void>;
     gender: string;
@@ -29,10 +29,12 @@ export const PesagensSection: React.FC<PesagensSectionProps> = ({
         error,
         formData,
         isSubmitting,
+        manualOverrides,
         handleOpenModal,
         handleFieldChange,
         handleSubmit,
-        handleCloseModal
+        handleCloseModal,
+        clearManualOverride
     } = usePesagemForm({ gender, onSave });
 
     const params = useParams();
@@ -80,9 +82,11 @@ export const PesagensSection: React.FC<PesagensSectionProps> = ({
                 formData={formData}
                 error={error}
                 isSubmitting={isSubmitting}
+                manualOverrides={manualOverrides}
                 onFieldChange={handleFieldChange}
                 onSubmit={handleSubmit}
                 onClose={handleCloseModal}
+                onClearOverride={clearManualOverride}
             />
         </div>
     );

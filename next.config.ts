@@ -118,13 +118,13 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Performance headers for images
+      // Performance headers for dynamic images (avatars, etc.) - short cache for updates
       {
         source: '/_next/image/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            value: 'public, max-age=60, stale-while-revalidate=300',
           },
         ],
       },

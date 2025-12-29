@@ -21,16 +21,17 @@ export const FinancialSection: React.FC<FinancialSectionProps> = React.memo(({ u
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label className={labelClasses}>
-                        <i className="fa-duotone fa-credit-card text-emerald-500/70 text-[10px]"></i>
-                        Montante a pagar (€)
+                        <i className="fa-duotone fa-dumbbell text-emerald-500/70 text-[10px]"></i>
+                        Treinos em Crédito
                     </label>
                     <input
                         type="number"
-                        step="0.01"
+                        step="1"
+                        min="0"
                         value={user.trainingCredit}
-                        onChange={(e) => onChange('trainingCredit', parseFloat(e.target.value))}
+                        onChange={(e) => onChange('trainingCredit', parseInt(e.target.value) || 0)}
                         className={inputClasses}
-                        placeholder="0.00"
+                        placeholder="0"
                     />
                 </div>
                 <div>

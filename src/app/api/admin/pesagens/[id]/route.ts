@@ -22,18 +22,29 @@ async function checkAdmin() {
 }
 
 // Helper function to convert empty strings to null and parse numbers
-function sanitizeValue(value: any): number | null | string | undefined {
+function sanitizeValue(value: any): number | null | undefined {
     if (value === null || value === undefined || value === '') {
         return undefined; // Use undefined for update to skip field
     }
     if (typeof value === 'string' && value.trim() === '') {
         return undefined;
     }
-    // For numeric fields, try to parse
-    if (typeof value === 'string' && !isNaN(parseFloat(value))) {
-        return parseFloat(value);
+    // Parse as number
+    const num = parseFloat(value);
+    return !isNaN(num) ? num : undefined;
+}
+
+// Helper for string fields - ensures proper string type and filters invalid values
+function sanitizeStringValue(value: any): string | null | undefined {
+    if (value === null || value === undefined || value === '') {
+        return undefined;
     }
-    return value;
+    const strValue = String(value).trim();
+    // Filter out spreadsheet errors
+    if (strValue.startsWith('#') || strValue === '') {
+        return undefined;
+    }
+    return strValue;
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -58,9 +69,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         if (body.gordVisceral !== undefined) updateData.gordVisceral = sanitizeValue(body.gordVisceral);
         if (body.idMetabolica !== undefined) updateData.idMetabolica = sanitizeValue(body.idMetabolica);
         if (body.massaOssea !== undefined) updateData.massaOssea = sanitizeValue(body.massaOssea);
-        if (body.resultadoIMC !== undefined) updateData.resultadoIMC = body.resultadoIMC || null;
-        if (body.resultadoPercentMG !== undefined) updateData.resultadoPercentMG = body.resultadoPercentMG || null;
-        if (body.notas !== undefined) updateData.notas = body.notas || null;
+        // String fields - ensure proper type conversion
+        if (body.resultadoIMC !== undefined) updateData.resultadoIMC = sanitizeStringValue(body.resultadoIMC);
+        if (body.resultadoPercentMG !== undefined) updateData.resultadoPercentMG = sanitizeStringValue(body.resultadoPercentMG);
+        if (body.notas !== undefined) updateData.notas = sanitizeStringValue(body.notas);
 
         const pesagem = await db.pesagem.update({
             where: { id: Number(id) },

@@ -54,21 +54,21 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = React.memo(({ u
                     </p>
                 </div>
 
-                {/* Crédito - with description */}
+                {/* Treinos em Crédito - integer value */}
                 <div className="border-b border-gray-200/60 pb-3">
                     <div className="flex justify-between items-center text-sm mb-1">
                         <span className="text-gray-600 font-semibold flex items-center gap-2">
-                            <i className="fa-duotone fa-coins text-emerald-500/70 text-xs"></i>
-                            Montante a pagar
+                            <i className="fa-duotone fa-dumbbell text-emerald-500/70 text-xs"></i>
+                            Treinos em Crédito
                         </span>
-                        <span className="font-bold text-emerald-600">{formatCurrency(user.trainingCredit || 0)}</span>
+                        <span className="font-bold text-emerald-600">{user.trainingCredit || 0}</span>
                     </div>
                     <p className="text-xs text-gray-500 leading-tight">
-                        Saldo disponível para sessões de treino.
+                        Sessões não utilizadas transitam para o mês seguinte.
                     </p>
                 </div>
 
-                {/* Dívida - color matches payment status */}
+                {/* Dívida - with description */}
                 <div className="border-b border-gray-200/60 pb-3">
                     <div className="flex justify-between items-center text-sm mb-1">
                         <span className="text-gray-600 font-semibold flex items-center gap-2">
@@ -77,7 +77,7 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = React.memo(({ u
                                     user.paid === 'EM ANÁLISE' ? 'text-amber-500' :
                                         'text-gray-400'
                                 }`}></i>
-                            Valor em Dívida
+                            Valor em Dívida (€)
                         </span>
                         <span className={`font-bold ${user.paid === 'PAGO' ? 'text-emerald-600' :
                             user.paid === 'PENDENTE' ? 'text-red-500' :
@@ -87,19 +87,12 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = React.memo(({ u
                             {formatCurrency(user.debtValue || 0)}
                         </span>
                     </div>
-                    <p className={`text-xs leading-tight ${user.paid === 'PAGO' ? 'text-emerald-600/80' :
-                        user.paid === 'PENDENTE' ? 'text-red-500/80' :
-                            user.paid === 'EM ANÁLISE' ? 'text-amber-600/80' :
-                                'text-gray-500'
-                        }`}>
-                        {user.paid === 'PAGO' && 'Conta regularizada.'}
-                        {user.paid === 'PENDENTE' && 'Valores pendentes a regularizar.'}
-                        {user.paid === 'EM ANÁLISE' && 'Aguarda verificação de pagamento.'}
-                        {(!user.paid || user.paid === '-') && 'Status de pagamento não definido.'}
+                    <p className="text-xs text-gray-500 leading-tight">
+                        Quantia pendente a regularizar.
                     </p>
                 </div>
 
-                {/* Agendados - with info */}
+                {/* Agendados - with description */}
                 <div className="border-b border-gray-200/60 pb-3">
                     <div className="flex justify-between items-center text-sm mb-1">
                         <span className="text-gray-600 font-semibold flex items-center gap-2">
@@ -111,9 +104,7 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = React.memo(({ u
                         </span>
                     </div>
                     <p className="text-xs text-gray-500 leading-tight">
-                        {(user.trainingsScheduled || 0) > 0
-                            ? `${user.trainingsScheduled} sessão(ões) marcada(s).`
-                            : 'Nenhum treino agendado.'}
+                        Número de sessões atualmente marcadas.
                     </p>
                 </div>
 

@@ -10,6 +10,13 @@ interface PesagemRowProps {
     onDelete: (id: number) => void;
 }
 
+// Helper to check if a value is valid (not a spreadsheet error like #REF!)
+const isValidValue = (val: any): boolean => {
+    if (val === null || val === undefined) return false;
+    if (typeof val === 'string' && (val.startsWith('#') || val === '')) return false;
+    return true;
+};
+
 export const PesagemRow: React.FC<PesagemRowProps> = ({
     pesagem: p,
     gender,
@@ -30,17 +37,17 @@ export const PesagemRow: React.FC<PesagemRowProps> = ({
             <td className="py-3 px-2 text-center font-semibold text-gray-900">{p.percentualMG ? `${p.percentualMG}%` : '-'}</td>
             <td className="py-3 px-2 text-center">
                 <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-[10px] font-bold">
-                    {metrics.mm || p.mm || '-'}
+                    {p.mm ?? metrics.mm ?? '-'}
                 </span>
             </td>
             <td className="py-3 px-2 text-center">
                 <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-[10px] font-bold">
-                    {metrics.h2o || p.h2o || '-'}
+                    {p.h2o ?? metrics.h2o ?? '-'}
                 </span>
             </td>
             <td className="py-3 px-2 text-center">
                 <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded text-[10px] font-bold">
-                    {metrics.bmi || p.imc || '-'}
+                    {p.imc ?? metrics.bmi ?? '-'}
                 </span>
             </td>
             <td className="py-3 px-2 text-center text-gray-600">{p.gordVisceral || '-'}</td>
@@ -48,12 +55,12 @@ export const PesagemRow: React.FC<PesagemRowProps> = ({
             <td className="py-3 px-2 text-center text-gray-600">{p.massaOssea || '-'}</td>
             <td className="py-3 px-2 text-center">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getBmiClassColor(metrics.bmiClass)}`}>
-                    {metrics.bmiClass || p.resultadoIMC || '-'}
+                    {isValidValue(p.resultadoIMC) ? p.resultadoIMC : (metrics.bmiClass || '-')}
                 </span>
             </td>
             <td className="py-3 px-2 text-center">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getFatClassColor(metrics.fatClass)}`}>
-                    {metrics.fatClass || p.resultadoPercentMG || '-'}
+                    {isValidValue(p.resultadoPercentMG) ? p.resultadoPercentMG : (metrics.fatClass || '-')}
                 </span>
             </td>
             <td className="py-3 px-2 text-right">

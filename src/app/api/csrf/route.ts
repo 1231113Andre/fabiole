@@ -10,16 +10,16 @@ const CSRF_COOKIE_MAX_AGE = 60 * 60 * 24; // 24 hours
  */
 export async function GET(request: NextRequest) {
     const existingToken = request.cookies.get(CSRF_COOKIE_NAME);
-    
+
     if (existingToken) {
-        return NextResponse.json({ 
+        return NextResponse.json({
             token: existingToken.value,
             message: 'Token already exists'
         });
     }
 
     const csrfToken = generateCsrfTokenSync();
-    const response = NextResponse.json({ 
+    const response = NextResponse.json({
         token: csrfToken,
         message: 'Token generated'
     });
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     response.cookies.set(CSRF_COOKIE_NAME, csrfToken, {
         httpOnly: false, // Must be readable by JavaScript
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        sameSite: 'lax', // Changed from 'strict' for better Vercel compatibility
         maxAge: CSRF_COOKIE_MAX_AGE,
         path: '/',
     });

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { UserData } from "../types";
 
@@ -7,7 +7,8 @@ export function useUserEdit(userId: string, initialUser: UserData) {
     const [user, setUser] = useState<UserData>(initialUser);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState<string | null>(null);
+
+    const [success, setSuccess] = useState<React.ReactNode | null>(null);
 
     const fetchUser = useCallback(async () => {
         try {

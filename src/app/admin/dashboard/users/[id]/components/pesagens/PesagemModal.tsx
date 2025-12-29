@@ -17,9 +17,11 @@ interface PesagemModalProps {
     formData: Partial<Pesagem>;
     error: string | null;
     isSubmitting?: boolean;
+    manualOverrides?: Set<keyof Pesagem>;
     onFieldChange: (field: keyof Pesagem, value: any) => void;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     onClose: () => void;
+    onClearOverride?: (field: keyof Pesagem) => void;
 }
 
 function FormInput({
@@ -32,9 +34,10 @@ function FormInput({
     step,
     required,
     placeholder,
-    readOnly,
-    isAuto,
-    showAuto
+    isAutoField,
+    isManuallyOverridden,
+    onClearOverride,
+    canAutoCalculate
 }: {
     label: string;
     icon: string;
@@ -45,17 +48,50 @@ function FormInput({
     step?: string;
     required?: boolean;
     placeholder?: string;
-    readOnly?: boolean;
-    isAuto?: boolean;
-    showAuto?: boolean;
+    isAutoField?: boolean;
+    isManuallyOverridden?: boolean;
+    onClearOverride?: () => void;
+    canAutoCalculate?: boolean;
 }) {
+    // Determine display state
+    const showAutoMode = isAutoField && !isManuallyOverridden && canAutoCalculate;
+    const showManualMode = isAutoField && isManuallyOverridden;
+
     return (
         <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                <i className={`fa-duotone ${icon} ${isAuto ? 'text-violet-500/70' : 'text-primary/70'} text-[10px]`}></i>
+                <i className={`fa-duotone ${icon} ${showAutoMode ? 'text-violet-500/70' : 'text-primary/70'} text-[10px]`}></i>
                 {label} {required && <span className="text-red-500">*</span>}
-                {showAuto && (
-                    <span className="ml-auto text-[10px] text-violet-600 font-bold bg-violet-100 px-1.5 py-0.5 rounded">🤖 Auto</span>
+                {isAutoField && (
+                    <span className="ml-auto flex items-center gap-1">
+                        {showManualMode ? (
+                            <button
+                                type="button"
+                                onClick={onClearOverride}
+                                className="text-[9px] text-amber-600 font-bold bg-amber-100 hover:bg-amber-200 px-1.5 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                                title="Clique para restaurar cálculo automático"
+                            >
+                                <i className="fa-duotone fa-pen-to-square text-[8px]"></i>
+                                Manual
+                                <i className="fa-duotone fa-rotate-right text-[8px] opacity-70"></i>
+                            </button>
+                        ) : canAutoCalculate ? (
+                            <button
+                                type="button"
+                                onClick={onClearOverride}
+                                className="text-[9px] text-violet-600 font-bold bg-violet-100 hover:bg-violet-200 px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors"
+                                title="Valor calculado automaticamente. Clique para recalcular."
+                            >
+                                <i className="fa-duotone fa-robot text-[8px]"></i>
+                                Auto
+                                <i className="fa-duotone fa-rotate text-[7px] opacity-70"></i>
+                            </button>
+                        ) : (
+                            <span className="text-[9px] text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">
+                                Aguarda dados
+                            </span>
+                        )}
+                    </span>
                 )}
             </label>
             <input
@@ -66,9 +102,9 @@ function FormInput({
                 onChange={(e) => onChange(type === 'number' ? parseFloat(e.target.value) : e.target.value)}
                 placeholder={placeholder}
                 required={required}
-                readOnly={readOnly}
-                className={`w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all ${isAuto ? 'bg-violet-50 border-violet-200 font-bold text-violet-700' :
-                    readOnly ? 'bg-gray-50 border-gray-200' : 'border-gray-200'
+                className={`w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all ${showAutoMode ? 'bg-violet-50 border-violet-200 font-bold text-violet-700' :
+                    showManualMode ? 'bg-amber-50 border-amber-200 font-bold text-amber-700' :
+                        'border-gray-200'
                     }`}
             />
         </div>
@@ -81,9 +117,11 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
     formData,
     error,
     isSubmitting = false,
+    manualOverrides = new Set(),
     onFieldChange,
     onSubmit,
-    onClose
+    onClose,
+    onClearOverride
 }) => {
     if (!isOpen) return null;
 
@@ -191,8 +229,10 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                     value={formData.mm}
                                     onChange={(v) => onFieldChange('mm', v)}
                                     step="0.01"
-                                    showAuto={!!(formData.peso && (formData.percentualMG || formData.massaOssea))}
-                                    isAuto={!!(formData.peso && (formData.percentualMG || formData.massaOssea))}
+                                    isAutoField
+                                    isManuallyOverridden={manualOverrides.has('mm')}
+                                    canAutoCalculate={!!(formData.peso && (formData.percentualMG || formData.massaOssea))}
+                                    onClearOverride={() => onClearOverride?.('mm')}
                                 />
                                 <FormInput
                                     label="% Água"
@@ -201,8 +241,10 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                     value={formData.h2o}
                                     onChange={(v) => onFieldChange('h2o', v)}
                                     step="0.01"
-                                    showAuto={!!formData.peso}
-                                    isAuto={!!formData.peso}
+                                    isAutoField
+                                    isManuallyOverridden={manualOverrides.has('h2o')}
+                                    canAutoCalculate={!!formData.peso}
+                                    onClearOverride={() => onClearOverride?.('h2o')}
                                 />
                                 <FormInput
                                     label="Gord. Visceral"
@@ -243,8 +285,10 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                     value={formData.imc}
                                     onChange={(v) => onFieldChange('imc', v)}
                                     step="0.1"
-                                    readOnly
-                                    isAuto
+                                    isAutoField
+                                    isManuallyOverridden={manualOverrides.has('imc')}
+                                    canAutoCalculate={!!(formData.peso && formData.height)}
+                                    onClearOverride={() => onClearOverride?.('imc')}
                                 />
                                 <FormInput
                                     label="Resultado IMC"
@@ -253,7 +297,10 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                     type="text"
                                     value={formData.resultadoIMC}
                                     onChange={(v) => onFieldChange('resultadoIMC', v)}
-                                    readOnly
+                                    isAutoField
+                                    isManuallyOverridden={manualOverrides.has('resultadoIMC')}
+                                    canAutoCalculate={!!(formData.peso && formData.height)}
+                                    onClearOverride={() => onClearOverride?.('resultadoIMC')}
                                 />
                                 <FormInput
                                     label="Resultado %MG"
@@ -262,7 +309,10 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                     type="text"
                                     value={formData.resultadoPercentMG}
                                     onChange={(v) => onFieldChange('resultadoPercentMG', v)}
-                                    readOnly
+                                    isAutoField
+                                    isManuallyOverridden={manualOverrides.has('resultadoPercentMG')}
+                                    canAutoCalculate={!!formData.percentualMG}
+                                    onClearOverride={() => onClearOverride?.('resultadoPercentMG')}
                                 />
                                 <div className="pt-1">
                                     <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
