@@ -60,9 +60,9 @@ export default async function ServerNavbar() {
         <>
             <header
                 id="main-header"
-                className="absolute top-0 left-0 w-full z-[1000] flex justify-center px-4 ui-flex-center transition-all duration-300 mt-[19px]"
+                className="absolute top-0 left-0 w-full z-[1000] flex justify-center px-4 ui-flex-center transition-all duration-300 mt-2"
             >
-                <div className="ui-container relative mx-auto flex h-[var(--navbar-height)] w-full max-w-7xl items-center justify-center px-4 sm:px-8 lg:px-12">
+                <div className="ui-container relative mx-auto flex h-20 w-full max-w-7xl items-center justify-center px-4 sm:px-8 lg:px-12">
                     {/* Mobile Menu Button - Client Component for interactivity */}
                     <ClientMobileMenu navItems={navItems} initialUser={initialUser} />
 
@@ -72,17 +72,29 @@ export default async function ServerNavbar() {
                         <Link
                             href="/"
                             id="main-logo-link"
-                            className="flex shrink-0 items-center transition-transform duration-200 hover:scale-105 active:scale-95"
+                            className="group flex items-center gap-0.75 transition-opacity duration-200 hover:opacity-90 py-2"
                             prefetch={true}
                         >
-                            <Image
-                                id="main-logo-image"
-                                src={ASSETS.logo}
-                                alt="Fábio Lé Logo"
-                                width={80}
-                                height={80}
-                                className="w-20 h-20 object-contain"
-                            />
+                            <div className="relative flex h-20 w-24 flex-shrink-0 items-center justify-center">
+                                <Image
+                                    id="main-logo-image"
+                                    src={ASSETS.logo}
+                                    alt="Fábio Lé Logo"
+                                    width={600}
+                                    height={600}
+                                    quality={100}
+                                    priority
+                                    className="absolute left-1/2 top-[65%] h-40 w-40 -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-md max-w-none"
+                                />
+                            </div>
+                            <div className="flex flex-col justify-center">
+                                <span className="font-montserrat text-2xl font-bold leading-none tracking-wide text-white drop-shadow-md whitespace-nowrap">
+                                    FÁBIO LÉ
+                                </span>
+                                <span className="font-montserrat text-xs font-bold leading-none tracking-[0.35em] text-primary drop-shadow-sm mt-1 whitespace-nowrap">
+                                    PERSONAL TRAINER
+                                </span>
+                            </div>
                         </Link>
 
                         {/* Desktop Navigation */}
@@ -108,7 +120,7 @@ export default async function ServerNavbar() {
                     <Link
                         href="/"
                         id="main-logo-link-mobile"
-                        className="mx-auto flex items-center lg:hidden"
+                        className="relative mx-auto flex h-12 w-12 items-center justify-center lg:hidden"
                         prefetch={true}
                     >
                         <Image
@@ -116,8 +128,15 @@ export default async function ServerNavbar() {
                             alt="Fábio Lé Logo"
                             width={64}
                             height={64}
-                            className="h-12 w-12 object-contain"
+                            quality={100}
+                            priority
+                            className="h-12 w-12 object-contain drop-shadow-md"
                         />
+                        <div className="ml-3 flex flex-col justify-center">
+                            <span className="font-montserrat text-lg font-bold leading-none tracking-wide text-white whitespace-nowrap">
+                                FÁBIO LÉ
+                            </span>
+                        </div>
                     </Link>
                 </div>
             </header>

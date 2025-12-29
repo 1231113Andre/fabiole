@@ -3,17 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import NewButton from '@/app/components/newButton';
 import AuthModal from '@/components/auth/AuthModal';
-import { useQueryClient } from '@tanstack/react-query';
+import { useSession } from '@/lib/react-query/hooks/useAuth';
 
 interface User {
     name?: string;
     surname?: string;
     email?: string;
-}
-
-interface SessionData {
-    authenticated?: boolean;
-    user?: User;
 }
 
 interface InteractiveAuthButtonsProps {
@@ -23,30 +18,14 @@ interface InteractiveAuthButtonsProps {
 
 /**
  * Interactive Auth Buttons - handles login/register modal and session state
- * Uses session-updated custom event for instant navbar updates after login/logout
+ * Uses useSession hook for automatic updates
  */
 export default function InteractiveAuthButtons({ initialUser, mobile = false }: InteractiveAuthButtonsProps) {
     const [isAuthModalOpen, setAuthModalOpen] = useState(false);
     const [authModalView, setAuthModalView] = useState<'login' | 'register'>('login');
-    const queryClient = useQueryClient();
 
-    // Session state - initialized from cache, updated via event
-    const [session, setSession] = useState<SessionData | undefined>(() =>
-        queryClient.getQueryData(['session'])
-    );
-
-    // Single event listener for session updates - most efficient approach
-    useEffect(() => {
-        const handleSessionUpdated = (event: Event) => {
-            const { detail } = event as CustomEvent<SessionData>;
-            if (detail) {
-                setSession(detail);
-            }
-        };
-
-        window.addEventListener('session-updated', handleSessionUpdated);
-        return () => window.removeEventListener('session-updated', handleSessionUpdated);
-    }, []);
+    // Use the hook directly - no manual event listeners needed
+    const { data: session } = useSession();
 
     // Derive user from session or initial SSR data
     const user = session?.user || initialUser;

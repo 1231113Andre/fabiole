@@ -49,16 +49,27 @@ export function useDashboardData(initialData?: UserSheetData): UseDashboardDataR
         refetch
     } = useUserData(false, initialData);
 
-    const user = sessionData?.user;
-    const isAuthenticated = Boolean(sessionData?.authenticated && user);
-
     const transformedData = useMemo(() => {
         // Use shared transformer
         return transformDashboardData(userData);
     }, [userData]);
 
+    const user = useMemo(() => {
+        if (!sessionData?.user) return undefined;
+
+        // Prefer the avatar from the database (refreshed via refetch) over the session avatar (which might be stale)
+        const dbAvatar = transformedData?.personalInfo?.avatarUrl;
+
+        return {
+            ...sessionData.user,
+            avatarUrl: dbAvatar || sessionData.user.avatarUrl
+        };
+    }, [sessionData?.user, transformedData?.personalInfo?.avatarUrl]);
+
+    const isAuthenticated = Boolean(sessionData?.authenticated && user);
+
     return {
-        ...transformedData, // ...
+        ...transformedData,
         isLoading: isSessionLoading || isUserDataLoading,
         isRefreshing: isFetching,
         error: error as Error | null,

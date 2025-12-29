@@ -3,10 +3,8 @@ export interface PersonalInfo {
     email: string;
     birthDate: string;
     phone?: string;
-    height?: string;
-    weight?: string;
-    goals?: string;
-    notes?: string;
+    height: string;
+    weight: string;
     lastUpdate?: string;
     trainingCredit?: string;
     trainingsScheduled?: string;
@@ -15,8 +13,11 @@ export interface PersonalInfo {
     q1?: string;
     q2?: string;
     q3?: string;
-    q4?: string;
-    age?: string;
+    q4: string;
+    goals: string;
+    notes: string;
+    age: string;
+    avatarUrl?: string; // Properly added
 }
 
 export interface Pesagem {

@@ -4,8 +4,8 @@ import NewButton from "@/app/components/newButton";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { FinancialSummary } from "./userEdit/FinancialSummary";
 import { PersonalInfoSection } from "./userEdit/PersonalInfoSection";
-import { FinancialSection } from "./userEdit/FinancialSection";
-import { NotesSection } from "./userEdit/NotesSection";
+import { FinancialForm } from "@/components/admin/users/forms/FinancialForm";
+import { NotesForm } from "@/components/admin/users/forms/NotesForm";
 
 interface UserEditFormProps {
     user: UserData;
@@ -51,10 +51,10 @@ export const UserEditForm: React.FC<UserEditFormProps> = React.memo(({
             <PersonalInfoSection user={user} onChange={handleChange} />
 
             {/* Financial Section */}
-            <FinancialSection user={user} onChange={handleChange} />
+            <FinancialForm data={user} onChange={handleChange} />
 
             {/* Notes Section */}
-            <NotesSection user={user} onChange={handleChange} />
+            <NotesForm data={user} onChange={handleChange} />
 
             {/* Save Button */}
             <div className="flex justify-end pt-4 border-t border-gray-100">

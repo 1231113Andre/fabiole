@@ -6,6 +6,9 @@ import ClientAuthModal from './ClientAuthModal';
 import { useSession } from '@/lib/react-query/hooks/useAuth';
 import NewButton from '@/app/components/newButton';
 import AuthModal from '@/components/auth/AuthModal';
+import Image from 'next/image';
+import { ASSETS } from '@/lib/constants/assets';
+
 
 interface NavItem {
     href: string;
@@ -91,7 +94,10 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
             >
                 <div className="flex flex-col h-full">
                     {/* Mobile Menu Header */}
-                    <div className="relative flex items-center justify-end bg-gradient-to-r from-[var(--background)] to-[color-mix(in oklab, var(--muted) 20%, transparent)] p-5">
+                    <div className="relative flex items-center justify-between bg-gradient-to-r from-[var(--background)] to-[color-mix(in oklab, var(--muted) 20%, transparent)] p-5">
+                        <Link href="/" className="flex items-center" onClick={closeMenu}>
+                            <Image src={ASSETS.logo} alt="Logo" width={40} height={40} />
+                        </Link>
                         <button
                             id="mobile-menu-close-btn"
                             onClick={closeMenu}

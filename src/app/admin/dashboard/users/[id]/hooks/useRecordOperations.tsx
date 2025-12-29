@@ -1,17 +1,17 @@
-import React, { useState, useCallback } from "react";
-import { UserData } from "../types";
+import React, { useCallback } from "react";
+import { useRecordMutations } from "./useRecordMutations";
 
 interface UseRecordOperationsProps {
     userId: string;
-    fetchUser: () => Promise<void>;
+    fetchUser: () => Promise<void>; // Kept for interface compatibility but largely unused now
     onLocalUpdate?: (endpoint: string, record: any, isDelete?: boolean) => void;
     setSuccess: (message: React.ReactNode | null) => void;
     setError: (message: string | null) => void;
     setSaving: (saving: boolean) => void;
 }
 
-export function useRecordOperations({ userId, fetchUser, onLocalUpdate, setSuccess, setError, setSaving }: UseRecordOperationsProps) {
-    const [isDeleting, setIsDeleting] = useState(false);
+export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setError, setSaving }: UseRecordOperationsProps) {
+    const { saveRecordMutation, bulkSaveMutation, deleteRecordMutation } = useRecordMutations(userId);
 
     const handleSaveRecord = useCallback(async (
         endpoint: string,
@@ -32,32 +32,21 @@ export function useRecordOperations({ userId, fetchUser, onLocalUpdate, setSucce
             }
         });
 
-        const url = editingId
-            ? `/api/admin/${endpoint}/${editingId}`
-            : `/api/admin/users/${userId}/${endpoint}`;
-
-        const method = editingId ? 'PUT' : 'POST';
+        setSaving(true);
+        setSuccess(null);
+        setError(null);
 
         try {
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+            const savedRecord = await saveRecordMutation.mutateAsync({
+                endpoint,
+                payload,
+                editingId
             });
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error || "Erro ao guardar registo");
-            }
-
-            const savedRecord = await response.json();
-
-            // Instant UI update
+            // Local callback for non-React Query updates (if any parent still needs it)
             if (onLocalUpdate) {
                 onLocalUpdate(endpoint, savedRecord);
             }
-
-            fetchUser();
 
             // Generate Diff Message
             const endpointNames: Record<string, string> = {
@@ -111,7 +100,7 @@ export function useRecordOperations({ userId, fetchUser, onLocalUpdate, setSucce
 
                 const formatValue = (key: string, val: any) => {
                     if (key === 'date') return formatDate(val);
-                    if (typeof val === 'number') return Math.round(val * 100) / 100; // round to 2 decimals
+                    if (typeof val === 'number') return Math.round(val * 100) / 100;
                     return val;
                 };
 
@@ -169,8 +158,10 @@ export function useRecordOperations({ userId, fetchUser, onLocalUpdate, setSucce
             setTimeout(() => setSuccess(null), 5000);
         } catch (err: any) {
             setError(err.message);
+        } finally {
+            setSaving(false);
         }
-    }, [userId, fetchUser, onLocalUpdate, setSuccess, setError]);
+    }, [saveRecordMutation, onLocalUpdate, setSuccess, setError, setSaving]);
 
     const handleBulkSave = useCallback(async (endpoint: string, data: any[]) => {
         setSaving(true);
@@ -180,33 +171,17 @@ export function useRecordOperations({ userId, fetchUser, onLocalUpdate, setSucce
         try {
             const records = data.map(record => {
                 const payload: any = { ...record };
-                // Remove temp id if it exists
                 if (typeof payload.id === 'string' && payload.id.startsWith('temp_')) {
                     delete payload.id;
                 }
-
-                // Note: The bulk endpoints will handle sanitization using the shared utility on the server side.
-                // However, we can also sanitize here to ensure clean data is sent.
-                // For now, we'll send the raw data and let the API handle it, 
-                // but we should ensure 'date' is present.
-
                 return payload;
             });
 
-            const response = await fetch(`/api/admin/users/${userId}/${endpoint}/bulk`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(records)
+            const result = await bulkSaveMutation.mutateAsync({
+                endpoint,
+                records
             });
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error || "Erro ao guardar registos");
-            }
-
-            const result = await response.json();
-
-            await fetchUser();
             setSuccess(`${result.count} registos adicionados com sucesso!`);
             setTimeout(() => setSuccess(null), 3000);
         } catch (err: any) {
@@ -214,42 +189,25 @@ export function useRecordOperations({ userId, fetchUser, onLocalUpdate, setSucce
         } finally {
             setSaving(false);
         }
-    }, [userId, fetchUser, setSuccess, setError, setSaving]);
+    }, [bulkSaveMutation, setSuccess, setError, setSaving]);
 
     const executeDelete = useCallback(async (endpoint: string, id: number) => {
-        setIsDeleting(true);
         try {
-            const response = await fetch(`/api/admin/${endpoint}/${id}`, {
-                method: 'DELETE'
-            });
+            await deleteRecordMutation.mutateAsync({ endpoint, id });
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                // Ignore P2025 (Record to delete does not exist) - treat as success
-                if (errData.code !== 'P2025') {
-                    throw new Error(errData.error || "Erro ao eliminar");
-                }
-            }
-
-            // Instant UI update
             if (onLocalUpdate) {
                 onLocalUpdate(endpoint, { id }, true);
             }
-
-            // Background fetch
-            fetchUser();
 
             setSuccess("Registo eliminado com sucesso");
             setTimeout(() => setSuccess(null), 3000);
         } catch (err: any) {
             setError("Erro: " + err.message);
-        } finally {
-            setIsDeleting(false);
         }
-    }, [fetchUser, onLocalUpdate, setSuccess, setError]);
+    }, [deleteRecordMutation, onLocalUpdate, setSuccess, setError]);
 
     return {
-        isDeleting,
+        isDeleting: deleteRecordMutation.isPending,
         handleSaveRecord,
         handleBulkSave,
         executeDelete

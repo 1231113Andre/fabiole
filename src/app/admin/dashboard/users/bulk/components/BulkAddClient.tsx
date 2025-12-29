@@ -24,7 +24,7 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
 
     // Use React Query for fetching latest user data
     const { data: userData } = useQuery({
-        queryKey: ['user', initialUser.id],
+        queryKey: ['adminUser', initialUser.id],
         queryFn: async () => {
             const response = await fetch(`/api/admin/users/${initialUser.id}`);
             if (!response.ok) throw new Error("Failed to fetch user");

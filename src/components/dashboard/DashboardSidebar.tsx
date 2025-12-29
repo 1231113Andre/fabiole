@@ -6,6 +6,8 @@ import Image from "next/image";
 
 // ============================================
 // TYPES
+import { ASSETS } from "@/lib/constants/assets";
+
 // ============================================
 interface MenuItem {
     id: string;
@@ -38,48 +40,38 @@ const SIDEBAR_WIDTH_COLLAPSED = "90px";
 
 /** Brand logo section */
 const BrandSection = memo(function BrandSection({
-    brandIcon,
-    brandLogo,
-    brandName,
     isCollapsed
 }: {
-    brandIcon: string;
+    brandIcon?: string;
     brandLogo?: string;
-    brandName: string;
+    brandName?: string;
     isCollapsed: boolean;
 }) {
     return (
-        <div className={`flex items-center gap-3 px-6 py-6 border-b border-gray-200 ${isCollapsed ? "justify-center" : ""}`}>
-            <div className="w-11 h-11 min-w-11 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white text-lg shadow-lg shadow-primary/25 overflow-hidden relative">
-                {brandLogo ? (
-                    <div className="w-full h-full p-2 flex items-center justify-center">
-                        <Image
-                            src={brandLogo}
-                            alt="Logo"
-                            width={32}
-                            height={32}
-                            className="w-auto h-auto max-w-full max-h-full object-contain"
-                        />
-                    </div>
-                ) : (
-                    <i className={`fa-duotone ${brandIcon}`} aria-hidden="true" />
-                )}
+        <div className={`flex items-center px-6 py-2 border-b border-gray-100 ${isCollapsed ? "justify-center" : ""}`}>
+            {/* Logo Anchor */}
+            <div className={`relative flex h-14 w-14 flex-shrink-0 items-center justify-center`}>
+                <Image
+                    src={ASSETS.logo}
+                    alt="Fábio Lé Logo"
+                    width={600}
+                    height={600}
+                    quality={100}
+                    priority
+                    className="absolute left-1/2 top-[65%] h-32 w-32 -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-md max-w-none"
+                />
             </div>
+
+            {/* Text */}
             {!isCollapsed && (
-                <span className="text-xl font-extrabold text-gray-900 tracking-tight">
-                    {brandName.includes("FABIOLE") ? (
-                        <div className="flex flex-col leading-none">
-                            <span className="text-lg font-black bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent">
-                                FABIOLE
-                            </span>
-                            <span className="text-[10px] font-bold text-gray-400 mt-0.5 tracking-[0.2em] uppercase">
-                                {brandName.split("FABIOLE")[1].trim()}
-                            </span>
-                        </div>
-                    ) : (
-                        brandName
-                    )}
-                </span>
+                <div className="flex flex-col justify-center ml-4 -mt-1">
+                    <span className="font-montserrat text-lg font-bold leading-none tracking-wide text-gray-900 whitespace-nowrap">
+                        FÁBIO LÉ
+                    </span>
+                    <span className="font-montserrat text-[10px] font-bold leading-none tracking-[0.35em] text-primary mt-1 whitespace-nowrap">
+                        PERSONAL TRAINER
+                    </span>
+                </div>
             )}
         </div>
     );

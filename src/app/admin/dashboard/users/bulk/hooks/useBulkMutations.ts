@@ -30,7 +30,7 @@ export function useBulkMutations() {
         onSuccess: (_, { userId }) => {
             toast.success("Registos guardados com sucesso!");
             // Invalidate user query to refetch fresh data
-            queryClient.invalidateQueries({ queryKey: ['user', userId] });
+            queryClient.invalidateQueries({ queryKey: ['adminUser', userId] });
             router.push(`/admin/dashboard/users/${userId}`);
         },
         onError: (error: Error) => {

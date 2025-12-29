@@ -56,6 +56,7 @@ export const Avatar: React.FC<AvatarProps> = ({
                     onError={() => setError(true)}
                     sizes={`${size}px`}
                     priority={size > 100}
+                    unoptimized
                 />
             </div>
         );

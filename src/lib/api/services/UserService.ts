@@ -94,7 +94,8 @@ export class UserService {
         age: userDB.birth ? calculateAge(userDB.birth) : '',
         // Legacy
         notas: userDB.notes || '',
-        inicio: userDB.gender || ''
+        inicio: userDB.gender || '',
+        avatarUrl: userDB.avatarUrl || undefined
       };
 
       // User gender for %MG classification

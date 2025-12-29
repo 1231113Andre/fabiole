@@ -1,63 +1,52 @@
-import React, { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import { UserData } from "../types";
+import { useAdminUser } from "./useAdminUser";
+import { useRecordMutations } from "./useRecordMutations";
 
 export function useUserEdit(userId: string, initialUser: UserData) {
-    const router = useRouter();
-    const [user, setUser] = useState<UserData>(initialUser);
-    const [saving, setSaving] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // 1. Fetch data with React Query (automatic caching & background updates)
+    const { data, refetch, error: queryError } = useAdminUser(userId, initialUser);
 
+    // 2. Local state for form editing
+    const [user, setUser] = useState<UserData>(initialUser);
+    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<React.ReactNode | null>(null);
 
-    const fetchUser = useCallback(async () => {
-        try {
-            const response = await fetch(`/api/admin/users/${userId}`);
-            if (response.status === 403) {
-                router.push("/admin/dashboard");
-                return;
-            }
-            if (!response.ok) throw new Error("Erro ao carregar utilizador");
-            const data = await response.json();
+    // 3. Sync local state when server data updates (e.g. background refetch)
+    // Only if we are not "dirty"? For admin dash, usually we want fresh data.
+    // Ideally we'd separate View vs Edit modes, but for now strict sync is safer.
+    useEffect(() => {
+        if (data) {
             setUser(data);
-        } catch (err: any) {
-            setError(err.message);
         }
-    }, [userId, router]);
+    }, [data]);
+
+    // 4. Mutations
+    const { updateUserMutation } = useRecordMutations(userId);
 
     const handleSaveUser = useCallback(async () => {
         if (!user) return;
-        setSaving(true);
         setError(null);
         setSuccess(null);
 
         try {
-            const response = await fetch(`/api/admin/users/${userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(user)
-            });
-
-            if (!response.ok) throw new Error("Erro ao guardar");
+            await updateUserMutation.mutateAsync(user);
             setSuccess("Utilizador guardado com sucesso!");
-            await fetchUser();
         } catch (err: any) {
             setError(err.message);
-        } finally {
-            setSaving(false);
         }
-    }, [user, userId, fetchUser]);
+    }, [user, updateUserMutation]);
 
     return {
-        user,
+        user: user || data || initialUser, // Fallback chain
         setUser,
-        saving,
-        setSaving,
-        error,
+        saving: updateUserMutation.isPending,
+        setSaving: () => { }, // No-op, managed by mutation isPending
+        error: error || (queryError ? queryError.message : null),
         success,
         setError,
         setSuccess,
-        fetchUser,
+        fetchUser: async () => { await refetch(); },
         handleSaveUser
     };
 }

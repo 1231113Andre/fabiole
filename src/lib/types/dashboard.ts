@@ -18,6 +18,7 @@ export interface PersonalInfo {
     // Legacy fields
     notas?: string;
     inicio?: string;
+    avatarUrl?: string;
 }
 
 export interface Pesagem {

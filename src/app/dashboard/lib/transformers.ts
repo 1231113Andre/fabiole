@@ -185,6 +185,7 @@ export function transformPersonalInfo(userData: UserSheetData, lastWeight?: numb
         q3: userData.personalInfo.q3 || "",
         q4: userData.personalInfo.q4 || "",
         age: userData.personalInfo.age || "",
+        avatarUrl: userData.personalInfo.avatarUrl || undefined,
     };
 }
 

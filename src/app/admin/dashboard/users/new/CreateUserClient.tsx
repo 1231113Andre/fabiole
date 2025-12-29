@@ -6,11 +6,14 @@ import { useNotification } from "@/components/NotificationContext";
 import { CreateUserFormData } from "./components/types";
 import { CreateUserHeader } from "./components/CreateUserHeader";
 import { PersonalInfoSection } from "./components/PersonalInfoSection";
-import { FinancialSection } from "./components/FinancialSection";
-import { NotesSection } from "./components/NotesSection";
+import { FinancialForm } from "@/components/admin/users/forms/FinancialForm";
+import { NotesForm } from "@/components/admin/users/forms/NotesForm";
 import { FormActions } from "./components/FormActions";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 export function CreateUserClient() {
+    const queryClient = useQueryClient();
     const router = useRouter();
     const { notify } = useNotification();
     const [loading, setLoading] = useState(false);
@@ -90,6 +93,7 @@ export function CreateUserClient() {
             }
 
             notify("Utilizador criado com sucesso!", "success");
+            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
             router.push(`/admin/dashboard/users/${data.user.id}`);
             router.refresh();
         } catch (error: any) {
@@ -116,14 +120,14 @@ export function CreateUserClient() {
                         generatePassword={generatePassword}
                     />
 
-                    <FinancialSection
-                        formData={formData}
-                        handleChange={handleChange as any}
+                    <FinancialForm
+                        data={formData}
+                        onChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))}
                     />
 
-                    <NotesSection
-                        formData={formData}
-                        handleChange={handleChange as any}
+                    <NotesForm
+                        data={formData}
+                        onChange={(field, value) => setFormData(prev => ({ ...prev, [field]: value }))}
                     />
 
                     <FormActions
