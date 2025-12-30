@@ -1,0 +1,22 @@
+{
+    "Gordura Vital": {
+        "percent": "10 - 13%",
+        "description": "Nível mínimo de gordura, essencial para a saúde."
+    },
+    "Muito Magra (Performance)": {
+        "percent": "14 - 20%",
+        "description": "Típico de atletas com foco em definição."
+    },
+    "Saudável e Boa Forma": {
+        "percent": "21 - 24%",
+        "description": "Nível considerado saudável e em boa forma."
+    },
+    "Nível Médio ⚠️": {
+        "percent": "25 - 31%",
+        "description": "Pode indicar necessidade de atenção."
+    },
+    "Elevado ❌": {
+        "percent": "32%+",
+        "description": "Risco para a saúde."
+    }
+}

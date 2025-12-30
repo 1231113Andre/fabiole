@@ -228,7 +228,22 @@ export function transformDashboardData(userData: UserSheetData | null | undefine
     const pesagens = transformPesagens(userData.pesagens || []);
     const perimetros = transformPerimetros(userData.perimetros || []);
     const avaliacoes = transformAvaliacoes(userData.avaliacoes || []);
-    const referenceTables = (userData.referenceTables || {}) as ReferenceTables;
+    // Load static reference data
+    const staticReferences: ReferenceTables = {
+        massaGordaMasculino: require("@/lib/data/references/male/massa_gorda.json"),
+        flexoesMasculino: require("@/lib/data/references/male/flexoes.json"),
+        abdominaisMasculino: require("@/lib/data/references/male/abdominais.json"),
+        milhaMasculino: require("@/lib/data/references/male/teste_milha.json"),
+        massaGordaFeminino: require("@/lib/data/references/female/massa_gorda.json"),
+        flexoesFeminino: require("@/lib/data/references/female/flexoes.json"),
+        abdominaisFeminino: require("@/lib/data/references/female/abdominais.json"),
+        milhaFeminino: require("@/lib/data/references/female/teste_milha.json"),
+    };
+
+    const referenceTables = {
+        ...staticReferences,
+        ...(userData.referenceTables || {})
+    } as ReferenceTables;
 
     // Transform personal info
     const lastWeight = pesagens.length > 0 ? pesagens[0].peso : undefined;
