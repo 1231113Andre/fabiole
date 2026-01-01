@@ -1,14 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { hashPassword } from "@/lib/security/password";
-import { checkAdmin } from "@/lib/api/utils/adminAuth";
+import { hashPassword, validatePasswordStrength } from "@/lib/security/password";
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
+import { Logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/sanitizers";
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
     const body = await req.json();
     const { newPassword } = body;
@@ -17,18 +14,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ error: 'Nova password é obrigatória' }, { status: 400 });
     }
 
-    // Validate password strength
-    if (newPassword.length < 8) {
-        return NextResponse.json({ error: 'Password deve ter pelo menos 8 caracteres' }, { status: 400 });
-    }
-    if (!/[A-Z]/.test(newPassword)) {
-        return NextResponse.json({ error: 'Password deve conter pelo menos uma letra maiúscula' }, { status: 400 });
-    }
-    if (!/[a-z]/.test(newPassword)) {
-        return NextResponse.json({ error: 'Password deve conter pelo menos uma letra minúscula' }, { status: 400 });
-    }
-    if (!/[0-9]/.test(newPassword)) {
-        return NextResponse.json({ error: 'Password deve conter pelo menos um número' }, { status: 400 });
+    // Validate password strength using shared helper
+    const validation = validatePasswordStrength(newPassword);
+    if (!validation.isValid) {
+        return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     try {
@@ -45,11 +34,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             data: { password: hashedPassword }
         });
 
-        console.log(`✅ [Admin] Password changed for user: ${user.email} by admin: ${admin.email}`);
+        Logger.success('Security', `Administrative Credential Update: Password for User [${user.email}] has been changed by Admin [${session.email}].`);
 
         return NextResponse.json({ success: true, message: 'Password alterada com sucesso' });
-    } catch (error) {
-        console.error('Admin change password error:', error);
-        return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
+    } catch (error: unknown) {
+        Logger.error('Security', `Administrative Credential Update Failure: Error changing password for User ID [${id}].`, error);
+        return NextResponse.json({ error: 'Erro interno', message: getErrorMessage(error) }, { status: 500 });
     }
-}
+});

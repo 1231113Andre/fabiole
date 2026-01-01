@@ -1,14 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { checkAdmin } from "@/lib/api/utils/adminAuth";
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/sanitizers";
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
     const body = await req.json();
     const { newEmail } = body;
@@ -42,11 +38,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             data: { email: newEmail }
         });
 
-        Logger.success('Security', `Administrative Identity Maintenance: Email address for User ID [${user.id}] has been updated by Admin [${admin.email}]. Change mapping: ${user.email} -> ${newEmail}.`);
+        Logger.success('Security', `Administrative Identity Maintenance: Email address for User ID [${user.id}] has been updated by Admin [${session.email}]. Change mapping: ${user.email} -> ${newEmail}.`);
 
         return NextResponse.json({ success: true, message: 'Email alterado com sucesso' });
-    } catch (error) {
-        Logger.error('Security', `Administrative Identity Update Failure: A critical exception occurred while Admin [${admin.email}] attempted to update the email for User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
+    } catch (error: unknown) {
+        Logger.error('Security', `Administrative Identity Update Failure: A critical exception occurred while Admin [${session.email}] attempted to update the email for User ID [${id}].`, error);
+        return NextResponse.json({ error: 'Erro interno', message: getErrorMessage(error) }, { status: 500 });
     }
-}
+});

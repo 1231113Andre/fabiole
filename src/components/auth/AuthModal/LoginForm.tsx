@@ -32,6 +32,7 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
     const { notify } = useNotification();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [lockoutSeconds, setLockoutSeconds] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(false); // Instant loading state
     const loginMutation = useLogin();
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -65,6 +66,9 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
     }, [lockoutSeconds, setError, clearErrors]);
 
     const onSubmit: SubmitHandler<LoginSchema> = (data) => {
+        // Instant visual feedback
+        setIsLoading(true);
+        
         loginMutation.mutate(
             {
                 email: data.email,
@@ -82,6 +86,7 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
                     }, 800);
                 },
                 onError: (error: any) => {
+                    setIsLoading(false);
                     // Check if this is a lockout error with countdown
                     if (error.lockoutSeconds) {
                         setLockoutSeconds(error.lockoutSeconds);
@@ -103,7 +108,7 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
         </button>
     );
 
-    const isSubmitting = loginMutation.isPending;
+    const isSubmitting = isLoading || loginMutation.isPending;
     const isLocked = lockoutSeconds !== null && lockoutSeconds > 0;
 
     return (

@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { checkAdmin } from "@/lib/api/utils/adminAuth";
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { invalidatePerimetrosCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
 import { clearUserData } from "@/lib/cache/userCache";
+import { sanitizeValue, getErrorMessage } from "@/lib/utils/sanitizers";
 
 interface PerimetroRecord {
     date: string;
@@ -18,17 +19,10 @@ interface PerimetroRecord {
     thighL?: unknown;
 }
 
-import { sanitizeValue, getErrorMessage } from "@/lib/utils/sanitizers";
-
 /**
  * Bulk create perimetros - much faster than sequential inserts
  */
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: user_uuid } = await params;
     const body = await req.json();
 
@@ -79,5 +73,4 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         console.error('Bulk create perimetros error:', error);
         return NextResponse.json({ error: 'Internal error', details: getErrorMessage(error) }, { status: 500 });
     }
-}
-
+});

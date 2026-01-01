@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { checkAdmin } from "@/lib/api/utils/adminAuth";
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { invalidateAvaliacoesCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
 import { clearUserData } from "@/lib/cache/userCache";
+import { sanitizeInt, sanitizeStringValue, getErrorMessage } from "@/lib/utils/sanitizers";
 
 interface AvaliacaoRecord {
     date: string;
@@ -13,17 +14,10 @@ interface AvaliacaoRecord {
     notes?: string | null;
 }
 
-import { sanitizeInt, getErrorMessage } from "@/lib/utils/sanitizers";
-
 /**
  * Bulk create avaliacoes - much faster than sequential inserts
  */
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: user_uuid } = await params;
     const body = await req.json();
 
@@ -44,9 +38,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             date: new Date(record.date),
             pushUps: sanitizeInt(record.pushUps),
             sitUps: sanitizeInt(record.sitUps),
-            mile: record.mile || null,
-            mileResult: record.mileResult || null,
-            notes: record.notes || null,
+            mile: sanitizeStringValue(record.mile),
+            mileResult: sanitizeStringValue(record.mileResult),
+            notes: sanitizeStringValue(record.notes),
         }));
 
         const result = await db.avaliacaoFisica.createMany({
@@ -69,5 +63,4 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         console.error('Bulk create avaliacoes error:', error);
         return NextResponse.json({ error: 'Internal error', details: getErrorMessage(error) }, { status: 500 });
     }
-}
-
+});

@@ -1,16 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { checkAdmin } from "@/lib/api/utils/adminAuth";
-import { sanitizeValue, sanitizeStringValue } from "@/lib/utils/sanitizers";
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
+import { sanitizeValue, sanitizeStringValue, getErrorMessage } from "@/lib/utils/sanitizers";
 import { invalidatePesagensCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
 import { clearUserData } from "@/lib/cache/userCache";
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: user_uuid } = await params;
     const body = await req.json();
 
@@ -50,6 +45,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json(pesagem);
     } catch (error: unknown) {
         console.error('Create pesagem error:', error);
-        return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
-}
+});

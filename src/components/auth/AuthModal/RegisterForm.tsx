@@ -9,6 +9,7 @@ import { z } from 'zod';
 
 import { useNotification } from '@/components/NotificationContext';
 import { useRegister } from '@/lib/react-query/hooks/useAuth';
+import { getCsrfToken } from '@/lib/react-query/hooks/useCsrfToken';
 import NewButton from '@/app/components/newButton';
 import { cn } from '@/lib/utils';
 import { Input } from './Input';
@@ -61,22 +62,13 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
         resolver: zodResolver(registerSchema),
     });
 
-    // Helper to get cookie by name
-    const getCookie = (name: string): string | null => {
-        if (typeof document === 'undefined') return null;
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-        return null;
-    };
-
     // Step 1: Send verification code
     const onSubmit: SubmitHandler<RegisterSchema> = async (data) => {
         setIsLoading(true);
         setFormData(data);
 
         try {
-            const csrfToken = getCookie('csrf-token');
+            const csrfToken = getCsrfToken();
             const headers: HeadersInit = {
                 'Content-Type': 'application/json'
             };
@@ -121,7 +113,7 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
         setVerifyError(undefined);
 
         try {
-            const csrfToken = getCookie('csrf-token');
+            const csrfToken = getCsrfToken();
             const headers: HeadersInit = {
                 'Content-Type': 'application/json'
             };
@@ -181,7 +173,7 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
         setVerifyError(undefined);
 
         try {
-            const csrfToken = getCookie('csrf-token');
+            const csrfToken = getCsrfToken();
             const headers: HeadersInit = {
                 'Content-Type': 'application/json'
             };
