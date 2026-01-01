@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { checkAdmin } from "@/lib/api/utils/adminAuth";
 import { sanitizeInt, sanitizeStringValue } from "@/lib/utils/sanitizers";
+import { invalidateAvaliacoesCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
+import { clearUserData } from "@/lib/cache/userCache";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const admin = await checkAdmin();
@@ -30,8 +32,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             }
         });
 
+        // Invalidate caches
+        invalidateAvaliacoesCache();
+        invalidateAdminUserDetail(user_uuid);
+        const user = await db.user.findUnique({ where: { id: user_uuid }, select: { email: true } });
+        if (user?.email) clearUserData(user.email);
+
         return NextResponse.json(avaliacao);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Create avaliacao error:', error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }

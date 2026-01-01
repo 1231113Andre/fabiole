@@ -157,14 +157,9 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
 
             // Success handled by hook (session update, notification)
             onClose();
-
-            // Redirect after brief delay
-            setTimeout(() => {
-                notify("Redirecting to your dashboard...", "loading");
-                setTimeout(() => {
-                    router.push("/dashboard");
-                }, 2000);
-            }, 1500);
+            
+            // Redirect immediately for snappy UX
+            router.push("/dashboard");
 
         } catch (error: any) {
             setVerifyError(error.message || 'Verification failed');

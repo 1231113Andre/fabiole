@@ -10,7 +10,7 @@ import { useRefreshData } from "@/lib/react-query/hooks/useUserData";
 import { useNotification } from "@/components/NotificationContext";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
-// Menu items configuration with hrefs
+// Menu items configuration with hrefs for Link prefetch
 const MENU_ITEMS = [
   { id: "overview", label: "Overview", icon: "fa-chart-line", href: "/dashboard" },
   { id: "personal", label: "Informações Pessoais", icon: "fa-user", href: "/dashboard/personal-data" },
@@ -88,15 +88,6 @@ export default function DashboardLayout({
     logoutMutation.mutate();
   }, [logoutMutation]);
 
-  const handleTabChange = useCallback((tabId: string) => {
-    const item = MENU_ITEMS.find(m => m.id === tabId);
-    if (item?.href) {
-      router.push(item.href);
-    }
-    // Close mobile sidebar
-    setSidebarOpen(false);
-  }, [router]);
-
   // Loading state
   if (isLoading || (!isLoading && !isAuthenticated)) {
     return (
@@ -110,12 +101,11 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-whiten dark:bg-boxdark-2 text-bodydark1">
-      {/* Sidebar */}
+      {/* Sidebar - uses Link prefetch for instant navigation */}
       <DashboardSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         activeTab={activeTab}
-        onTabChange={handleTabChange}
         menuItems={MENU_ITEMS}
         brandName="Fabiole"
         brandIcon="fa-dumbbell"

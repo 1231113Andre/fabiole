@@ -39,17 +39,6 @@ export default function AdminLayout({
         logoutMutation.mutate();
     }, [logoutMutation]);
 
-    const handleTabChange = useCallback((tabId: string) => {
-        // Simple navigation mapping
-        if (tabId === "overview") router.push("/admin/dashboard/overview");
-        if (tabId === "users") router.push("/admin/dashboard/users");
-        if (tabId === "create-user") router.push("/admin/dashboard/users/new");
-        if (tabId === "settings") router.push("/admin/dashboard/settings");
-        if (tabId === "import") router.push("/admin/bulk-import");
-
-        setSidebarOpen(false);
-    }, [router]);
-
     // Loading & Auth Check
     // (Middleware handles severe auth failures, but client check is nice)
     useEffect(() => {
@@ -70,12 +59,11 @@ export default function AdminLayout({
 
     return (
         <div className="flex min-h-screen bg-gray-50 text-gray-900">
-            {/* Admin Sidebar */}
+            {/* Admin Sidebar - uses Link prefetch for instant navigation */}
             <AdminSidebar
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
                 activeTab={activeTab}
-                onTabChange={handleTabChange}
                 userName={user?.name}
                 userSurname={user?.surname}
             />

@@ -1,6 +1,14 @@
 import { db } from '@/lib/db/client';
 import { AdminUser, RecentUser } from '@/app/admin/types';
 import { Logger } from '@/lib/utils/logger';
+import {
+    getAdminUsers,
+    setAdminUsers,
+    getRecentSignups,
+    setRecentSignups,
+    getAdminUserDetail,
+    setAdminUserDetail
+} from '@/lib/cache/adminCache';
 
 export interface AdminUserDetail {
     id: string;
@@ -64,8 +72,16 @@ export interface AdminUserDetail {
 export class AdminUserService {
     /**
      * Get all users with measurement counts and financial status
+     * Uses short-lived cache for performance
      */
     static async getAllUsers(): Promise<AdminUser[]> {
+        // Check cache first
+        const cached = getAdminUsers<AdminUser[]>();
+        if (cached) {
+            Logger.info('AdminUsers', 'Cache hit: returning cached user list');
+            return cached;
+        }
+
         Logger.info('AdminService', 'Initiating fetching of the complete master user directory.');
         const users = await db.user.findMany({
             select: {
@@ -92,7 +108,7 @@ export class AdminUserService {
             orderBy: { name: 'asc' }
         });
 
-        return users.map(u => ({
+        const result = users.map(u => ({
             id: u.id,
             name: u.name,
             surname: u.surname,
@@ -109,12 +125,25 @@ export class AdminUserService {
             trainingsScheduled: u.trainingsScheduled ?? 0,
             debtValue: u.debtValue ? Number(u.debtValue) : 0
         }));
+
+        // Cache for next requests
+        setAdminUsers(result);
+
+        return result;
     }
 
     /**
      * Get recent signups
+     * Uses short-lived cache for performance
      */
     static async getRecentSignups(limit: number = 5): Promise<RecentUser[]> {
+        // Check cache first
+        const cached = getRecentSignups<RecentUser[]>();
+        if (cached) {
+            Logger.info('AdminUsers', 'Cache hit: returning cached recent signups');
+            return cached;
+        }
+
         const recentSignups = await db.user.findMany({
             take: limit,
             orderBy: { createdAt: 'desc' },
@@ -130,7 +159,7 @@ export class AdminUserService {
             }
         });
 
-        return recentSignups.map(u => ({
+        const result = recentSignups.map(u => ({
             id: u.id,
             name: u.name,
             surname: u.surname,
@@ -140,12 +169,25 @@ export class AdminUserService {
             birth: u.birth?.toISOString() ?? null,
             avatarUrl: u.avatarUrl
         }));
+
+        // Cache for next requests
+        setRecentSignups(result);
+
+        return result;
     }
 
     /**
      * Get detailed user information by ID
+     * Uses short-lived cache (10s) for balance between freshness and performance
      */
     static async getUserById(userId: string): Promise<AdminUserDetail | null> {
+        // Check cache first
+        const cached = getAdminUserDetail<AdminUserDetail>(userId);
+        if (cached) {
+            Logger.info('AdminUsers', `Cache hit: returning cached user detail for ${userId}`);
+            return cached;
+        }
+
         Logger.info('AdminService', `Extracting comprehensive profile details for User ID: ${userId}.`);
         const user = await db.user.findUnique({
             where: { id: userId },
@@ -158,7 +200,7 @@ export class AdminUserService {
 
         if (!user) return null;
 
-        return {
+        const result: AdminUserDetail = {
             id: user.id,
             name: user.name,
             surname: user.surname,
@@ -216,5 +258,10 @@ export class AdminUserService {
                 notes: a.notes
             }))
         };
+
+        // Cache for next requests
+        setAdminUserDetail(userId, result);
+
+        return result;
     }
 }

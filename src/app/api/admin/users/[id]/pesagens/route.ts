@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { checkAdmin } from "@/lib/api/utils/adminAuth";
 import { sanitizeValue, sanitizeStringValue } from "@/lib/utils/sanitizers";
+import { invalidatePesagensCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
+import { clearUserData } from "@/lib/cache/userCache";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const admin = await checkAdmin();
@@ -37,8 +39,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             }
         });
 
+        // Invalidate relevant caches
+        invalidatePesagensCache();
+        invalidateAdminUserDetail(user_uuid);
+        
+        // Also invalidate user's client cache (get email from user)
+        const user = await db.user.findUnique({ where: { id: user_uuid }, select: { email: true } });
+        if (user?.email) clearUserData(user.email);
+
         return NextResponse.json(pesagem);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Create pesagem error:', error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }

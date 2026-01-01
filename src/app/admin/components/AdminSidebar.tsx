@@ -8,7 +8,7 @@ interface AdminSidebarProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    onTabChange: (tab: string) => void;
+    onTabChange?: (tab: string) => void; // Optional - not used with Link prefetch
     userName?: string;
     userSurname?: string;
 }

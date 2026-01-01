@@ -97,17 +97,15 @@ export function useLogin() {
 
   return useMutation<LoginResponse, Error, LoginData>({
     mutationFn: async (credentials: LoginData) => {
-      // Try to get CSRF token, wait up to 500ms if not immediately available
-      let csrfToken = getCsrfToken();
-      if (!csrfToken) {
-        csrfToken = await waitForCsrfToken(500);
-      }
+      // Login doesn't require CSRF (protected by rate limiting and lockout)
+      // Just get it synchronously if available, don't wait
+      const csrfToken = getCsrfToken();
 
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
 
-      // Add CSRF token to headers if available
+      // Add CSRF token to headers if available (optional for login)
       if (csrfToken) {
         headers["X-CSRF-Token"] = csrfToken;
       }
@@ -170,10 +168,11 @@ export function useRegister() {
 
   return useMutation<RegisterResponse, Error, RegisterData>({
     mutationFn: async (registerData: RegisterData) => {
-      // Try to get CSRF token, wait up to 500ms if not immediately available
+      // Get CSRF token - wait up to 100ms if not immediately available
+      // (should already be loaded by the time user fills the form)
       let csrfToken = getCsrfToken();
       if (!csrfToken) {
-        csrfToken = await waitForCsrfToken(500);
+        csrfToken = await waitForCsrfToken(100);
       }
 
       const headers: HeadersInit = {
@@ -235,10 +234,10 @@ export function useLogout() {
 
   return useMutation<void, Error, void>({
     mutationFn: async () => {
-      // Try to get CSRF token, wait up to 500ms if not immediately available
+      // Get CSRF token - wait up to 100ms if not immediately available
       let csrfToken = getCsrfToken();
       if (!csrfToken) {
-        csrfToken = await waitForCsrfToken(500);
+        csrfToken = await waitForCsrfToken(100);
       }
 
       const headers: HeadersInit = {};

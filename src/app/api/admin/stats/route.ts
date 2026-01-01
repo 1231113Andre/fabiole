@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
+import { toNumber, toISOStringOrNull } from "@/lib/utils/sanitizers";
 
 export const GET = withAdminAuth(async (req, session) => {
     try {
@@ -83,33 +84,33 @@ export const GET = withAdminAuth(async (req, session) => {
             email: u.email,
             role: u.role,
             gender: u.gender ?? null,
-            birth: u.birth?.toISOString() || '',
-            createdAt: u.createdAt?.toISOString() || '',
+            birth: toISOStringOrNull(u.birth) || '',
+            createdAt: toISOStringOrNull(u.createdAt) || '',
             avatarUrl: u.avatarUrl,
             pesagensCount: u._count.pesagens,
             perimetrosCount: u._count.perimetros,
             avaliacoesCount: u._count.avaliacoes,
-            trainingCredit: u.trainingCredit ? Number(u.trainingCredit) : 0,
+            trainingCredit: toNumber(u.trainingCredit) ?? 0,
             trainingsScheduled: u.trainingsScheduled ?? 0,
-            debtValue: u.debtValue ? Number(u.debtValue) : 0,
+            debtValue: toNumber(u.debtValue) ?? 0,
         }));
 
-        const formattedRecentPesagens = recentPesagens.map((p: any) => ({
+        const formattedRecentPesagens = recentPesagens.map((p: typeof recentPesagens[number]) => ({
             id: p.id,
             userId: p.user_uuid,
             date: p.date.toISOString(),
-            peso: p.peso,
+            peso: toNumber(p.peso),
             userName: p.user?.name,
             userSurname: p.user?.surname,
             avatarUrl: p.user?.avatarUrl,
             userRole: p.user?.role,
-            userBirth: p.user?.birth?.toISOString() || null
+            userBirth: toISOStringOrNull(p.user?.birth)
         }));
 
         const formattedRecentSignups = recentSignups.map((u: typeof recentSignups[number]) => ({
             ...u,
             createdAt: u.createdAt.toISOString(),
-            birth: u.birth ? u.birth.toISOString() : null
+            birth: toISOStringOrNull(u.birth)
         }));
 
         return NextResponse.json({

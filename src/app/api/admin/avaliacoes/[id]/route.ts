@@ -1,46 +1,41 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-
-// Helper to sanitize integer values
-function sanitizeInt(value: any): number | null | undefined {
-    if (value === undefined) return undefined;
-    if (value === null || value === '') return null;
-    const parsed = parseInt(value, 10);
-    return isNaN(parsed) ? null : parsed;
-}
-
-// Helper to sanitize string values
-function sanitizeString(value: any): string | null | undefined {
-    if (value === undefined) return undefined;
-    if (value === null || value === '') return null;
-    return String(value);
-}
+import { sanitizeIntForUpdate, sanitizeStringForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
+import { invalidateAvaliacoesCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
+import { clearUserData } from "@/lib/cache/userCache";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
     const body = await req.json();
 
     try {
-        // Build update data only for fields that are explicitly provided
-        const updateData: Record<string, any> = {};
+        const updateData: Record<string, unknown> = {};
 
         if (body.date !== undefined) updateData.date = new Date(body.date);
-        if (body.pushUps !== undefined) updateData.pushUps = sanitizeInt(body.pushUps);
-        if (body.sitUps !== undefined) updateData.sitUps = sanitizeInt(body.sitUps);
-        if (body.mile !== undefined) updateData.mile = sanitizeString(body.mile);
-        if (body.mileResult !== undefined) updateData.mileResult = sanitizeString(body.mileResult);
-        if (body.notes !== undefined) updateData.notes = sanitizeString(body.notes);
+        if (body.pushUps !== undefined) updateData.pushUps = sanitizeIntForUpdate(body.pushUps);
+        if (body.sitUps !== undefined) updateData.sitUps = sanitizeIntForUpdate(body.sitUps);
+        if (body.mile !== undefined) updateData.mile = sanitizeStringForUpdate(body.mile);
+        if (body.mileResult !== undefined) updateData.mileResult = sanitizeStringForUpdate(body.mileResult);
+        if (body.notes !== undefined) updateData.notes = sanitizeStringForUpdate(body.notes);
 
         const avaliacao = await db.avaliacaoFisica.update({
             where: { id: Number(id) },
-            data: updateData
+            data: updateData,
+            include: { user: { select: { id: true, email: true } } }
         });
 
+        // Invalidate caches
+        invalidateAvaliacoesCache();
+        if (avaliacao.user) {
+            invalidateAdminUserDetail(avaliacao.user.id);
+            if (avaliacao.user.email) clearUserData(avaliacao.user.email);
+        }
+
         return NextResponse.json(avaliacao);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Update avaliacao error:', error);
-        return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });
 
@@ -48,13 +43,26 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
     const { id } = await params;
 
     try {
+        // Get user info before deleting
+        const avaliacao = await db.avaliacaoFisica.findUnique({
+            where: { id: Number(id) },
+            include: { user: { select: { id: true, email: true } } }
+        });
+
         await db.avaliacaoFisica.delete({
             where: { id: Number(id) }
         });
 
+        // Invalidate caches
+        invalidateAvaliacoesCache();
+        if (avaliacao?.user) {
+            invalidateAdminUserDetail(avaliacao.user.id);
+            if (avaliacao.user.email) clearUserData(avaliacao.user.email);
+        }
+
         return NextResponse.json({ success: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Delete avaliacao error:', error);
-        return NextResponse.json({ error: 'Internal error', code: error.code, details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });

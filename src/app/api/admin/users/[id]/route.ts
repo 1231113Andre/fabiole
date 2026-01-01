@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { clearUserData } from "@/lib/cache/userCache";
+import { invalidateAdminUsers, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
+import { toNumber } from "@/lib/utils/sanitizers";
 
 export const GET = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -42,15 +44,15 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
             pesagens: user.pesagens.map((p: typeof user.pesagens[number]) => ({
                 id: p.id,
                 date: p.date.toISOString(),
-                peso: p.peso ? Number(p.peso) : null,
-                percentualMG: p.percentualMG ? Number(p.percentualMG) : null,
-                mm: p.mm ? Number(p.mm) : null,
-                h2o: p.h2o ? Number(p.h2o) : null,
-                imc: p.imc ? Number(p.imc) : null,
-                gordVisceral: p.gordVisceral ? Number(p.gordVisceral) : null,
-                idMetabolica: p.idMetabolica ? Number(p.idMetabolica) : null,
-                massaOssea: p.massaOssea ? Number(p.massaOssea) : null,
-                height: p.height ? Number(p.height) : null,
+                peso: toNumber(p.peso),
+                percentualMG: toNumber(p.percentualMG),
+                mm: toNumber(p.mm),
+                h2o: toNumber(p.h2o),
+                imc: toNumber(p.imc),
+                gordVisceral: toNumber(p.gordVisceral),
+                idMetabolica: toNumber(p.idMetabolica),
+                massaOssea: toNumber(p.massaOssea),
+                height: toNumber(p.height),
                 resultadoIMC: p.resultadoIMC,
                 resultadoPercentMG: p.resultadoPercentMG,
                 notas: p.notas
@@ -58,16 +60,16 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
             perimetros: user.perimetros.map((p: typeof user.perimetros[number]) => ({
                 id: p.id,
                 date: p.date.toISOString(),
-                msRight: p.msRight ? Number(p.msRight) : null,
-                msRightFlex: p.msRightFlex ? Number(p.msRightFlex) : null,
-                msLeft: p.msLeft ? Number(p.msLeft) : null,
-                msLeftFlex: p.msLeftFlex ? Number(p.msLeftFlex) : null,
-                chest: p.chest ? Number(p.chest) : null,
-                waist: p.waist ? Number(p.waist) : null,
-                abdomen: p.abdomen ? Number(p.abdomen) : null,
-                hips: p.hips ? Number(p.hips) : null,
-                thighR: p.thighR ? Number(p.thighR) : null,
-                thighL: p.thighL ? Number(p.thighL) : null
+                msRight: toNumber(p.msRight),
+                msRightFlex: toNumber(p.msRightFlex),
+                msLeft: toNumber(p.msLeft),
+                msLeftFlex: toNumber(p.msLeftFlex),
+                chest: toNumber(p.chest),
+                waist: toNumber(p.waist),
+                abdomen: toNumber(p.abdomen),
+                hips: toNumber(p.hips),
+                thighR: toNumber(p.thighR),
+                thighL: toNumber(p.thighL)
             })),
             avaliacoes: user.avaliacoes.map((a: typeof user.avaliacoes[number]) => ({
                 id: a.id,
@@ -113,8 +115,10 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
             data: updateData
         });
 
-        // Clear cache and sync backup to Sheets
+        // Clear caches
         clearUserData(user.email);
+        invalidateAdminUserDetail(id);
+        invalidateAdminUsers();
 
         return NextResponse.json({ success: true, user: { id: user.id, name: user.name } });
     } catch (error) {
@@ -133,9 +137,12 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
 
         await db.user.delete({ where: { id } });
 
+        // Clear caches
         if (user) {
             clearUserData(user.email);
         }
+        invalidateAdminUserDetail(id);
+        invalidateAdminUsers();
 
         return NextResponse.json({ success: true });
     } catch (error) {

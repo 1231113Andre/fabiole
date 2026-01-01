@@ -21,7 +21,7 @@ interface DashboardSidebarProps {
     isOpen: boolean;
     onClose: () => void;
     activeTab: string;
-    onTabChange: (tab: string) => void;
+    onTabChange?: (tab: string) => void; // Optional - not used with Link prefetch
     menuItems: MenuItem[];
     brandName?: string;
     brandIcon?: string;
@@ -79,37 +79,35 @@ const BrandSection = memo(function BrandSection({
     );
 });
 
-/** Single menu item button */
-const MenuItemButton = memo(function MenuItemButton({
+/** Single menu item - uses Link with prefetch for fast navigation */
+const MenuItemLink = memo(function MenuItemLink({
     item,
     isActive,
     isCollapsed,
-    onClick,
+    onNavigate,
 }: {
     item: MenuItem;
     isActive: boolean;
     isCollapsed: boolean;
-    onClick: () => void;
+    onNavigate?: () => void;
 }) {
     const iconClass = item.icon.includes("fa-duotone")
         ? item.icon
         : `fa-duotone ${item.icon.replace("fas ", "").replace("fa-", "fa-")}`;
 
-    return (
-        <button
-            onClick={onClick}
-            className={`
-                group relative flex items-center gap-3.5 px-5 py-3 mx-3 rounded-xl 
-                border-none text-[15px] font-semibold text-left cursor-pointer 
-                transition-all duration-200
-                ${isActive
-                    ? "bg-primary text-white shadow-lg shadow-primary/25"
-                    : "bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                }
-                ${isCollapsed ? "justify-center px-3 mx-2" : ""}
-            `}
-            title={isCollapsed ? item.label : ""}
-        >
+    const className = `
+        group relative flex items-center gap-3.5 px-5 py-3 mx-3 rounded-xl 
+        border-none text-[15px] font-semibold text-left cursor-pointer 
+        transition-all duration-200 no-underline
+        ${isActive
+            ? "bg-primary text-white shadow-lg shadow-primary/25"
+            : "bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+        }
+        ${isCollapsed ? "justify-center px-3 mx-2" : ""}
+    `;
+
+    const content = (
+        <>
             <i
                 className={`${iconClass} text-xl transition-colors duration-200 
                     ${isCollapsed ? "text-2xl" : "w-6 text-center"} 
@@ -117,6 +115,35 @@ const MenuItemButton = memo(function MenuItemButton({
                 aria-hidden="true"
             />
             {!isCollapsed && <span className="flex-1">{item.label}</span>}
+        </>
+    );
+
+    // Use Link with prefetch for href items (prefetches on hover/viewport)
+    if (item.href) {
+        return (
+            <Link
+                href={item.href}
+                prefetch={true}
+                className={className}
+                title={isCollapsed ? item.label : ""}
+                onClick={onNavigate}
+            >
+                {content}
+            </Link>
+        );
+    }
+
+    // Fallback to button for onClick items
+    return (
+        <button
+            onClick={() => {
+                item.onClick?.();
+                onNavigate?.();
+            }}
+            className={className}
+            title={isCollapsed ? item.label : ""}
+        >
+            {content}
         </button>
     );
 });
@@ -203,17 +230,12 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         });
     }, []);
 
-    const handleMenuClick = useCallback((item: MenuItem) => {
-        if (item.onClick) {
-            item.onClick();
-        } else {
-            onTabChange(item.id);
-        }
-        // Close mobile menu
+    // Close mobile menu on navigation
+    const handleNavigate = useCallback(() => {
         if (typeof window !== "undefined" && window.innerWidth < 1024) {
             onClose();
         }
-    }, [onTabChange, onClose]);
+    }, [onClose]);
 
     return (
         <>
@@ -249,12 +271,12 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                     <SectionLabel label="Menu" isCollapsed={isCollapsed} />
 
                     {menuItems.map((item) => (
-                        <MenuItemButton
+                        <MenuItemLink
                             key={item.id}
                             item={item}
                             isActive={activeTab === item.id}
                             isCollapsed={isCollapsed}
-                            onClick={() => handleMenuClick(item)}
+                            onNavigate={handleNavigate}
                         />
                     ))}
 

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { checkAdmin } from "@/lib/api/utils/adminAuth";
+import { invalidateAvaliacoesCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
+import { clearUserData } from "@/lib/cache/userCache";
 
 interface AvaliacaoRecord {
     date: string;
@@ -11,7 +13,7 @@ interface AvaliacaoRecord {
     notes?: string | null;
 }
 
-import { sanitizeInt } from "@/lib/utils/sanitizers";
+import { sanitizeInt, getErrorMessage } from "@/lib/utils/sanitizers";
 
 /**
  * Bulk create avaliacoes - much faster than sequential inserts
@@ -52,14 +54,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             skipDuplicates: false
         });
 
+        // Invalidate caches
+        invalidateAvaliacoesCache();
+        invalidateAdminUserDetail(user_uuid);
+        const user = await db.user.findUnique({ where: { id: user_uuid }, select: { email: true } });
+        if (user?.email) clearUserData(user.email);
+
         return NextResponse.json({
             success: true,
             count: result.count,
             message: `${result.count} avaliacoes created successfully`
         });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Bulk create avaliacoes error:', error);
-        return NextResponse.json({ error: 'Internal error', details: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', details: getErrorMessage(error) }, { status: 500 });
     }
 }
 

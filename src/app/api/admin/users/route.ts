@@ -4,6 +4,7 @@ import { hashPassword } from "@/lib/security/password";
 import { AccountEmailService } from "@/lib/email/services/AccountEmailService";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
+import { invalidateAdminUsers, invalidateAdminStats } from "@/lib/cache/adminCache";
 
 export const POST = withAdminAuth(async (req, session) => {
     try {
@@ -72,12 +73,16 @@ export const POST = withAdminAuth(async (req, session) => {
             }
         }
 
+        // Invalidate admin caches
+        invalidateAdminUsers();
+        invalidateAdminStats();
+
         return NextResponse.json({
             success: true,
             user: newUser
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         Logger.error('AdminService', 'Manual Provisioning Failure: A critical exception occurred during the administrative user creation sequence.', error);
         return NextResponse.json({ error: 'Erro interno ao criar utilizador' }, { status: 500 });
     }

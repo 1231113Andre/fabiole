@@ -75,15 +75,11 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
                     // Close modal immediately
                     onClose();
 
-                    // After success toast disappears (2.5s), show redirect toast
+                    // Brief notification then redirect
+                    notify("A redirecionar para o teu painel...", "loading");
                     setTimeout(() => {
-                        notify("A redirecionar para o teu painel em alguns segundos...", "loading");
-
-                        // Redirect after 3 more seconds
-                        setTimeout(() => {
-                            router.push("/dashboard");
-                        }, 3000);
-                    }, 2500);
+                        router.push("/dashboard");
+                    }, 800);
                 },
                 onError: (error: any) => {
                     // Check if this is a lockout error with countdown
