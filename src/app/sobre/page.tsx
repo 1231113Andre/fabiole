@@ -2,7 +2,7 @@ import Image from "next/image";
 import NewButton from "@/app/components/newButton";
 
 export const metadata = {
-  title: "Sobre Mim | Fábio Lé",
+  title: "Sobre Mim",
   description: "Conheça o percurso e a missão do Fábio Lé, Personal Trainer dedicado à sua transformação.",
 };
 

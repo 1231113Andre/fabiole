@@ -116,9 +116,9 @@ const Navbar = memo(function Navbar({ initialSession }: NavbarProps) {
                 return (
                   <Link
                     href="/dashboard"
-                    className={`flex items-center gap-2 text-base font-semibold text-white transition-all duration-200 hover:text-[var(--primary)] ${isActive ? "text-[var(--primary)]" : ""}`}
+                    className={`flex items-center gap-2 text-lg font-semibold text-white transition-all duration-200 hover:text-[var(--primary)] ${isActive ? "text-[var(--primary)]" : ""}`}
                   >
-                    <i className="fa-duotone fa-user-circle" aria-hidden="true"></i>
+                    <i className="fa-duotone fa-user-circle text-xl" aria-hidden="true"></i>
                     <span>{fullName}</span>
                   </Link>
                 );
@@ -210,10 +210,10 @@ const Navbar = memo(function Navbar({ initialSession }: NavbarProps) {
                 return (
                   <Link
                     href="/dashboard"
-                    className="flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-3 text-base font-semibold text-white transition-all duration-200 hover:brightness-110"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-3 text-lg font-semibold text-white transition-all duration-200 hover:brightness-110"
                     onClick={closeMobileMenu}
                   >
-                    <i className="fa-duotone fa-user-circle" aria-hidden="true"></i>
+                    <i className="fa-duotone fa-user-circle text-xl" aria-hidden="true"></i>
                     <span>{fullName}</span>
                   </Link>
                 );

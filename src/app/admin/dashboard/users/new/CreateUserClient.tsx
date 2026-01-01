@@ -11,6 +11,7 @@ import { NotesForm } from "@/components/admin/users/forms/NotesForm";
 import { FormActions } from "./components/FormActions";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export function CreateUserClient() {
     const queryClient = useQueryClient();
@@ -24,6 +25,7 @@ export function CreateUserClient() {
         name: "",
         surname: "",
         email: "",
+        phone: "",
         password: "",
         gender: "Masculino",
         birth: "",
@@ -93,7 +95,7 @@ export function CreateUserClient() {
             }
 
             notify("Utilizador criado com sucesso!", "success");
-            queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
             router.push(`/admin/dashboard/users/${data.user.id}`);
             router.refresh();
         } catch (error: any) {

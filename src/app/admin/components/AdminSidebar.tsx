@@ -17,6 +17,7 @@ const ADMIN_MENU_ITEMS = [
     { id: "overview", label: "Visão Geral", icon: "fa-grid-2", href: "/admin/dashboard/overview" },
     { id: "users", label: "Utilizadores", icon: "fa-users", href: "/admin/dashboard/users" },
     { id: "create-user", label: "Gestão de Contas", icon: "fa-user-plus", href: "/admin/dashboard/users/new" },
+    { id: "settings", label: "Definições de Sistema", icon: "fa-gears", href: "/admin/dashboard/settings" },
 ];
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {

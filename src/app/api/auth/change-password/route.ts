@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/security/session';
 import { comparePassword, hashPassword } from '@/lib/security/password';
 import { db } from '@/lib/db/client';
+import { Logger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
     try {
@@ -70,14 +71,14 @@ export async function POST(request: NextRequest) {
             data: { password: hashedNewPassword }
         });
 
-        console.log(`✅ [Change Password] Password changed for: ${session.email}`);
+        Logger.success('Security', `Password changed for: ${session.email}.`);
 
         return NextResponse.json({
             success: true,
             message: 'Password alterada com sucesso',
         });
     } catch (error) {
-        console.error('❌ [Change Password] Error:', error);
+        Logger.error('Security', 'Password change failed.', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao alterar password' },
             { status: 500 }

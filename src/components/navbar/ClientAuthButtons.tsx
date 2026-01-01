@@ -42,8 +42,8 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
         }
     };
 
-    // Build user display name
-    const fullName = user ? `${user.name || ''} ${user.surname || ''}`.trim().toUpperCase() : 'USER';
+    // Build user display name - PREFER EMAIL
+    const displayName = user?.email || 'USER';
 
     if (mobile) {
         if (isAuthenticated) {
@@ -51,10 +51,10 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
                 <NewButton
                     href="/dashboard"
                     variant="new_primary_rounded"
-                    className="w-full uppercase font-bold text-lg"
-                    icon={<i className="fa-duotone fa-user-tie"></i>}
+                    className="w-full text-lg font-bold truncate"
+                    icon={<i className="fa-duotone fa-user-tie text-xl"></i>}
                 >
-                    {fullName}
+                    <span className="truncate">{displayName}</span>
                 </NewButton>
             )
         }
@@ -66,7 +66,7 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
                         onClick={() => openAuthModal('login')}
                         variant="new_secondary_no_border_on_idle"
                         className="w-full uppercase font-bold text-lg"
-                        icon={<i className="fa-duotone fa-right-to-bracket"></i>}
+                        icon={<i className="fa-duotone fa-lock-keyhole-open"></i>}
                     >
                         Login
                     </NewButton>
@@ -94,11 +94,11 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
             <NewButton
                 href="/dashboard"
                 variant="new_primary_rounded"
-                iconPosition="right"
-                className="min-w-[180px] uppercase font-bold text-lg"
-                icon={<i className="fa-duotone fa-user-tie text-xl"></i>}
+                iconPosition="left"
+                className="min-w-fit px-4 text-base font-bold"
+                icon={<i className="fa-duotone fa-user-tie text-lg"></i>}
             >
-                {fullName}
+                {displayName}
             </NewButton>
         );
     }
@@ -111,7 +111,7 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
                     variant="new_primary_rounded"
                     iconPosition="right"
                     className="w-[140px] min-w-[140px] uppercase font-bold text-lg"
-                    icon={<i className="fa-duotone fa-right-to-bracket text-xl"></i>}
+                    icon={<i className="fa-duotone fa-lock-keyhole-open"></i>}
                 >
                     Login
                 </NewButton>

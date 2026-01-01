@@ -15,6 +15,12 @@ const STAT_BADGES_CONFIG = [
     { key: 'avaliacoesCount', icon: 'fa-clipboard-check', colorClass: 'text-emerald-600 bg-emerald-50', label: 'Avaliações' },
 ] as const;
 
+const FINANCIAL_BADGES_CONFIG = [
+    { key: 'trainingCredit', icon: 'fa-dumbbell', colorClass: 'text-emerald-600 bg-emerald-50', label: 'Crédito', isCurrency: false },
+    { key: 'trainingsScheduled', icon: 'fa-calendar-check', colorClass: 'text-blue-600 bg-blue-50', label: 'Agendados', isCurrency: false },
+    { key: 'debtValue', icon: 'fa-file-invoice-dollar', colorClass: 'text-red-600 bg-red-50', label: 'Dívida', isCurrency: true },
+] as const;
+
 // ============================================================================
 // HELPERS
 // ============================================================================
@@ -28,6 +34,10 @@ function calculateAge(birthDate: Date | null): number | null {
         age--;
     }
     return age;
+}
+
+function formatCurrency(value: number): string {
+    return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
 }
 
 // ============================================================================
@@ -90,6 +100,15 @@ export const UserCard = memo<UserCardProps>(({ user }) => {
                 {/* Right: Stats */}
                 <div className="text-right flex flex-col items-end justify-center gap-1">
                     <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                        {user.gender && (
+                            <>
+                                <span className={`font-bold ${user.gender.toLowerCase() === 'feminino' || user.gender.toLowerCase() === 'f' ? 'text-pink-500' : 'text-blue-500'}`}>
+                                    {user.gender}
+                                </span>
+                                <i className={`fa-duotone ${user.gender.toLowerCase() === 'feminino' || user.gender.toLowerCase() === 'f' ? 'fa-venus text-pink-500' : 'fa-mars text-blue-500'} text-xs`} />
+                                <span className="text-gray-300">|</span>
+                            </>
+                        )}
                         <span className="font-bold text-primary">
                             {birthDate ? birthDate.toLocaleDateString('pt-PT') : '-'}
                         </span>
@@ -112,6 +131,22 @@ export const UserCard = memo<UserCardProps>(({ user }) => {
                                 label={label}
                             />
                         ))}
+                        <div className="w-px h-4 bg-gray-400 mx-2 opacity-60" />
+                        {FINANCIAL_BADGES_CONFIG.map(({ key, icon, colorClass, label, isCurrency }) => {
+                            const value = user[key as keyof AdminUser] as number ?? 0;
+                            return (
+                                <div
+                                    key={key}
+                                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${colorClass}`}
+                                    title={label}
+                                >
+                                    <i className={`fa-duotone ${icon} text-[10px]`} />
+                                    <span className="text-[10px] font-bold">
+                                        {isCurrency ? formatCurrency(value) : value}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

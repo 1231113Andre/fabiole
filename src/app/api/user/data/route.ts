@@ -5,6 +5,7 @@ import { timeoutMiddleware } from '@/lib/api/middleware/TimeoutMiddleware';
 import { compressionMiddleware } from '@/lib/api/middleware/CompressionMiddleware';
 import { authMiddleware } from '@/lib/api/middleware/AuthMiddleware';
 import { UserService } from '@/lib/api/services/UserService';
+import { Logger } from '@/lib/utils/logger';
 
 // No static caching - always fetch fresh data
 export const dynamic = 'force-dynamic';
@@ -24,7 +25,7 @@ const getUserDataHandler = new BaseRouteHandler()
       const { searchParams } = new URL(context.request.url);
       const forceRefresh = searchParams.get('refresh') === 'true';
 
-      console.log(`📊 [UserData API] Fetching data for: ${context.user.email}`);
+      Logger.info('UserData API', `Incoming request: Commencing data retrieval process for user profile: ${context.user.email}.`);
 
       // forceRefresh is handled by UserService.getUserData
       // Cache invalidation for route handlers is handled via forceRefresh parameter
@@ -32,7 +33,7 @@ const getUserDataHandler = new BaseRouteHandler()
         forceRefresh,
       });
 
-      console.log(`✅ [UserData API] Data fetched successfully for: ${context.user.email}`);
+      Logger.success('UserData API', `Request completed: Comprehensive profile data successfully compiled for ${context.user.email}.`);
 
       // Use private cache with short TTL for client-side caching
       // Server-side cache is handled by UserService
@@ -45,13 +46,11 @@ const getUserDataHandler = new BaseRouteHandler()
         }
       );
     } catch (error) {
-      console.error(`❌ [UserData API] Error for ${context.user.email}:`, error);
-      
+      Logger.error('UserData API', `Request failed: Critical error encountered during data assembly for ${context.user.email}.`, error);
+
       if (error instanceof Error) {
-        console.error(`   Error message: ${error.message}`);
-        
         if (error.message.includes('USER_NOT_MIGRATED')) {
-          console.log(`   Returning 503: User needs migration from Google Sheets`);
+          Logger.info('UserData API', `Flow Control: User ${context.user.email} is flagged for mandatory Google Sheets to PostgreSQL migration.`);
           return ApiResponse.custom(
             503,
             {
@@ -65,13 +64,13 @@ const getUserDataHandler = new BaseRouteHandler()
             }
           );
         }
-        
+
         if (error.message === 'User sheet not found' || error.message.includes('not found')) {
-          console.log(`   Returning 404: User not found`);
+          Logger.info('UserData API', `Lookup Refused: No database record or legacy spreadsheet found for candidate: ${context.user.email}.`);
           return ApiResponse.notFound('User not found in database. Please ensure your account has been migrated.');
         }
       }
-      
+
       throw error; // Re-throw to be handled by BaseRouteHandler
     }
   });

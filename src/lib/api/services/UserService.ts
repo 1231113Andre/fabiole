@@ -8,6 +8,7 @@ import {
   clearUserData as clearCachedUserData,
 } from '@/lib/cache/userCache';
 import { deduplicateRequest } from '@/lib/cache/requestDeduplication';
+import { Logger } from '@/lib/utils/logger';
 
 export interface GetUserDataOptions {
   /** Force refresh (bypass cache) */
@@ -37,14 +38,14 @@ export class UserService {
     // If force refresh, clear cache
     if (forceRefresh) {
       clearCachedUserData(email);
-      console.log(`🔄 [UserService] Force refresh requested for: ${email}`);
+      Logger.info('UserService', `Manual cache invalidation triggered for user: ${email}.`);
     }
 
     // Check cache first (unless force refresh)
     if (!forceRefresh) {
       const cached = getCachedUserData<UserSheetData>(email);
       if (cached) {
-        console.log(`📦 [UserService] Returning cached data for: ${email}`);
+        Logger.info('UserData API', `Memory cache hit: Successfully retrieved data for ${email}.`);
         return cached;
       }
     }
@@ -53,7 +54,7 @@ export class UserService {
     const cacheKey = `user:data:${email.toLowerCase()}`;
     return deduplicateRequest<UserSheetData>(cacheKey, async () => {
       // 1. Fetch User from Prisma
-      console.log(`🔍 [UserService] Looking up user in Prisma: ${email}`);
+      Logger.info('Database', `Executing PostgreSQL lookup for user profile: ${email}.`);
       let userDB = await db.user.findUnique({
         where: { email },
         include: {
@@ -64,12 +65,12 @@ export class UserService {
       });
 
       if (!userDB) {
-        console.error(`❌ [UserService] User not found in Prisma: ${email}`);
+        Logger.error('Database', `User not found: ${email}.`);
         throw new Error('User not found in database');
       }
 
-      console.log(`✅ [UserService] User found: ${userDB.name} ${userDB.surname}`);
-      console.log(`   📊 Data counts: ${userDB.pesagens.length} pesagens, ${userDB.perimetros.length} perimetros, ${userDB.avaliacoes.length} avaliacoes`);
+      Logger.success('Database', `Identity confirmed: ${userDB.name} ${userDB.surname} (${userDB.email}).`);
+      Logger.info('UserService', `Profile metrics synchronized: ${userDB.pesagens.length} weigh-ins, ${userDB.perimetros.length} circumferences, ${userDB.avaliacoes.length} physical assessments.`);
 
       // 2. Reference Tables - skipping external fetch to remove GS dependency
       const referenceTables = {};

@@ -4,6 +4,7 @@ import { r2Client, R2_BUCKET_NAME } from "@/lib/r2";
 import { db } from "@/lib/db/client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Logger } from "@/lib/utils/logger";
 
 export async function GET(req: NextRequest) {
     try {
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
             publicUrl: `${process.env.NEXT_PUBLIC_R2_PUBLIC_URL}/${fileName}`
         });
     } catch (error) {
-        console.error("Error generating presigned URL:", error);
+        Logger.error('System', "Error generating presigned URL for avatar upload.", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

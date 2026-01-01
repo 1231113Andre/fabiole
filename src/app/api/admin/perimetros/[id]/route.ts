@@ -1,25 +1,6 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/security/session";
-
-async function checkAdmin() {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('auth_session');
-
-    if (!sessionCookie) return null;
-
-    const session = await verifySession(sessionCookie.value);
-    if (!session?.email) return null;
-
-    const user = await db.user.findUnique({
-        where: { email: session.email },
-        select: { role: true }
-    });
-
-    return user?.role === 'ADMINISTRATOR' ? session : null;
-}
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 
 // Helper to sanitize decimal values - only update if field is present
 function sanitizeValue(value: any): number | null | undefined {
@@ -30,12 +11,7 @@ function sanitizeValue(value: any): number | null | undefined {
     return isNaN(parsed) ? null : parsed;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
     const body = await req.json();
 
@@ -65,14 +41,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         console.error('Update perimetro error:', error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
-}
+});
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const DELETE = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
 
     try {
@@ -85,4 +56,4 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         console.error('Delete perimetro error:', error);
         return NextResponse.json({ error: 'Internal error', code: error.code, details: error.message }, { status: 500 });
     }
-}
+});

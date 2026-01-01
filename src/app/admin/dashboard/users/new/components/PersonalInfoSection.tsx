@@ -90,10 +90,11 @@ export function PersonalInfoSection({
                     </label>
                     <input
                         type="text"
-                        disabled
+                        name="phone"
+                        value={formData.phone || ''}
+                        onChange={handleChange}
                         placeholder="+351 000 000 000"
-                        className={`${INPUT_CLASSES} bg-gray-50 opacity-60 cursor-not-allowed`}
-                        title="Disponível após criação"
+                        className={INPUT_CLASSES}
                     />
                 </div>
 

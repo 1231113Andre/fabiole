@@ -5,6 +5,8 @@
  * IMPORTANT: Uses Symbol.for() to ensure single instance across HMR
  */
 
+import { Logger } from '@/lib/utils/logger';
+
 interface CacheEntry<T> {
   value: T;
   expiresAt: number;
@@ -121,7 +123,7 @@ class MemoryCache {
       }
 
       if (cleaned > 0) {
-        console.log(`🧹 [MemoryCache] Cleaned up ${cleaned} expired entries`);
+        Logger.info('Cache', `Automated Garbage Collection: Successfully purged ${cleaned} expired entries from memory.`);
       }
     }, 5 * 60 * 1000); // Every 5 minutes
   }
@@ -147,7 +149,7 @@ const globalStore = globalThis as unknown as {
 function getMemoryCache(): MemoryCache {
   if (!globalStore[CACHE_KEY]) {
     globalStore[CACHE_KEY] = new MemoryCache(10000);
-    console.log('🧠 [MemoryCache] Created new singleton instance');
+    Logger.success('Cache', 'Core MemoryCache subsystem initialized with 10,000 slots capacity.');
   }
   return globalStore[CACHE_KEY];
 }

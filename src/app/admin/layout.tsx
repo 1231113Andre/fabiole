@@ -13,6 +13,7 @@ function getActiveTabFromPath(pathname: string): string {
     if (pathname.includes("/admin/dashboard/overview")) return "overview";
     if (pathname.includes("/admin/dashboard/users/new")) return "create-user";
     if (pathname.includes("/admin/dashboard/users")) return "users";
+    if (pathname.includes("/admin/dashboard/settings")) return "settings";
     if (pathname.includes("/admin/bulk-import")) return "import";
     return "overview";
 }
@@ -43,6 +44,7 @@ export default function AdminLayout({
         if (tabId === "overview") router.push("/admin/dashboard/overview");
         if (tabId === "users") router.push("/admin/dashboard/users");
         if (tabId === "create-user") router.push("/admin/dashboard/users/new");
+        if (tabId === "settings") router.push("/admin/dashboard/settings");
         if (tabId === "import") router.push("/admin/bulk-import");
 
         setSidebarOpen(false);

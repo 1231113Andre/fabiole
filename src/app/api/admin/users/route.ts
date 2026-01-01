@@ -1,37 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/security/session";
 import { hashPassword } from "@/lib/security/password";
-import { EmailService } from "@/lib/email/EmailService";
+import { AccountEmailService } from "@/lib/email/services/AccountEmailService";
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 
-async function checkAdmin() {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('auth_session');
-
-    if (!sessionCookie) return null;
-
-    const session = await verifySession(sessionCookie.value);
-    if (!session?.email) return null;
-
-    const user = await db.user.findUnique({
-        where: { email: session.email },
-        select: { role: true }
-    });
-
-    return user?.role === 'ADMINISTRATOR' ? session : null;
-}
-
-export async function POST(req: NextRequest) {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const POST = withAdminAuth(async (req, session) => {
     try {
         const body = await req.json();
         const {
-            name, surname, email, password, gender, birth, sendNotification,
+            name, surname, email, phone, password, gender, birth, sendNotification,
             trainingCredit, trainingsScheduled, debtValue, goals, notes, role
         } = body;
 
@@ -42,7 +19,8 @@ export async function POST(req: NextRequest) {
 
         // Check if user already exists
         const existingUser = await db.user.findUnique({
-            where: { email }
+            where: { email },
+            select: { id: true }
         });
 
         if (existingUser) {
@@ -58,6 +36,7 @@ export async function POST(req: NextRequest) {
                 name,
                 surname,
                 email,
+                phone: phone || null,
                 password: hashedPassword,
                 gender: gender || 'Masculino',
                 birth: new Date(birth),
@@ -68,36 +47,37 @@ export async function POST(req: NextRequest) {
                 debtValue: debtValue || 0,
                 goals: goals || null,
                 notes: notes || null
+            },
+            select: {
+                id: true,
+                name: true,
+                surname: true,
+                email: true
             }
         });
 
         // Send email notification if requested
         if (sendNotification) {
             try {
-                await EmailService.sendManualAccountCreatedEmail({
+                // We execute this asynchronously without awaiting to not block the response
+                AccountEmailService.sendManualAccountCreatedEmail({
                     email: newUser.email,
                     password: password, // Send the original password, not the hashed one
                     firstName: newUser.name,
-                    role: newUser.role
-                });
+                    role: role || 'USER'
+                }).catch(err => console.error('Failed to send welcome email async:', err));
             } catch (emailError) {
-                console.error('Failed to send welcome email:', emailError);
-                // We don't fail the request if email fails, but we log it
+                console.error('Failed to trigger welcome email:', emailError);
             }
         }
 
         return NextResponse.json({
             success: true,
-            user: {
-                id: newUser.id,
-                name: newUser.name,
-                surname: newUser.surname,
-                email: newUser.email
-            }
+            user: newUser
         });
 
     } catch (error: any) {
         console.error('Manual user creation error:', error);
         return NextResponse.json({ error: 'Erro interno ao criar utilizador' }, { status: 500 });
     }
-}
+});

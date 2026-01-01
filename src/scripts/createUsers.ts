@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { db } from '../lib/db/client';
-import crypto from 'crypto';
+import { Logger } from '../lib/utils/logger';
 
 // Users extracted from infoData sheet
 const users = [
@@ -127,7 +127,7 @@ const users = [
 ];
 
 async function main() {
-    console.log('🚀 Creating users from infoData...');
+    Logger.info('Migration', 'Mass Provisioning: Initiating batch user creation from master dataset.');
 
     for (const u of users) {
         try {
@@ -148,15 +148,15 @@ async function main() {
                     paid: '-',
                 }
             });
-            console.log(`✅ Created user: ${u.email}`);
+            Logger.success('Migration', `Creation Successful: Account provisioned for ${u.email}.`);
         } catch (e: any) {
-            console.error(`❌ Failed to create ${u.email}:`, e.message);
+            Logger.error('Migration', `Creation Failure: Could not provision account for ${u.email}.`, e);
         }
     }
 
-    console.log('\n✅ All users created!');
+    Logger.info('Migration', 'Mass Provisioning Complete: All target records have been processed.');
 }
 
 main()
-    .catch(e => console.error(e))
+    .catch(e => Logger.error('System', 'Critical provisioning failure sequence encountered.', e))
     .finally(async () => await db.$disconnect());

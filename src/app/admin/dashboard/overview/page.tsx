@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { getAdminDashboardData } from "@/lib/api/services/AdminService";
 import { AdminHeader } from "../../components/AdminHeader";
 import { StatsCards } from "../../components/StatsCards";
 import { RecentActivityWidgets } from "../../components/RecentActivityWidgets";
+
+export const metadata: Metadata = {
+    title: "Admin Dashboard | Visão Geral",
+    description: "Visão geral do painel de administração"
+};
 
 // Force dynamic rendering - always fresh data
 export const dynamic = 'force-dynamic';

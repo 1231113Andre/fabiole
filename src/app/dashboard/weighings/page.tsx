@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/security/session";
 import { UserService } from "@/lib/api/services/UserService";
 import { redirect } from "next/navigation";
 import { WeighingsClient } from "./components/WeighingsClient";
+
+export const metadata: Metadata = {
+    title: "Dashboard | Pesagens",
+    description: "Histórico de pesagens e composição corporal"
+};
 
 export const dynamic = 'force-dynamic';
 

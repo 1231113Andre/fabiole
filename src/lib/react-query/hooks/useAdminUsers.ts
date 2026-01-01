@@ -1,45 +1,26 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AdminUser } from "@/app/admin/types";
-
-interface AdminStats {
-    users: AdminUser[];
-    stats: {
-        totalUsers: number;
-        activeUsers: number;
-        paidUsers: number;
-        pendingUsers: number;
-    };
-    recentActivity: any[];
-}
+import { queryKeys } from "../queryKeys";
+import { apiGet, ApiError } from "../apiClient";
+import type { AdminDashboardData } from "@/lib/api/services/AdminService";
 
 /**
  * Hook to fetch admin users list with React Query caching
  * Provides instant navigation with stale-while-revalidate pattern
+ * 
+ * @param initialData - Optional SSR data to hydrate the cache (prevents flash)
  */
-export function useAdminUsers() {
-    return useQuery<AdminStats, Error>({
-        queryKey: ["adminUsers"],
-        queryFn: async () => {
-            const response = await fetch("/api/admin/stats");
-
-            if (response.status === 403) {
-                throw new Error("ACCESS_DENIED");
-            }
-
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                throw new Error(error.error || "Erro ao carregar dados");
-            }
-
-            return response.json();
-        },
+export function useAdminUsers(initialData?: AdminDashboardData) {
+    return useQuery<AdminDashboardData, ApiError>({
+        queryKey: queryKeys.adminUsers,
+        queryFn: () => apiGet<AdminDashboardData>("/api/admin/stats"),
         staleTime: 30 * 1000, // 30 seconds - data considered fresh
         gcTime: 5 * 60 * 1000, // 5 minutes cache retention
         refetchOnWindowFocus: true,
-        refetchOnMount: true,
-        placeholderData: (previousData) => previousData, // Keep showing old data while refetching
+        refetchOnMount: initialData ? false : true, // Skip initial fetch if we have SSR data
+        initialData: initialData, // Pre-populate cache with SSR data
+        initialDataUpdatedAt: initialData ? Date.now() : undefined, // Mark SSR data as fresh
         retry: 1,
     });
 }
@@ -51,14 +32,10 @@ export function useInvalidateAdminUsers() {
     const queryClient = useQueryClient();
 
     return {
-        invalidate: () => queryClient.invalidateQueries({ queryKey: ["adminUsers"] }),
+        invalidate: () => queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers }),
         prefetch: () => queryClient.prefetchQuery({
-            queryKey: ["adminUsers"],
-            queryFn: async () => {
-                const response = await fetch("/api/admin/stats");
-                if (!response.ok) throw new Error("Prefetch failed");
-                return response.json();
-            },
+            queryKey: queryKeys.adminUsers,
+            queryFn: () => apiGet<AdminDashboardData>("/api/admin/stats"),
         }),
     };
 }

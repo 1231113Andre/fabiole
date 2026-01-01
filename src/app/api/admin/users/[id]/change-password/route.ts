@@ -1,25 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/security/session";
 import { hashPassword } from "@/lib/security/password";
-
-async function checkAdmin() {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('auth_session');
-
-    if (!sessionCookie) return null;
-
-    const session = await verifySession(sessionCookie.value);
-    if (!session?.email) return null;
-
-    const user = await db.user.findUnique({
-        where: { email: session.email },
-        select: { role: true }
-    });
-
-    return user?.role === 'ADMINISTRATOR' ? session : null;
-}
+import { checkAdmin } from "@/lib/api/utils/adminAuth";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const admin = await checkAdmin();

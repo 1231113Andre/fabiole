@@ -7,7 +7,7 @@ import {
     VERIFICATION_CODE_EXPIRY_MINUTES,
     MAX_VERIFICATION_ATTEMPTS,
 } from './types';
-import { EmailService } from './EmailService';
+import { VerificationEmailService } from './services/VerificationEmailService';
 
 /**
  * In-memory store for verification codes
@@ -133,7 +133,7 @@ export class VerificationCodeService {
             this.storeCode(normalizedEmail, code);
 
             // Send email
-            const result = await EmailService.sendVerificationCode({
+            const result = await VerificationEmailService.sendVerificationCode({
                 email: normalizedEmail,
                 code,
                 firstName,

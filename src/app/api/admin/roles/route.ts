@@ -1,18 +1,8 @@
-
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/security/session";
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 
-export async function GET() {
-    // Basic auth check
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('auth_session');
-
-    if (!sessionCookie) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+export const GET = withAdminAuth(async (req, session) => {
     try {
         // Fetch distinct roles from the database
         const roles = await db.user.findMany({
@@ -35,4 +25,5 @@ export async function GET() {
         console.error('Error fetching roles:', error);
         return NextResponse.json({ error: 'Failed to fetch roles' }, { status: 500 });
     }
-}
+});
+

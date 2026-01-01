@@ -2,25 +2,26 @@
 // Beautiful email template for verification codes - Fabiole brand style
 
 import * as React from 'react';
+import { getCurrentYear } from '../../utils/date';
 
 interface VerificationCodeEmailProps {
-    code: string;
-    firstName?: string;
-    expiryMinutes?: number;
+  code: string;
+  firstName?: string;
+  expiryMinutes?: number;
 }
 
 // Fabiole brand colors from globals.css
 const COLORS = {
-    primary: '#e6915b',       // Brand orange
-    primaryHover: '#d37d45',
-    accent: '#fb923c',        // Tailwind orange-400
-    background: '#ffffff',
-    foreground: '#171717',
-    muted: '#737373',
-    darkBg: '#1c2434',        // Sidebar dark
-    darkBgDeep: '#0a1628',    // Sidebar deeper
-    textLight: '#dee4ee',
-    textMuted: '#8a99af',
+  primary: '#e6915b',       // Brand orange
+  primaryHover: '#d37d45',
+  accent: '#fb923c',        // Tailwind orange-400
+  background: '#ffffff',
+  foreground: '#171717',
+  muted: '#737373',
+  darkBg: '#1c2434',        // Sidebar dark
+  darkBgDeep: '#0a1628',    // Sidebar deeper
+  textLight: '#dee4ee',
+  textMuted: '#8a99af',
 };
 
 /**
@@ -28,9 +29,9 @@ const COLORS = {
  * Note: Logo removed due to email client limitations - using text logo instead
  */
 export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): string {
-    const { code, firstName = 'there', expiryMinutes = 10 } = props;
+  const { code, firstName = 'there', expiryMinutes = 10 } = props;
 
-    return `
+  return `
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -173,7 +174,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
           <tr>
             <td align="center" style="padding: 24px 16px 0 16px;">
               <p style="margin: 0; font-size: 11px; color: #9ca3af;">
-                © 2024 Fabiole. All rights reserved.
+                © ${getCurrentYear()} Fabiole. All rights reserved.
               </p>
             </td>
           </tr>
@@ -192,217 +193,217 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
  * React component version (for future use with @react-email)
  */
 export function VerificationCodeEmail({
-    code,
-    firstName = 'there',
-    expiryMinutes = 10,
+  code,
+  firstName = 'there',
+  expiryMinutes = 10,
 }: VerificationCodeEmailProps): React.ReactElement {
-    return (
-        <html lang="pt">
-            <head>
-                <meta charSet="utf-8" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <title>Código de Verificação - Fabiole</title>
-            </head>
-            <body style={styles.body}>
-                <table style={styles.wrapper}>
-                    <tbody>
-                        <tr>
-                            <td style={styles.container}>
-                                <table style={styles.card}>
-                                    <tbody>
-                                        <tr>
-                                            <td style={styles.logoCell}>
-                                                <table style={styles.logoBorder}>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td style={{ textAlign: 'center' as const }}>
-                                                                <h1 style={styles.logoText}>FÁBIO LÉ</h1>
-                                                                <p style={styles.logoSubtext}>PERSONAL TRAINER</p>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style={styles.titleCell}>
-                                                <h2 style={styles.title}>Verification Code</h2>
-                                                <div style={styles.divider} />
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style={styles.greetingCell}>
-                                                <p style={styles.greeting}>
-                                                    Hey <span style={styles.name}>{firstName}</span>! 💪
-                                                </p>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style={styles.descCell}>
-                                                <p style={styles.desc}>
-                                                    Use the code below to complete your registration<br />and start your fitness journey with us.
-                                                </p>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style={styles.codeCell}>
-                                                <table style={styles.codeOuter}>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td style={styles.codeInner}>
-                                                                <span style={styles.code}>{code}</span>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style={styles.expiryCell}>
-                                                <p style={styles.expiry}>
-                                                    ⏱️ This code expires in <strong>{expiryMinutes} minutes</strong>
-                                                </p>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
+  return (
+    <html lang="pt">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Código de Verificação - Fabiole</title>
+      </head>
+      <body style={styles.body}>
+        <table style={styles.wrapper}>
+          <tbody>
+            <tr>
+              <td style={styles.container}>
+                <table style={styles.card}>
+                  <tbody>
+                    <tr>
+                      <td style={styles.logoCell}>
+                        <table style={styles.logoBorder}>
+                          <tbody>
+                            <tr>
+                              <td style={{ textAlign: 'center' as const }}>
+                                <h1 style={styles.logoText}>FÁBIO LÉ</h1>
+                                <p style={styles.logoSubtext}>PERSONAL TRAINER</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={styles.titleCell}>
+                        <h2 style={styles.title}>Verification Code</h2>
+                        <div style={styles.divider} />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={styles.greetingCell}>
+                        <p style={styles.greeting}>
+                          Hey <span style={styles.name}>{firstName}</span>! 💪
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={styles.descCell}>
+                        <p style={styles.desc}>
+                          Use the code below to complete your registration<br />and start your fitness journey with us.
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={styles.codeCell}>
+                        <table style={styles.codeOuter}>
+                          <tbody>
+                            <tr>
+                              <td style={styles.codeInner}>
+                                <span style={styles.code}>{code}</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={styles.expiryCell}>
+                        <p style={styles.expiry}>
+                          ⏱️ This code expires in <strong>{expiryMinutes} minutes</strong>
+                        </p>
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
-            </body>
-        </html>
-    );
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </body>
+    </html>
+  );
 }
 
 // Styles for React component
 const styles: Record<string, React.CSSProperties> = {
-    body: {
-        margin: 0,
-        padding: 0,
-        width: '100%',
-        backgroundColor: '#f5f5f5',
-        fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
-    },
-    wrapper: {
-        width: '100%',
-        backgroundColor: '#f5f5f5',
-    },
-    container: {
-        padding: '48px 16px',
-        textAlign: 'center' as const,
-    },
-    card: {
-        maxWidth: 560,
-        margin: '0 auto',
-        background: `linear-gradient(180deg, ${COLORS.darkBg} 0%, ${COLORS.darkBgDeep} 100%)`,
-        borderRadius: 24,
-        overflow: 'hidden',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.25)',
-    },
-    logoCell: {
-        padding: '48px 48px 16px 48px',
-        textAlign: 'center' as const,
-    },
-    logoBorder: {
-        display: 'inline-block',
-        border: `3px solid ${COLORS.primary}`,
-        borderRadius: 16,
-        padding: '20px 32px',
-    },
-    logoText: {
-        margin: 0,
-        fontSize: 28,
-        fontWeight: 800,
-        fontStyle: 'italic',
-        color: COLORS.primary,
-        letterSpacing: 2,
-        textTransform: 'uppercase' as const,
-    },
-    logoSubtext: {
-        margin: '6px 0 0 0',
-        fontSize: 10,
-        fontWeight: 600,
-        color: COLORS.accent,
-        letterSpacing: 4,
-        textTransform: 'uppercase' as const,
-    },
-    titleCell: {
-        padding: '24px 48px 24px 48px',
-        textAlign: 'center' as const,
-    },
-    title: {
-        margin: 0,
-        fontSize: 24,
-        fontWeight: 700,
-        color: '#ffffff',
-        textTransform: 'uppercase' as const,
-        letterSpacing: 2,
-    },
-    divider: {
-        width: 60,
-        height: 3,
-        background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.accent})`,
-        margin: '16px auto 0 auto',
-        borderRadius: 2,
-    },
-    greetingCell: {
-        padding: '0 48px 16px 48px',
-        textAlign: 'center' as const,
-    },
-    greeting: {
-        margin: 0,
-        fontSize: 18,
-        color: COLORS.textLight,
-        lineHeight: 1.5,
-    },
-    name: {
-        color: COLORS.primary,
-        fontWeight: 600,
-    },
-    descCell: {
-        padding: '0 48px 32px 48px',
-        textAlign: 'center' as const,
-    },
-    desc: {
-        margin: 0,
-        fontSize: 15,
-        color: COLORS.textMuted,
-        lineHeight: 1.7,
-    },
-    codeCell: {
-        padding: '0 48px 32px 48px',
-        textAlign: 'center' as const,
-    },
-    codeOuter: {
-        display: 'inline-block',
-        background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryHover} 100%)`,
-        borderRadius: 16,
-        padding: 4,
-    },
-    codeInner: {
-        background: COLORS.darkBgDeep,
-        borderRadius: 14,
-        padding: '28px 40px',
-    },
-    code: {
-        fontSize: 44,
-        fontWeight: 800,
-        letterSpacing: 16,
-        fontFamily: "'Courier New', Courier, monospace",
-        color: '#ffffff',
-        display: 'block',
-        textAlign: 'center' as const,
-    },
-    expiryCell: {
-        padding: '0 48px 24px 48px',
-        textAlign: 'center' as const,
-    },
-    expiry: {
-        margin: 0,
-        fontSize: 14,
-        color: COLORS.accent,
-        fontWeight: 600,
-        lineHeight: 1.5,
-    },
+  body: {
+    margin: 0,
+    padding: 0,
+    width: '100%',
+    backgroundColor: '#f5f5f5',
+    fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
+  },
+  wrapper: {
+    width: '100%',
+    backgroundColor: '#f5f5f5',
+  },
+  container: {
+    padding: '48px 16px',
+    textAlign: 'center' as const,
+  },
+  card: {
+    maxWidth: 560,
+    margin: '0 auto',
+    background: `linear-gradient(180deg, ${COLORS.darkBg} 0%, ${COLORS.darkBgDeep} 100%)`,
+    borderRadius: 24,
+    overflow: 'hidden',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.25)',
+  },
+  logoCell: {
+    padding: '48px 48px 16px 48px',
+    textAlign: 'center' as const,
+  },
+  logoBorder: {
+    display: 'inline-block',
+    border: `3px solid ${COLORS.primary}`,
+    borderRadius: 16,
+    padding: '20px 32px',
+  },
+  logoText: {
+    margin: 0,
+    fontSize: 28,
+    fontWeight: 800,
+    fontStyle: 'italic',
+    color: COLORS.primary,
+    letterSpacing: 2,
+    textTransform: 'uppercase' as const,
+  },
+  logoSubtext: {
+    margin: '6px 0 0 0',
+    fontSize: 10,
+    fontWeight: 600,
+    color: COLORS.accent,
+    letterSpacing: 4,
+    textTransform: 'uppercase' as const,
+  },
+  titleCell: {
+    padding: '24px 48px 24px 48px',
+    textAlign: 'center' as const,
+  },
+  title: {
+    margin: 0,
+    fontSize: 24,
+    fontWeight: 700,
+    color: '#ffffff',
+    textTransform: 'uppercase' as const,
+    letterSpacing: 2,
+  },
+  divider: {
+    width: 60,
+    height: 3,
+    background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.accent})`,
+    margin: '16px auto 0 auto',
+    borderRadius: 2,
+  },
+  greetingCell: {
+    padding: '0 48px 16px 48px',
+    textAlign: 'center' as const,
+  },
+  greeting: {
+    margin: 0,
+    fontSize: 18,
+    color: COLORS.textLight,
+    lineHeight: 1.5,
+  },
+  name: {
+    color: COLORS.primary,
+    fontWeight: 600,
+  },
+  descCell: {
+    padding: '0 48px 32px 48px',
+    textAlign: 'center' as const,
+  },
+  desc: {
+    margin: 0,
+    fontSize: 15,
+    color: COLORS.textMuted,
+    lineHeight: 1.7,
+  },
+  codeCell: {
+    padding: '0 48px 32px 48px',
+    textAlign: 'center' as const,
+  },
+  codeOuter: {
+    display: 'inline-block',
+    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryHover} 100%)`,
+    borderRadius: 16,
+    padding: 4,
+  },
+  codeInner: {
+    background: COLORS.darkBgDeep,
+    borderRadius: 14,
+    padding: '28px 40px',
+  },
+  code: {
+    fontSize: 44,
+    fontWeight: 800,
+    letterSpacing: 16,
+    fontFamily: "'Courier New', Courier, monospace",
+    color: '#ffffff',
+    display: 'block',
+    textAlign: 'center' as const,
+  },
+  expiryCell: {
+    padding: '0 48px 24px 48px',
+    textAlign: 'center' as const,
+  },
+  expiry: {
+    margin: 0,
+    fontSize: 14,
+    color: COLORS.accent,
+    fontWeight: 600,
+    lineHeight: 1.5,
+  },
 };

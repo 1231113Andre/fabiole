@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { useRecordMutations } from "./useRecordMutations";
+import { useAdminMutations } from "@/lib/react-query/hooks";
 
 interface UseRecordOperationsProps {
     userId: string;
@@ -11,10 +11,10 @@ interface UseRecordOperationsProps {
 }
 
 export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setError, setSaving }: UseRecordOperationsProps) {
-    const { saveRecordMutation, bulkSaveMutation, deleteRecordMutation } = useRecordMutations(userId);
+    const { saveRecord, bulkSave, deleteRecord } = useAdminMutations(userId, { showToasts: false });
 
     const handleSaveRecord = useCallback(async (
-        endpoint: string,
+        endpoint: 'pesagens' | 'perimetros' | 'avaliacoes',
         e: React.FormEvent<HTMLFormElement>,
         editingId?: number,
         originalData?: any
@@ -37,7 +37,8 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
         setError(null);
 
         try {
-            const savedRecord = await saveRecordMutation.mutateAsync({
+            const savedRecord = await saveRecord.mutateAsync({
+                userId,
                 endpoint,
                 payload,
                 editingId
@@ -137,14 +138,14 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
                                 O registo de {name} foi atualizado com sucesso.
                             </div>
                             <div className="mt-4 text-sm font-medium text-[#0F172A]/80">
-                                The records updated:
+                                Os registos foram atualizados:
                             </div>
                             <div className="flex flex-col gap-2 mt-2 pl-1">
                                 {changes.map((change, idx) => (
                                     <div key={idx} className="flex items-center gap-2 text-sm">
                                         <i className="fa-solid fa-rotate text-emerald-600 text-xs"></i>
                                         <span>
-                                            <span className="font-bold uppercase">{change.key}</span> updated from <span className="font-bold">{change.old}</span> to <span className="font-bold">{change.new}</span> new value.
+                                            <span className="font-bold uppercase">{change.key}</span> foi atualizado de <span className="font-bold">{change.old}</span> para <span className="font-bold">{change.new}</span> novo valor.
                                         </span>
                                     </div>
                                 ))}
@@ -161,9 +162,9 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
         } finally {
             setSaving(false);
         }
-    }, [saveRecordMutation, onLocalUpdate, setSuccess, setError, setSaving]);
+    }, [saveRecord, userId, onLocalUpdate, setSuccess, setError, setSaving]);
 
-    const handleBulkSave = useCallback(async (endpoint: string, data: any[]) => {
+    const handleBulkSave = useCallback(async (endpoint: 'pesagens' | 'perimetros' | 'avaliacoes', data: any[]) => {
         setSaving(true);
         setError(null);
         setSuccess(null);
@@ -177,23 +178,24 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
                 return payload;
             });
 
-            const result = await bulkSaveMutation.mutateAsync({
+            const result = await bulkSave.mutateAsync({
+                userId,
                 endpoint,
                 records
             });
 
-            setSuccess(`${result.count} registos adicionados com sucesso!`);
+            setSuccess(`${(result as any).count || records.length} registos adicionados com sucesso!`);
             setTimeout(() => setSuccess(null), 3000);
         } catch (err: any) {
             setError(err.message);
         } finally {
             setSaving(false);
         }
-    }, [bulkSaveMutation, setSuccess, setError, setSaving]);
+    }, [bulkSave, userId, setSuccess, setError, setSaving]);
 
-    const executeDelete = useCallback(async (endpoint: string, id: number) => {
+    const executeDelete = useCallback(async (endpoint: 'pesagens' | 'perimetros' | 'avaliacoes', id: number) => {
         try {
-            await deleteRecordMutation.mutateAsync({ endpoint, id });
+            await deleteRecord.mutateAsync({ userId, endpoint, id });
 
             if (onLocalUpdate) {
                 onLocalUpdate(endpoint, { id }, true);
@@ -204,10 +206,10 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
         } catch (err: any) {
             setError("Erro: " + err.message);
         }
-    }, [deleteRecordMutation, onLocalUpdate, setSuccess, setError]);
+    }, [deleteRecord, userId, onLocalUpdate, setSuccess, setError]);
 
     return {
-        isDeleting: deleteRecordMutation.isPending,
+        isDeleting: deleteRecord.isPending,
         handleSaveRecord,
         handleBulkSave,
         executeDelete

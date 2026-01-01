@@ -38,7 +38,6 @@ interface DashboardSidebarProps {
 const SIDEBAR_WIDTH_EXPANDED = "290px";
 const SIDEBAR_WIDTH_COLLAPSED = "90px";
 
-/** Brand logo section */
 const BrandSection = memo(function BrandSection({
     isCollapsed
 }: {
@@ -48,9 +47,12 @@ const BrandSection = memo(function BrandSection({
     isCollapsed: boolean;
 }) {
     return (
-        <div className={`flex items-center px-6 py-2 border-b border-gray-100 ${isCollapsed ? "justify-center" : ""}`}>
+        <Link
+            href="/"
+            className={`flex items-center px-6 py-2 border-b border-gray-100 no-underline transition-all duration-300 hover:bg-gray-50 group ${isCollapsed ? "justify-center" : ""}`}
+        >
             {/* Logo Anchor */}
-            <div className={`relative flex h-14 w-14 flex-shrink-0 items-center justify-center`}>
+            <div className={`relative flex h-14 w-14 flex-shrink-0 items-center justify-center transition-transform duration-300 group-hover:scale-105`}>
                 <Image
                     src={ASSETS.logo}
                     alt="Fábio Lé Logo"
@@ -64,7 +66,7 @@ const BrandSection = memo(function BrandSection({
 
             {/* Text */}
             {!isCollapsed && (
-                <div className="flex flex-col justify-center ml-4 -mt-1">
+                <div className="flex flex-col justify-center ml-4 -mt-1 transition-transform duration-300 group-hover:translate-x-1">
                     <span className="font-montserrat text-lg font-bold leading-none tracking-wide text-gray-900 whitespace-nowrap">
                         FÁBIO LÉ
                     </span>
@@ -73,7 +75,7 @@ const BrandSection = memo(function BrandSection({
                     </span>
                 </div>
             )}
-        </div>
+        </Link>
     );
 });
 

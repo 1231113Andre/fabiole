@@ -137,9 +137,9 @@ export default function ClientMobileMenu({ navItems, initialUser }: ClientMobile
                             {isAuthenticated ? (
                                 <Link
                                     href="/dashboard"
-                                    className="inline-flex items-center justify-center px-4 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-300 ease-out active:scale-95 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary cursor-pointer bg-primary text-white rounded-lg shadow-md font-medium text-base px-6 disabled:opacity-60 hover:!bg-transparent hover:border-orange-400 hover:!text-white hover:shadow-[0_10px_24px_rgba(230,145,91,0.35)] active:shadow-lg transition-all duration-200 ease-out border-2 border-orange-400 h-12 w-full uppercase font-bold text-lg"
+                                    className="inline-flex items-center justify-center text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-300 ease-out active:scale-95 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary cursor-pointer bg-primary text-white rounded-lg shadow-md disabled:opacity-60 hover:!bg-transparent hover:border-orange-400 hover:!text-white hover:shadow-[0_10px_24px_rgba(230,145,91,0.35)] active:shadow-lg transition-all duration-200 ease-out border-2 border-orange-400 h-12 w-full uppercase font-bold text-lg px-6"
                                 >
-                                    <i className="fa-duotone fa-user-circle mr-2"></i>
+                                    <i className="fa-duotone fa-user-circle mr-3 text-xl"></i>
                                     {fullName}
                                 </Link>
                             ) : (

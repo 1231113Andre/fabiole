@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { verifyAdminAccess } from "@/lib/api/services/AdminService";
 import { CreateUserClient } from "./CreateUserClient";
+
+export const metadata: Metadata = {
+    title: "Admin Dashboard | Utilizadores | Novo Utilizador",
+    description: "Criar nova conta de utilizador"
+};
 
 export const dynamic = 'force-dynamic';
 

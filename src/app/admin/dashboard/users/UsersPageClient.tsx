@@ -3,17 +3,21 @@
 import { useState, useMemo, useCallback } from "react";
 import { AdminHeader } from "@/app/admin/components/AdminHeader";
 import { UserTable } from "@/app/admin/components/users";
-import type { AdminUser } from "@/lib/api/services/AdminService";
+import { useAdminUsers } from "@/lib/react-query/hooks/useAdminUsers";
+import type { AdminDashboardData } from "@/lib/api/services/AdminService";
 
 interface UsersPageClientProps {
-    initialUsers: AdminUser[];
+    initialData: AdminDashboardData;
 }
 
-export function UsersPageClient({ initialUsers }: UsersPageClientProps) {
+export function UsersPageClient({ initialData }: UsersPageClientProps) {
     const [searchTerm, setSearchTerm] = useState("");
 
-    // Use server-provided data as initial state
-    const users = useMemo(() => initialUsers, [initialUsers]);
+    // Use React Query with SSR data hydration - no flash of default values
+    const { data } = useAdminUsers(initialData);
+
+    // Users from hydrated data (will always have correct values from SSR)
+    const users = useMemo(() => data?.users ?? [], [data]);
 
     const handleSearchChange = useCallback((value: string) => {
         setSearchTerm(value);
@@ -23,7 +27,7 @@ export function UsersPageClient({ initialUsers }: UsersPageClientProps) {
         <div>
             <AdminHeader
                 title="Utilizadores"
-                subtitle="Gestão de contas de utilizador"
+                subtitle="Consulte, edite e gerencie todas as contas"
                 icon="fa-users"
             />
             <UserTable
@@ -34,3 +38,4 @@ export function UsersPageClient({ initialUsers }: UsersPageClientProps) {
         </div>
     );
 }
+

@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useMemo } from "react";
+import Link from "next/link";
 import { AdminUser } from "@/app/admin/types";
 import { sortUsersAlphabetically } from "@/app/admin/helpers";
 import { UserCard } from "./UserCard";
@@ -46,13 +47,21 @@ export const UserTable = memo<UserTableProps>(({ users, searchTerm, onSearchChan
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             {/* Header */}
             <div className="p-6 border-b border-gray-100 flex flex-wrap items-center justify-between gap-4">
-                <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                    <i className="fa-duotone fa-users text-primary" />
-                    Todos os Utilizadores
-                    <span className="ml-2 px-2.5 py-0.5 bg-primary/10 text-primary text-sm font-bold rounded-full">
-                        {filteredUsers.length}
-                    </span>
-                </h3>
+                <div>
+                    <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                        <i className="fa-duotone fa-users text-primary" />
+                        Todos os <span className="text-primary">{filteredUsers.length}</span> Utilizadores
+                    </h3>
+                    {filteredUsers.filter(u => u.role === 'ADMINISTRATOR').length > 0 && (
+                        <Link
+                            href="/"
+                            className="text-sm text-gray-600 font-semibold ml-9 -mt-1 flex items-center gap-2 hover:text-primary transition-colors cursor-pointer w-fit"
+                        >
+                            <i className="fa-duotone fa-user-gear text-primary" />
+                            <span>(<span className="text-primary">{filteredUsers.filter(u => u.role === 'ADMINISTRATOR').length}</span> Administradores)</span>
+                        </Link>
+                    )}
+                </div>
                 <SearchInput value={searchTerm} onChange={onSearchChange} />
             </div>
 

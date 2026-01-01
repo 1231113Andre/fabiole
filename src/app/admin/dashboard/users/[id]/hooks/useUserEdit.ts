@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { UserData } from "../types";
-import { useAdminUser } from "./useAdminUser";
-import { useRecordMutations } from "./useRecordMutations";
+import { useAdminUser, useAdminMutations } from "@/lib/react-query/hooks";
 
 export function useUserEdit(userId: string, initialUser: UserData) {
     // 1. Fetch data with React Query (automatic caching & background updates)
-    const { data, refetch, error: queryError } = useAdminUser(userId, initialUser);
+    const { data, refetch, error: queryError } = useAdminUser(userId, initialUser as any);
 
     // 2. Local state for form editing
     const [user, setUser] = useState<UserData>(initialUser);
@@ -17,12 +16,12 @@ export function useUserEdit(userId: string, initialUser: UserData) {
     // Ideally we'd separate View vs Edit modes, but for now strict sync is safer.
     useEffect(() => {
         if (data) {
-            setUser(data);
+            setUser(data as UserData);
         }
     }, [data]);
 
     // 4. Mutations
-    const { updateUserMutation } = useRecordMutations(userId);
+    const { updateUser } = useAdminMutations(userId, { showToasts: false });
 
     const handleSaveUser = useCallback(async () => {
         if (!user) return;
@@ -30,17 +29,17 @@ export function useUserEdit(userId: string, initialUser: UserData) {
         setSuccess(null);
 
         try {
-            await updateUserMutation.mutateAsync(user);
+            await updateUser.mutateAsync({ userId, userData: user as any });
             setSuccess("Utilizador guardado com sucesso!");
         } catch (err: any) {
             setError(err.message);
         }
-    }, [user, updateUserMutation]);
+    }, [user, updateUser, userId]);
 
     return {
         user: user || data || initialUser, // Fallback chain
         setUser,
-        saving: updateUserMutation.isPending,
+        saving: updateUser.isPending,
         setSaving: () => { }, // No-op, managed by mutation isPending
         error: error || (queryError ? queryError.message : null),
         success,

@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { getSession } from "@/lib/security/session";
 import { UserService } from "@/lib/api/services/UserService";
 import { redirect } from "next/navigation";
 import { EvaluationsClient } from "./components/EvaluationsClient";
+
+export const metadata: Metadata = {
+    title: "Dashboard | Avaliações",
+    description: "Avaliações físicas e testes de performance"
+};
 
 export const dynamic = 'force-dynamic';
 

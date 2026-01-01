@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import NewButton from "@/app/components/newButton";
 import { UserHeader } from "../../[id]/components/UserHeader";
-import { UserData, Tab } from "../../[id]/types";
+import { Tab } from "../../[id]/types";
 
-import { useQuery } from "@tanstack/react-query";
+// Centralized React Query hooks
+import { useAdminUser, useAdminMutations } from "@/lib/react-query/hooks";
+import type { AdminUserData } from "@/lib/react-query/hooks";
 
 // Local components and hooks
 import { BulkAddClientProps, TYPE_LABELS, TYPE_LABELS_PT, MAX_ROWS_PER_PAGE } from "./types";
 import { useBulkState } from "./useBulkState";
-import { useBulkMutations } from "../hooks/useBulkMutations";
 import { BulkTableHeader } from "./BulkTableHeader";
 import { BulkTableRow } from "./BulkTableRow";
 import { BulkPagination } from "./BulkPagination";
@@ -20,18 +21,13 @@ import { getDescription } from "./BulkDescriptions";
 
 export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
     const router = useRouter();
-    const { bulkSaveMutation } = useBulkMutations();
 
-    // Use React Query for fetching latest user data
-    const { data: userData } = useQuery({
-        queryKey: ['adminUser', initialUser.id],
-        queryFn: async () => {
-            const response = await fetch(`/api/admin/users/${initialUser.id}`);
-            if (!response.ok) throw new Error("Failed to fetch user");
-            return response.json();
-        },
-        initialData: initialUser
-    });
+    // Use centralized hook for fetching user data
+    const { data: fetchedData } = useAdminUser(initialUser.id, initialUser as unknown as AdminUserData);
+    const userData = fetchedData || (initialUser as unknown as AdminUserData);
+
+    // Use consolidated mutations hook with navigation on bulk save
+    const { bulkSave } = useAdminMutations(userData.id, { navigateOnBulkSave: true });
 
     const {
         pages,
@@ -68,12 +64,12 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
             return payload;
         });
 
-        bulkSaveMutation.mutate({
-            userId: userData.id,
-            type,
+        bulkSave.mutate({
+            userId: userData!.id,
+            endpoint: type,
             records
         });
-    }, [getAllRows, userData.id, type, bulkSaveMutation]);
+    }, [getAllRows, userData, type, bulkSave]);
 
     // Calculate evolution for pesagens
     const getEvolution = useCallback((rowIndex: number): number | null => {
@@ -251,12 +247,12 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
                         </Link>
                         <NewButton
                             onClick={handleSave}
-                            disabled={bulkSaveMutation.isPending}
+                            disabled={bulkSave.isPending}
                             variant="new_primary_rounded"
-                            icon={bulkSaveMutation.isPending ? <i className="fa-duotone fa-spinner-third animate-spin"></i> : <i className="fa-duotone fa-floppy-disk"></i>}
+                            icon={bulkSave.isPending ? <i className="fa-duotone fa-spinner-third animate-spin"></i> : <i className="fa-duotone fa-floppy-disk"></i>}
                             className="shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all"
                         >
-                            {bulkSaveMutation.isPending ? 'A GUARDAR...' : `GUARDAR (${newRecordsCount}) REGISTOS`}
+                            {bulkSave.isPending ? 'A GUARDAR...' : `GUARDAR (${newRecordsCount}) REGISTOS`}
                         </NewButton>
                     </div>
                 </div>

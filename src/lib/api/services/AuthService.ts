@@ -3,6 +3,7 @@ import { db } from '@/lib/db/client';
 import { comparePassword, hashPassword } from '@/lib/security/password';
 import { signSession } from '@/lib/security/session';
 import { randomUUID } from 'crypto';
+import { Logger } from '@/lib/utils/logger';
 
 export interface UserResponse {
   name: string;
@@ -39,7 +40,7 @@ export class AuthService {
     if (!isPasswordValid) {
       isPasswordValid = user.password === password;
       if (isPasswordValid) {
-        console.log(`⚠️ [Auth] Using plain text password for: ${email} - consider migrating to hash`);
+        Logger.warn('AuthService', `Security Warning: User ${email} authenticated using legacy plain-text password. Migration recommended.`);
       }
     }
 

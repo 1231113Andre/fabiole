@@ -4,6 +4,7 @@
  */
 
 import { memoryCache } from './memoryCache';
+import { Logger } from '@/lib/utils/logger';
 
 /**
  * Cache keys
@@ -76,6 +77,6 @@ export function clearAllUserCache(): void {
   // Note: This would require iterating all keys, which is expensive
   // For now, we'll rely on TTL expiration
   // If needed, we can maintain a list of user email keys
-  console.log('🧹 [UserCache] Cache will expire via TTL');
+  Logger.info('Cache', 'User cache scheduled for TTL expiration.');
 }
 

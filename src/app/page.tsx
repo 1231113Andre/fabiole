@@ -197,8 +197,8 @@ export default function Home() {
                   <div className="mt-auto w-full">
                     <NewButton
                       href={service.href}
-                      variant="new_primary_no_bg_rounded"
-                      className="mx-auto h-12 w-auto gap-3 px-8 text-base uppercase !text-primary hover:!text-white"
+                      variant="new_primary_rounded"
+                      className="mx-auto h-12 w-auto gap-3 px-8 text-base uppercase font-bold shadow-md"
                     >
                       Saber mais <i className="fa-regular fa-arrow-right"></i>
                     </NewButton>

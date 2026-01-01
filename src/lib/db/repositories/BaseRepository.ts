@@ -54,7 +54,8 @@ export abstract class BaseRepository {
             const data = await operation();
             return { success: true, data };
         } catch (error) {
-            console.error(`[${this.constructor.name}] Error:`, error);
+            const { Logger } = require('@/lib/utils/logger');
+            Logger.error('Database', `Operation failed in [${this.constructor.name}].`, error);
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(String(error))

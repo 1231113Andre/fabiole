@@ -224,9 +224,20 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                 <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium" title="Data de Registo">
                                     <i className="fa-duotone fa-calendar-clock text-primary/80"></i>
                                     {user.createdAt ? (
-                                        <span className="font-semibold text-gray-800">
-                                            Membro desde {new Date(user.createdAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                        </span>
+                                        <div className="flex items-center gap-1.5 font-semibold text-gray-800">
+                                            <span>Membro desde {new Date(user.createdAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                            {user.gender && (
+                                                <>
+                                                    <span className="text-gray-300 mx-1 font-normal opacity-50">|</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className={`font-bold ${user.gender.toLowerCase() === 'feminino' || user.gender.toLowerCase() === 'f' ? 'text-pink-500' : 'text-blue-500'}`}>
+                                                            {user.gender}
+                                                        </span>
+                                                        <i className={`fa-duotone ${user.gender.toLowerCase() === 'feminino' || user.gender.toLowerCase() === 'f' ? 'fa-venus text-pink-500' : 'fa-mars text-blue-500'} text-xs`} />
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     ) : (
                                         <span className="text-gray-400">Data de registo indisponível</span>
                                     )}

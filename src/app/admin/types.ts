@@ -11,12 +11,16 @@ export interface AdminUser {
     surname: string;
     email: string;
     role: string;
+    gender: string | null;
     birth: string;
     createdAt: string;
     avatarUrl?: string | null;
     pesagensCount: number;
     perimetrosCount: number;
     avaliacoesCount: number;
+    trainingCredit: number;
+    trainingsScheduled: number;
+    debtValue: number;
 }
 
 export interface RecentUser {

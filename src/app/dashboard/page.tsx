@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import NewButton from "@/app/components/newButton";
 import { DashboardClient } from "./components/DashboardClient";
 import { getSession } from "@/lib/security/session";
 import { redirect } from "next/navigation";
 import { UserService } from "@/lib/api/services/UserService";
 import { UserSheetData } from "@/lib/types/dashboard";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Painel do cliente com visão geral dos treinos"
+};
 
 export const dynamic = 'force-dynamic';
 

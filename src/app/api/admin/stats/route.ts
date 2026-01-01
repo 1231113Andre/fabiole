@@ -1,31 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/security/session";
+import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 
-async function checkAdmin() {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('auth_session');
-
-    if (!sessionCookie) return null;
-
-    const session = await verifySession(sessionCookie.value);
-    if (!session?.email) return null;
-
-    const user = await db.user.findUnique({
-        where: { email: session.email },
-        select: { role: true }
-    });
-
-    return user?.role === 'ADMINISTRATOR' ? session : null;
-}
-
-export async function GET() {
-    const admin = await checkAdmin();
-    if (!admin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    }
-
+export const GET = withAdminAuth(async (req, session) => {
     try {
         // Get stats
         const [totalUsers, totalPesagens, totalPerimetros, totalAvaliacoes] = await Promise.all([
@@ -43,9 +20,13 @@ export async function GET() {
                 surname: true,
                 email: true,
                 role: true,
+                gender: true,
                 birth: true,
                 createdAt: true,
                 avatarUrl: true,
+                trainingCredit: true,
+                trainingsScheduled: true,
+                debtValue: true,
                 _count: {
                     select: {
                         pesagens: true,
@@ -100,12 +81,16 @@ export async function GET() {
             surname: u.surname,
             email: u.email,
             role: u.role,
+            gender: u.gender ?? null,
             birth: u.birth?.toISOString() || '',
             createdAt: u.createdAt?.toISOString() || '',
             avatarUrl: u.avatarUrl,
             pesagensCount: u._count.pesagens,
             perimetrosCount: u._count.perimetros,
-            avaliacoesCount: u._count.avaliacoes
+            avaliacoesCount: u._count.avaliacoes,
+            trainingCredit: u.trainingCredit ? Number(u.trainingCredit) : 0,
+            trainingsScheduled: u.trainingsScheduled ?? 0,
+            debtValue: u.debtValue ? Number(u.debtValue) : 0,
         }));
 
         const formattedRecentPesagens = recentPesagens.map((p: any) => ({
@@ -141,4 +126,4 @@ export async function GET() {
         console.error('Admin stats error:', error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
-}
+});

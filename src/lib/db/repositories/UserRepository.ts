@@ -147,8 +147,9 @@ export class UserRepository extends BaseRepository {
 
             // Clear cache for this user (by email)
             import('@/lib/cache/userCache').then(({ clearUserData }) => {
+                const { Logger } = require('@/lib/utils/logger');
                 clearUserData(user.email);
-                console.log(`🧹 [Cache] Cleared cache for ${user.email}`);
+                Logger.info('Cache', `Stale data purge: Memory cache evicted for user ${user.email} following database update.`);
             });
 
             return user;

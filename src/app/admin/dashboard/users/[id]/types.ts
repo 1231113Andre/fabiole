@@ -13,7 +13,7 @@ export interface UserData {
     debtValue: number;
     goals: string;
     notes: string;
-    paid: string;
+    paid: string | boolean;
     avatarUrl: string | null;
     pesagens: Pesagem[];
     perimetros: Perimetro[];

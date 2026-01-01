@@ -13,7 +13,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: {
     default: "Fabio Le — Personal Trainer",
-    template: "%s | Fabio Le"
+    template: "%s | Fabio Le — Personal Trainer"
   },
   description: "Personal training presencial e online. Marca já a tua sessão.",
   icons: {

@@ -11,7 +11,7 @@ interface AvatarProps {
     className?: string;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({
+export const Avatar: React.FC<AvatarProps> = React.memo(({
     src,
     name = "",
     surname = "",
@@ -71,4 +71,6 @@ export const Avatar: React.FC<AvatarProps> = ({
             {getInitials() || <i className="fa-duotone fa-user"></i>}
         </div>
     );
-};
+});
+
+Avatar.displayName = "Avatar";

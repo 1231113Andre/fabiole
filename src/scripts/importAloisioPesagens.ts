@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { db } from '../lib/db/client';
+import { Logger } from '../lib/utils/logger';
 
 // Pesagens extracted from Google Sheets for aloisio-monteiro@hotmail.com
 const pesagensData = [
@@ -20,20 +21,20 @@ function parseDate(dateStr: string): Date {
 
 async function main() {
     const email = 'aloisio-monteiro@hotmail.com';
-    console.log(`🚀 Importing pesagens for ${email}...`);
+    Logger.info('Migration', `Commencing pesagens import protocol for target: ${email}.`);
 
     // Find the user
     const user = await db.user.findUnique({ where: { email } });
     if (!user) {
-        console.error(`❌ User not found: ${email}`);
+        Logger.error('Migration', `Target user identification failed: Profile ${email} not found in database. Aborting procedure.`);
         process.exit(1);
     }
 
-    console.log(`✅ Found user: ${user.name} ${user.surname} (ID: ${user.id})`);
+    Logger.success('Migration', `Target user identified: ${user.name} ${user.surname} (Internal UUID: ${user.id}).`);
 
     // Delete existing pesagens
     const deleted = await db.pesagem.deleteMany({ where: { user_uuid: user.id } });
-    console.log(`🗑️ Deleted ${deleted.count} existing pesagens`);
+    Logger.info('Migration', `Data sanitisation: Successfully removed ${deleted.count} legacy pesagens records from profile.`);
 
     // Insert new pesagens
     const dataToInsert = pesagensData.map(p => ({
@@ -54,13 +55,13 @@ async function main() {
     }));
 
     await db.pesagem.createMany({ data: dataToInsert });
-    console.log(`✅ Imported ${dataToInsert.length} pesagens`);
+    Logger.success('Migration', `Import phase concluded: Successfully provisioned ${dataToInsert.length} pesagens records.`);
 
     // Verify
     const count = await db.pesagem.count({ where: { user_uuid: user.id } });
-    console.log(`📊 Total pesagens for ${email}: ${count}`);
+    Logger.info('Migration', `Final audit check: Total active pesagens for ${email} is now ${count}.`);
 }
 
 main()
-    .catch(e => console.error(e))
+    .catch(e => Logger.error('Migration', 'Critical failure encountered during data import execution sequence.', e))
     .finally(() => db.$disconnect());

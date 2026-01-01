@@ -1,9 +1,10 @@
 import 'dotenv/config';
 import { db } from '../lib/db/client';
 import { hashPassword } from '../lib/security/password';
+import { Logger } from '../lib/utils/logger';
 
 async function main() {
-    console.log('🔧 Setting up admin roles...\n');
+    Logger.info('System', 'Privileged Action: Initiating master administrator hierarchy configuration.');
 
     // 1. Remove admin from developerxawierstudio@gmail.com
     try {
@@ -11,9 +12,9 @@ async function main() {
             where: { email: 'developerxawierstudio@gmail.com' },
             data: { role: 'USER' }
         });
-        console.log('✅ developerxawierstudio@gmail.com -> role: USER');
+        Logger.success('AdminService', 'Permission Downgrade: Successfully reverted developerxawierstudio@gmail.com to standard USER status.');
     } catch (e) {
-        console.log('⚠️ developerxawierstudio@gmail.com not found or already USER');
+        Logger.warn('AdminService', 'Maintenance Notice: developerxawierstudio@gmail.com either already downgraded or record is absent.');
     }
 
     // 2. Check if fabiole@fabiole.com exists
@@ -34,19 +35,19 @@ async function main() {
                 birth: new Date('1990-01-01')
             }
         });
-        console.log('✅ Created new admin: fabiole@fabiole.com (password: admin123)');
+        Logger.success('AdminService', 'Identity Creation: Root administrator account fabiole@fabiole.com successfully provisioned.');
     } else {
         // Update existing user to admin
         await db.user.update({
             where: { email: 'fabiole@fabiole.com' },
             data: { role: 'ADMINISTRATOR' }
         });
-        console.log('✅ fabiole@fabiole.com -> role: ADMINISTRATOR');
+        Logger.success('AdminService', 'Permission Escalation: fabiole@fabiole.com elevated to master ADMINISTRATOR role.');
     }
 
-    console.log('\n🎉 Done! Admin account: fabiole@fabiole.com');
+    Logger.info('System', 'Configuration Success: Admin hierarchy finalized and locked.');
 }
 
 main()
-    .catch(console.error)
+    .catch((err) => Logger.error('System', 'Setup failed.', err))
     .finally(() => db.$disconnect());

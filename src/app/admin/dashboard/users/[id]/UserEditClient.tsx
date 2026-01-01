@@ -36,7 +36,7 @@ const LoadingSection = () => (
 export function UserEditClient({ initialUser }: UserEditClientProps) {
     const userId = initialUser.id;
     const [activeTab, setActiveTab] = useState<Tab>('info');
-    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; endpoint: string; id: number; message: string } | null>(null);
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; endpoint: 'pesagens' | 'perimetros' | 'avaliacoes'; id: number; message: string } | null>(null);
 
     const {
         user,
@@ -96,7 +96,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
         setSaving
     });
 
-    const handleDeleteRecord = async (endpoint: string, id: number, message: string) => {
+    const handleDeleteRecord = async (endpoint: 'pesagens' | 'perimetros' | 'avaliacoes', id: number, message: string) => {
         const dontAsk = localStorage.getItem('fabiole_dont_ask_delete');
         if (dontAsk === 'true') {
             await executeDelete(endpoint, id);
