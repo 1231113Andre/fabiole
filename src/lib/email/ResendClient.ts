@@ -1,7 +1,5 @@
-// src/lib/email/ResendClient.ts
-// Singleton Resend client with configuration
-
 import { Resend } from 'resend';
+import { Logger } from '../utils/logger';
 
 class ResendClientSingleton {
     private static instance: Resend | null = null;
@@ -11,6 +9,7 @@ class ResendClientSingleton {
             const apiKey = process.env.RESEND_API_KEY;
 
             if (!apiKey) {
+                Logger.error('Email', 'Initialization Failure: RESEND_API_KEY is missing from environment configuration. Dispatch services are disabled.');
                 throw new Error(
                     '[ResendClient] RESEND_API_KEY is not configured. ' +
                     'Please add it to your .env.local file.'
@@ -18,7 +17,7 @@ class ResendClientSingleton {
             }
 
             ResendClientSingleton.instance = new Resend(apiKey);
-            console.log('✅ [ResendClient] Initialized successfully');
+            Logger.success('Email', 'Subsystem Initialized: Resend API client is provisioned and ready for outbound message dispatch.');
         }
 
         return ResendClientSingleton.instance;

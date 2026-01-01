@@ -6,6 +6,7 @@ import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware'
 import { VerificationCodeService } from '@/lib/email/VerificationCodeService';
 import { db } from '@/lib/db/client';
 import { comparePassword } from '@/lib/security/password';
+import { Logger } from '@/lib/utils/logger';
 
 // Validation schema
 const requestChangeEmailSchema = z.object({
@@ -32,8 +33,7 @@ const handler = new BaseRouteHandler()
             const currentEmail = session.email.toLowerCase();
             const nextEmail = newEmail.toLowerCase();
 
-            console.log(`[ChangeEmailRequest] Current(Session): ${currentEmail}, Next(Input): ${nextEmail}`);
-
+            // Note: Flow control tracking for sensitive identity updates
             if (currentEmail === nextEmail) {
                 return ApiResponse.badRequest("O novo email deve ser diferente do atual.");
             }
@@ -75,7 +75,7 @@ const handler = new BaseRouteHandler()
             });
 
         } catch (error) {
-            console.error("[ChangeEmailRequest] Error:", error);
+            Logger.error('Security', 'Email Update Initiation Failure: A critical exception occurred during the change-request verification sequence.', error);
             if (error instanceof Error) {
                 return ApiResponse.badRequest(error.message);
             }

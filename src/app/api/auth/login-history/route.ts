@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/security/session';
+import { Logger } from '@/lib/utils/logger';
 
 // In a production app, you would store login sessions in a database
 // For now, we'll return mock data based on the current session
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
             data: sessions,
         });
     } catch (error) {
-        console.error('❌ [Login History] Error:', error);
+        Logger.error('Security', 'History Retrieval Failure: Could not compile login session history for audit.', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao carregar histórico' },
             { status: 500 }

@@ -7,7 +7,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
+import { Pool, PoolConfig } from 'pg';
 
 // Use Symbol to ensure unique key across HMR
 const PRISMA_KEY = Symbol.for('app.prisma.client');
@@ -23,13 +23,33 @@ if (!connectionString) {
     throw new Error('DATABASE_URL environment variable is not set');
 }
 
+// Determine if SSL is needed (most cloud providers require it)
+const isProduction = process.env.NODE_ENV === 'production';
+const requireSSL = connectionString.includes('sslmode=require') || 
+                   connectionString.includes('ssl=true') ||
+                   isProduction;
+
 function getPool(): Pool {
     if (!globalStore[POOL_KEY]) {
-        globalStore[POOL_KEY] = new Pool({
+        const poolConfig: PoolConfig = {
             connectionString,
             max: 10, // Connection pool size
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 10000,
+        };
+
+        // Add SSL configuration for production/cloud databases
+        if (requireSSL) {
+            poolConfig.ssl = {
+                rejectUnauthorized: false, // Allow self-signed certificates
+            };
+        }
+
+        globalStore[POOL_KEY] = new Pool(poolConfig);
+
+        // Handle pool errors gracefully
+        globalStore[POOL_KEY].on('error', (err) => {
+            console.error('[DB Pool] Unexpected error on idle client:', err);
         });
     }
     return globalStore[POOL_KEY];

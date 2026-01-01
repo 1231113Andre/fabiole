@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/security/session';
 import { getServerPathname } from '@/lib/utils/pathname';
+import { Logger } from '@/lib/utils/logger';
 import ClientAuthButtons from './ClientAuthButtons';
 import ClientMobileMenu from './ClientMobileMenu';
 import { ASSETS } from '@/lib/constants/assets';
@@ -38,12 +39,11 @@ export default async function ServerNavbar() {
         const cookieStore = await cookies();
         const sessionCookie = cookieStore.get('auth_session');
 
-        console.log('[ServerNavbar] Cookie found:', !!sessionCookie?.value);
-
+        // Note: Reduced verbosity for standard navigation flow
         if (sessionCookie?.value) {
             const payload = await verifySession(sessionCookie.value);
-            console.log('[ServerNavbar] Payload verified:', !!payload);
             if (payload) {
+                Logger.info('Security', `Identity Resolved: User ${payload.email} successfully authenticated via SSR for Navbar hydration.`);
                 initialUser = {
                     name: payload.name as string,
                     surname: payload.surname as string,
@@ -52,7 +52,7 @@ export default async function ServerNavbar() {
             }
         }
     } catch (error) {
-        console.error('[ServerNavbar] Error verifying session:', error);
+        Logger.error('Security', 'Hydration Failure: Could not verify session identity during ServerNavbar SSR.', error);
         // Fail silently - user will be treated as guest
     }
 

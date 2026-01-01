@@ -3,6 +3,7 @@ import { db } from "@/lib/db/client";
 import { hashPassword } from "@/lib/security/password";
 import { AccountEmailService } from "@/lib/email/services/AccountEmailService";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
+import { Logger } from "@/lib/utils/logger";
 
 export const POST = withAdminAuth(async (req, session) => {
     try {
@@ -65,9 +66,9 @@ export const POST = withAdminAuth(async (req, session) => {
                     password: password, // Send the original password, not the hashed one
                     firstName: newUser.name,
                     role: role || 'USER'
-                }).catch(err => console.error('Failed to send welcome email async:', err));
+                }).catch(err => Logger.error('Email', `Asynchronous Dispatch Failure: Could not deliver welcome notification to manually registered user ${newUser.email}.`, err));
             } catch (emailError) {
-                console.error('Failed to trigger welcome email:', emailError);
+                Logger.error('Email', `Dispatch Initiation Failure: Error encountered while triggering the welcome notification workflow for ${newUser.email}.`, emailError);
             }
         }
 
@@ -77,7 +78,7 @@ export const POST = withAdminAuth(async (req, session) => {
         });
 
     } catch (error: any) {
-        console.error('Manual user creation error:', error);
+        Logger.error('AdminService', 'Manual Provisioning Failure: A critical exception occurred during the administrative user creation sequence.', error);
         return NextResponse.json({ error: 'Erro interno ao criar utilizador' }, { status: 500 });
     }
 });

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkAdmin, AdminSession } from "@/lib/api/utils/adminAuth";
+import { Logger } from "@/lib/utils/logger";
 
 /**
  * Type for the handler function receiving the request, admin session, and context
@@ -32,7 +33,7 @@ export function withAdminAuth<T = any>(handler: AdminRouteHandler<T>) {
 
             return await handler(req, adminSession, context);
         } catch (error) {
-            console.error("Auth Wrapper Error:", error);
+            Logger.error('Security', "Administrative Authorization Failure: Critical exception encountered within the admin session verification wrapper.", error);
             return NextResponse.json(
                 { error: "Internal Server Error" },
                 { status: 500 }

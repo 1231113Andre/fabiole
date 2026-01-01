@@ -1,5 +1,6 @@
 import { Middleware, ApiResponse } from '../core/types';
 import { ApiResponse as ApiResponseBuilder } from '../core/ApiResponse';
+import { Logger } from '@/lib/utils/logger';
 
 /**
  * Error handling middleware
@@ -16,7 +17,7 @@ export const errorMiddleware: Middleware = async (context) => {
  * Handle errors from handlers
  */
 export function handleError(error: unknown, requestId: string): ApiResponse {
-  console.error(`[${requestId}] Handler error:`, error);
+  Logger.error('System', `Handler Execution Failure: An unhandled exception was caught in the API middleware pipeline for request [${requestId}].`, error);
 
   const isProduction = process.env.NODE_ENV === 'production';
 

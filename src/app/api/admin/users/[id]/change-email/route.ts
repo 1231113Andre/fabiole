@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { checkAdmin } from "@/lib/api/utils/adminAuth";
+import { Logger } from "@/lib/utils/logger";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const admin = await checkAdmin();
@@ -35,17 +36,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             return NextResponse.json({ error: 'Este email já está em uso' }, { status: 400 });
         }
 
-        // Update email
+        // Update user email
         await db.user.update({
             where: { id },
             data: { email: newEmail }
         });
 
-        console.log(`✅ [Admin] Email changed for user: ${user.email} -> ${newEmail} by admin: ${admin.email}`);
+        Logger.success('Security', `Administrative Identity Maintenance: Email address for User ID [${user.id}] has been updated by Admin [${admin.email}]. Change mapping: ${user.email} -> ${newEmail}.`);
 
         return NextResponse.json({ success: true, message: 'Email alterado com sucesso' });
     } catch (error) {
-        console.error('Admin change email error:', error);
+        Logger.error('Security', `Administrative Identity Update Failure: A critical exception occurred while Admin [${admin.email}] attempted to update the email for User ID [${id}].`, error);
         return NextResponse.json({ error: 'Erro interno' }, { status: 500 });
     }
 }

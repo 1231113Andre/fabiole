@@ -1,5 +1,6 @@
 import { getResendClient, EMAIL_CONFIG } from '../ResendClient';
 import { SendEmailOptions, SendEmailResult } from '../types';
+import { Logger } from '../../utils/logger';
 
 /**
  * Base Email Service
@@ -49,20 +50,20 @@ export class BaseEmailService {
             const result = await resend.emails.send(emailOptions as Parameters<typeof resend.emails.send>[0]);
 
             if (result.error) {
-                console.error('❌ [BaseEmailService] Resend error:', result.error);
+                Logger.error('Email', `Provider Error: Resend API returned an error during dispatch to ${toAddresses.join(', ')}.`, result.error);
                 return {
                     success: false,
                     error: result.error.message || 'Failed to send email',
                 };
             }
 
-            console.log(`✅ [BaseEmailService] Email sent successfully. ID: ${result.data?.id}`);
+            Logger.success('Email', `Transmission Successful: Message delivered to provider queue for ${toAddresses.join(', ')}. Provider ID: ${result.data?.id}.`);
             return {
                 success: true,
                 messageId: result.data?.id,
             };
         } catch (error) {
-            console.error('❌ [BaseEmailService] Error sending email:', error);
+            Logger.error('Email', `System Error: Critical failure in the email generation or transmission pipeline.`, error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Failed to send email',

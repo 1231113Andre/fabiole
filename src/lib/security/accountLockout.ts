@@ -1,3 +1,5 @@
+import { Logger } from '../utils/logger';
+
 /**
  * @fileoverview Account lockout mechanism
  * @description Tracks failed login attempts and locks accounts after threshold
@@ -45,7 +47,7 @@ function scheduleCleanup() {
     }
 
     if (cleaned > 0) {
-      console.log(`🧹 [AccountLockout] Cleaned up ${cleaned} expired lockout entries`);
+      Logger.info('Security', `Automated Account Protection: Purged ${cleaned} stale lockout tracking entries from memory.`);
     }
   }, CLEANUP_INTERVAL_MS);
 }
@@ -117,9 +119,7 @@ export function recordFailedAttempt(
   // Lock account if threshold reached
   if (entry.attempts >= MAX_ATTEMPTS) {
     entry.lockedUntil = now + LOCKOUT_DURATION_MS;
-    console.log(
-      `🔒 [AccountLockout] Account locked: ${email} (${entry.attempts} failed attempts)`
-    );
+    Logger.warn('Security', `Account Lockout Triggered: Identity ${email} has reached the maximum failed attempt threshold (${entry.attempts}). Access restricted for 15 minutes.`);
   }
 
   lockoutStore.set(key, entry);
@@ -149,7 +149,7 @@ export function recordFailedAttempt(
 export function clearFailedAttempts(email: string, ip?: string): void {
   const key = getLockoutKey(email, ip);
   lockoutStore.delete(key);
-  console.log(`✅ [AccountLockout] Cleared lockout for: ${email}`);
+  Logger.success('Security', `Account Protection Reset: Login restrictions and attempt tracking cleared for identity: ${email}.`);
 }
 
 /**

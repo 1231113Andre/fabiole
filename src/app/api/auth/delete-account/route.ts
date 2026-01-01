@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/security/session';
 import { comparePassword } from '@/lib/security/password';
 import { db } from '@/lib/db/client';
+import { Logger } from '@/lib/utils/logger';
 
 export async function DELETE(request: NextRequest) {
     try {
@@ -76,11 +77,11 @@ export async function DELETE(request: NextRequest) {
             path: '/',
         });
 
-        console.log(`🗑️ [Delete Account] Account deleted: ${session.email}`);
+        Logger.warn('Security', `Account Termination: User profile ${session.email} has been permanently deleted from the database registry.`);
 
         return response;
     } catch (error) {
-        console.error('❌ [Delete Account] Error:', error);
+        Logger.error('Security', 'Account Termination Failure: A critical exception occurred during the user deletion lifecycle.', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao eliminar conta' },
             { status: 500 }

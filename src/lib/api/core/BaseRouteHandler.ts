@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { RouteContext, Middleware, RouteHandler, ApiResponse } from './types';
 import { createRouteContext } from './RouteContext';
 import { ApiResponse as ApiResponseBuilder } from './ApiResponse';
+import { Logger } from '@/lib/utils/logger';
 
 /**
  * Base route handler with middleware support
@@ -36,12 +37,12 @@ export class BaseRouteHandler {
       // Execute middleware pipeline
       for (const middleware of this.middlewares) {
         const result = await middleware(context);
-        
+
         // If middleware returns ApiResponse, short-circuit
         if (this.isApiResponse(result)) {
           return this.toNextResponse(result);
         }
-        
+
         context = result;
       }
 
@@ -53,8 +54,8 @@ export class BaseRouteHandler {
       const response = await this.handler(context);
       return this.toNextResponse(response);
     } catch (error) {
-      console.error(`[${context.requestId}] Handler error:`, error);
-      
+      Logger.error('System', `Handler Execution Failure: Unhandled exception in route handler context for request [${context.requestId}].`, error);
+
       const errorResponse = ApiResponseBuilder.error(
         error instanceof Error ? error.message : 'Internal server error',
         500,

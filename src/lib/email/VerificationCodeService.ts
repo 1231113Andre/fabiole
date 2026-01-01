@@ -8,6 +8,7 @@ import {
     MAX_VERIFICATION_ATTEMPTS,
 } from './types';
 import { VerificationEmailService } from './services/VerificationEmailService';
+import { Logger } from '../utils/logger';
 
 /**
  * In-memory store for verification codes
@@ -48,7 +49,7 @@ export class VerificationCodeService {
         };
 
         verificationCodes.set(normalizedEmail, verificationCode);
-        console.log(`✅ [VerificationCodeService] Code stored for: ${normalizedEmail} (total codes in store: ${verificationCodes.size})`);
+        Logger.info('Security', `Authentication Tracking: One-time verification code generated and stored for identity: ${normalizedEmail}. Current active verification session count: ${verificationCodes.size}.`);
 
         return verificationCode;
     }
@@ -69,20 +70,20 @@ export class VerificationCodeService {
         const stored = verificationCodes.get(normalizedEmail);
 
         if (!stored) {
-            console.log(`❌ [VerificationCodeService] No code found for: ${normalizedEmail}`);
+            Logger.warn('Security', `Verification Rejected: No active session found for identifier ${normalizedEmail}. Possible session timeout or manual clear.`);
             return { valid: false, error: 'NOT_FOUND' };
         }
 
         // Check if expired
         if (new Date() > stored.expiresAt) {
-            console.log(`❌ [VerificationCodeService] Code expired for: ${normalizedEmail}`);
+            Logger.warn('Security', `Verification Expired: Authentication token for ${normalizedEmail} has surpassed the validity window. Clearing session.`);
             verificationCodes.delete(normalizedEmail);
             return { valid: false, error: 'EXPIRED' };
         }
 
         // Check attempts
         if (stored.attempts >= MAX_VERIFICATION_ATTEMPTS) {
-            console.log(`❌ [VerificationCodeService] Too many attempts for: ${normalizedEmail}`);
+            Logger.warn('Security', `Brute-force Prevention: Maximum verification attempts reached for ${normalizedEmail}. Restricting access and purging session.`);
             verificationCodes.delete(normalizedEmail);
             return { valid: false, error: 'TOO_MANY_ATTEMPTS' };
         }
@@ -92,13 +93,13 @@ export class VerificationCodeService {
 
         // Check code
         if (stored.code !== submittedCode) {
-            console.log(`❌ [VerificationCodeService] Invalid code for: ${normalizedEmail} (attempt ${stored.attempts})`);
+            Logger.warn('Security', `Verification Failure: Invalid code submitted for ${normalizedEmail}. Attempt ${stored.attempts} of ${MAX_VERIFICATION_ATTEMPTS}.`);
             return { valid: false, error: 'INVALID' };
         }
 
         // Success! Remove the code
         verificationCodes.delete(normalizedEmail);
-        console.log(`✅ [VerificationCodeService] Code verified for: ${normalizedEmail}`);
+        Logger.success('Security', `Authentication Success: Multi-factor verification completed for identity: ${normalizedEmail}.`);
 
         return { valid: true };
     }
@@ -120,7 +121,7 @@ export class VerificationCodeService {
                 // Rate limit: don't send another code if one was sent recently (within 1 minute)
                 const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
                 if (existing.createdAt > oneMinuteAgo) {
-                    console.log(`⚠️ [VerificationCodeService] Rate limited for: ${normalizedEmail}`);
+                    Logger.warn('Security', `Rate Limiting: Suppressing redundant verification request for ${normalizedEmail} to prevent spam/abuse.`);
                     return {
                         success: false,
                         error: 'Please wait before requesting another code',
@@ -147,7 +148,7 @@ export class VerificationCodeService {
 
             return { success: true };
         } catch (error) {
-            console.error('❌ [VerificationCodeService] Error:', error);
+            Logger.error('Security', 'Dispatch Failure: Critical exception encountered during the verification code issuance workflow.', error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : 'Failed to send verification code',
@@ -160,7 +161,7 @@ export class VerificationCodeService {
      */
     static clearAllCodes(): void {
         verificationCodes.clear();
-        console.log('🧹 [VerificationCodeService] All codes cleared');
+        Logger.info('Security', 'Maintenance Action: All active verification sessions have been manually purged from memory.');
     }
 
     /**

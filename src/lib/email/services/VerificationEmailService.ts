@@ -1,6 +1,7 @@
 import { BaseEmailService } from './BaseEmailService';
 import { renderVerificationCodeEmail } from '../templates/VerificationCodeEmail';
 import { SendEmailResult, VERIFICATION_CODE_EXPIRY_MINUTES } from '../types';
+import { Logger } from '../../utils/logger';
 
 export class VerificationEmailService extends BaseEmailService {
     /**
@@ -28,9 +29,9 @@ export class VerificationEmailService extends BaseEmailService {
         });
 
         if (result.success) {
-            console.log(`✅ [VerificationEmailService] Verification code sent to: ${email}`);
+            Logger.success('Email', `Dispatch Successful: One-time verification code securely transmitted to ${email}.`);
         } else {
-            console.error(`❌ [VerificationEmailService] Failed to send verification code to: ${email}`);
+            Logger.error('Email', `Dispatch Failure: Could not transmit verification code to ${email}.`, result.error);
         }
 
         return result;

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { verifySession } from '@/lib/security/session';
 import { comparePassword } from '@/lib/security/password';
 import { db } from '@/lib/db/client';
+import { Logger } from '@/lib/utils/logger';
 
 export async function POST(request: NextRequest) {
     try {
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
             data: { email: newEmail.toLowerCase() }
         });
 
-        console.log(`✅ [Change Email] Email updated in Prisma: ${oldEmail} -> ${newEmail}`);
+        Logger.success('Security', `Identity Maintenance: Primary email successfully updated for profile ${user.id}. Mapping change: ${oldEmail} -> ${newEmail}.`);
 
         // Clear session cookie to force re-login with new email
         const response = NextResponse.json({
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
 
         return response;
     } catch (error) {
-        console.error('❌ [Change Email] Error:', error);
+        Logger.error('Security', 'Identity Update Failure: A critical exception occurred while committing the new primary email to the database.', error);
         return NextResponse.json(
             { success: false, error: 'Erro ao alterar email' },
             { status: 500 }

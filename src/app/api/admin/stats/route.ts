@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
+import { Logger } from "@/lib/utils/logger";
 
 export const GET = withAdminAuth(async (req, session) => {
     try {
@@ -123,7 +124,7 @@ export const GET = withAdminAuth(async (req, session) => {
             recentPesagens: formattedRecentPesagens
         });
     } catch (error) {
-        console.error('Admin stats error:', error);
+        Logger.error('AdminService', 'Analytics Synchronization Failure: A critical exception occurred while compiling master dashboard statistics and user metrics.', error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
 });

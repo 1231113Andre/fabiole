@@ -4,6 +4,7 @@ import { DashboardClient } from "./components/DashboardClient";
 import { getSession } from "@/lib/security/session";
 import { redirect } from "next/navigation";
 import { UserService } from "@/lib/api/services/UserService";
+import { Logger } from "@/lib/utils/logger";
 import { UserSheetData } from "@/lib/types/dashboard";
 
 export const metadata: Metadata = {
@@ -26,7 +27,7 @@ export default async function DashboardOverviewPage() {
   try {
     userData = await UserService.getUserData(session.email);
   } catch (error) {
-    console.error("Error fetching user data:", error);
+    Logger.error('Dashboard', `SSR Data Retrieval Yielded Error: Could not compile profile overview for user ${session.email}.`, error);
     // If user not found or error, handle gracefully
     return (
       <div className="flex items-center justify-center min-h-screen text-gray-500">

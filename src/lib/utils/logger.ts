@@ -24,7 +24,10 @@ export class Logger {
 
         const timestamp = `${getPart('day')}.${getPart('month')}.${getPart('year')} - ${getPart('hour')}:${getPart('minute')}:${getPart('second')}`;
 
-        return `[${timestamp}] | [${category}] => ${message}`;
+        // Ensure message ends with a period
+        const finalMessage = message.trim().endsWith('.') ? message.trim() : `${message.trim()}.`;
+
+        return `[${timestamp}] | [${category}] => ${finalMessage}`;
     }
 
     static info(category: string, message: string) {

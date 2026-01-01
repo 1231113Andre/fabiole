@@ -8,6 +8,7 @@ import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifySession, isSessionExpired, SessionPayload } from '@/lib/security/session';
 import { getCachedSession, setCachedSession } from '@/lib/security/sessionCache';
+import { Logger } from '@/lib/utils/logger';
 
 export interface AuthUser {
   name: string;
@@ -33,7 +34,7 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get('auth_session');
-    
+
     if (!session) {
       return {
         authenticated: false,
@@ -44,7 +45,7 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
     try {
       // Check cache first (JWT verification is expensive)
       const cachedPayload = getCachedSession<SessionPayload>(session.value);
-      
+
       if (cachedPayload) {
         // Check if session is expired
         if (isSessionExpired(cachedPayload)) {
@@ -75,11 +76,11 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
 
       // Try to verify as JWT (new format) - not in cache
       const payload = await verifySession(session.value);
-      
+
       if (payload) {
         // Cache the result for future requests
         setCachedSession(session.value, payload);
-        
+
         // Check if session is expired
         if (isSessionExpired(payload)) {
           return {
@@ -110,7 +111,7 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
       // Fallback: try to parse as JSON (legacy format for backward compatibility)
       try {
         const userData = JSON.parse(session.value) as AuthUser;
-        
+
         // Validate user data structure
         if (!userData.email || !userData.name || !userData.surname) {
           return {
@@ -120,8 +121,8 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
         }
 
         // Legacy format - warn but allow (for migration period)
-        console.warn('⚠️ [Auth] Using legacy session format (JSON). Consider migrating to JWT.');
-        
+        Logger.warn('Security', 'Legacy Protocol Detected: Identity is using a deprecated JSON session format. Migration to signed JWT is highly recommended for enhanced security.');
+
         return {
           authenticated: true,
           user: userData,
@@ -139,7 +140,7 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
       };
     }
   } catch (error) {
-    console.error('❌ [Auth] Error validating authentication:', error);
+    Logger.error('Security', 'Authentication Boundary Error: An unexpected exception occurred during the session validation lifecycle.', error);
     return {
       authenticated: false,
       error: 'Authentication check failed',

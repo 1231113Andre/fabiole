@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { clearUserData } from "@/lib/cache/userCache";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
+import { Logger } from "@/lib/utils/logger";
 
 export const GET = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -79,7 +80,7 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
             }))
         });
     } catch (error) {
-        console.error('Get user error:', error);
+        Logger.error('AdminService', `Profile Retrieval Failure: A critical exception occurred while fetching the full data set for User ID [${id}].`, error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
 });
@@ -117,7 +118,7 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
 
         return NextResponse.json({ success: true, user: { id: user.id, name: user.name } });
     } catch (error) {
-        console.error('Update user error:', error);
+        Logger.error('AdminService', `Profile Update Failure: A critical exception occurred while committing changes to User ID [${id}].`, error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
 });
@@ -138,7 +139,7 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Delete user error:', error);
+        Logger.error('AdminService', `Account Termination Failure: A critical exception occurred during the administrative deletion of User ID [${id}].`, error);
         return NextResponse.json({ error: 'Internal error' }, { status: 500 });
     }
 });

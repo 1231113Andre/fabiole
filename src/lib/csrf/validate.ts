@@ -7,6 +7,7 @@
 import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { compareTokens, isValidTokenFormat } from './csrf';
+import { Logger } from '../utils/logger';
 
 const CSRF_TOKEN_COOKIE_NAME = 'csrf-token';
 const CSRF_TOKEN_HEADER_NAME = 'X-CSRF-Token';
@@ -45,7 +46,7 @@ function validateOrigin(request: NextRequest): boolean {
 
       // Only check host match - Vercel's internal routing may change protocol
       if (originHost !== expectedHost) {
-        console.error('[CSRF] Origin validation failed:', {
+        Logger.error('Security', 'CSRF Violation: Origin header validation failed during security check.', {
           originHost,
           expectedHost,
           origin,
@@ -63,7 +64,7 @@ function validateOrigin(request: NextRequest): boolean {
 
       // Only check host match
       if (refererHost !== expectedHost) {
-        console.error('[CSRF] Referer validation failed:', {
+        Logger.error('Security', 'CSRF Violation: Referer header validation failed during security check.', {
           refererHost,
           expectedHost,
           referer,
@@ -75,7 +76,7 @@ function validateOrigin(request: NextRequest): boolean {
     }
   } catch (error) {
     // Invalid URL format - reject
-    console.error('[CSRF] URL parsing error:', error);
+    Logger.error('Security', 'CSRF Subsystem: Critical URL parsing error encountered during header validation.', error);
     return false;
   }
 
@@ -154,7 +155,7 @@ export async function validateCsrfToken(
 
     return { valid: true };
   } catch (error) {
-    console.error('[CSRF] Validation error:', error);
+    Logger.error('Security', 'CSRF Validation Failure: Internal error encountered in the double-submit token verification pipeline.', error);
     return {
       valid: false,
       error: 'CSRF validation failed',
