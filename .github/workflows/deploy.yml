@@ -21,6 +21,5 @@ jobs:
             npm install
             npx prisma generate
             npm run build
-            # Restartujemy na porcie 3000 dla Nginxa
             pm2 restart fabiole-app || PORT=3000 pm2 start npm --name "fabiole-app" -- run start
             pm2 save
