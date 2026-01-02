@@ -16,6 +16,8 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$PATH:/root/.npm-global/bin:/usr/local/bin:$(npm bin -g 2>/dev/null)"
             cd /root/fabiole-app
             git pull origin main
