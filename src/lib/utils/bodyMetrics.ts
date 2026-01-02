@@ -24,6 +24,21 @@ export type BodyFatClassification =
     | 'Elevado (Risco para a Saúde)'
     | 'Verifique o Género';
 
+// =============================================================================
+// BADGE STYLES
+// =============================================================================
+
+export const BADGE_STYLES = {
+    GRAY: "inline-flex items-center rounded-md bg-gray-500/15 px-2 py-1 text-xs font-bold text-gray-700 inset-ring inset-ring-gray-500/30",
+    RED: "inline-flex items-center rounded-md bg-red-500/15 px-2 py-1 text-xs font-bold text-red-700 inset-ring inset-ring-red-500/30",
+    YELLOW: "inline-flex items-center rounded-md bg-yellow-500/15 px-2 py-1 text-xs font-bold text-yellow-700 inset-ring inset-ring-yellow-500/40",
+    GREEN: "inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-700 inset-ring inset-ring-emerald-500/30",
+    BLUE: "inline-flex items-center rounded-md bg-blue-500/15 px-2 py-1 text-xs font-bold text-blue-700 inset-ring inset-ring-blue-500/30",
+    INDIGO: "inline-flex items-center rounded-md bg-indigo-500/15 px-2 py-1 text-xs font-bold text-indigo-700 inset-ring inset-ring-indigo-500/30",
+    PURPLE: "inline-flex items-center rounded-md bg-purple-500/15 px-2 py-1 text-xs font-bold text-purple-700 inset-ring inset-ring-purple-500/30",
+    PINK: "inline-flex items-center rounded-md bg-pink-500/15 px-2 py-1 text-xs font-bold text-pink-700 inset-ring inset-ring-pink-500/30",
+};
+
 export type Gender = 'M' | 'F' | 'Masculino' | 'Feminino' | string;
 
 // =============================================================================
@@ -200,11 +215,22 @@ export function classifyBodyFat(
  * Get CSS class for BMI classification badge
  */
 export function getBmiClassColor(bmiClass: string): string {
-    if (bmiClass === 'Peso Normal') return 'bg-emerald-100 text-emerald-700';
-    if (bmiClass === 'Baixo Peso') return 'bg-sky-100 text-sky-700';
-    if (bmiClass === 'Pré-obesidade' || bmiClass.includes('Grau I')) return 'bg-amber-100 text-amber-700';
-    if (bmiClass.includes('Grau')) return 'bg-red-100 text-red-700';
-    return 'bg-gray-100 text-gray-500';
+    if (bmiClass === 'Peso Normal') return BADGE_STYLES.GREEN;
+    if (bmiClass === 'Baixo Peso') return BADGE_STYLES.BLUE;
+    if (bmiClass === 'Pré-obesidade' || bmiClass.includes('Grau I')) return BADGE_STYLES.YELLOW;
+    if (bmiClass.includes('Grau')) return BADGE_STYLES.RED;
+    return BADGE_STYLES.GRAY;
+}
+
+/**
+ * Get Icon for BMI classification
+ */
+export function getBmiIcon(bmiClass: string): string {
+    if (bmiClass === 'Peso Normal') return 'fa-check';
+    if (bmiClass === 'Baixo Peso') return 'fa-arrow-down';
+    if (bmiClass === 'Pré-obesidade') return 'fa-circle-exclamation';
+    if (bmiClass.includes('Grau')) return 'fa-triangle-exclamation';
+    return 'fa-minus';
 }
 
 /**
@@ -212,19 +238,30 @@ export function getBmiClassColor(bmiClass: string): string {
  */
 export function getFatClassColor(fatClass: string): string {
     if (fatClass === 'Saudável e em Boa Forma' || fatClass.includes('Performance')) {
-        return 'bg-emerald-100 text-emerald-700';
+        return BADGE_STYLES.GREEN;
     }
-    if (fatClass === 'Gordura Vital') return 'bg-sky-100 text-sky-700';
-    if (fatClass === 'Nível Médio (Atenção)') return 'bg-amber-100 text-amber-700';
-    if (fatClass === 'Elevado (Risco para a Saúde)') return 'bg-red-100 text-red-700';
-    return 'bg-gray-100 text-gray-500';
+    if (fatClass === 'Gordura Vital') return BADGE_STYLES.BLUE;
+    if (fatClass === 'Nível Médio (Atenção)') return BADGE_STYLES.YELLOW;
+    if (fatClass === 'Elevado (Risco para a Saúde)') return BADGE_STYLES.RED;
+    return BADGE_STYLES.GRAY;
+}
+
+/**
+ * Get Icon for Body Fat classification
+ */
+export function getFatIcon(fatClass: string): string {
+    if (fatClass === 'Saudável e em Boa Forma' || fatClass.includes('Performance')) return 'fa-check';
+    if (fatClass === 'Gordura Vital') return 'fa-heart-pulse';
+    if (fatClass === 'Nível Médio (Atenção)') return 'fa-square-exclamation';
+    if (fatClass === 'Elevado (Risco para a Saúde)') return 'fa-triangle-exclamation';
+    return 'fa-minus';
 }
 
 /**
  * Get CSS class for delta peso display
  */
-export function getDeltaPesoColor(delta: number | null | string): string {
-    if (delta === null) return 'text-gray-400';
+export function getDeltaPesoColor(delta: number | null | string | undefined): string {
+    if (delta === null || delta === undefined) return 'text-gray-400';
     if (typeof delta === 'string') {
         if (delta.startsWith('+')) return 'text-red-500';
         if (delta.startsWith('-')) return 'text-emerald-500';
@@ -242,4 +279,23 @@ export function formatDeltaPeso(delta: number | null): string {
     if (delta === null) return '-';
     const sign = delta > 0 ? '+' : '';
     return `${sign}${delta.toFixed(1)} kg`;
+}
+/**
+ * Get CSS class for Mile result badge
+ */
+export function getMileResultStyle(result: string): string {
+    if (!result) return BADGE_STYLES.GRAY;
+    const r = result.toLowerCase();
+
+    if (r.includes('excelente') || r.includes('bom') || r.includes('apto')) {
+        return BADGE_STYLES.GREEN;
+    }
+    if (r.includes('médio') || r.includes('atenção')) {
+        return BADGE_STYLES.YELLOW;
+    }
+    if (r.includes('fraco') || r.includes('risco')) {
+        return BADGE_STYLES.RED;
+    }
+
+    return BADGE_STYLES.GRAY;
 }

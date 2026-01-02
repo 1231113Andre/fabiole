@@ -1,5 +1,7 @@
 import React from "react";
 import { Perimetro } from "../../types";
+import { BADGE_STYLES } from "@/lib/utils/bodyMetrics";
+import { TooltipHeader } from "@/components/ui/TooltipHeader";
 
 interface PerimetrosTableProps {
     perimetros: Perimetro[];
@@ -27,14 +29,62 @@ export const PerimetrosTable: React.FC<PerimetrosTableProps> = ({
                 <thead>
                     <tr className="bg-gray-50 border-b">
                         <th className="py-3 px-2 text-left font-semibold text-gray-700 whitespace-nowrap">Data</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">MS Dir.</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">MS Esq.</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Peito</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Cintura</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Abdómen</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Anca</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Coxa Dir.</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Coxa Esq.</th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> MS Dir.</span>}
+                                description="Medida da circunferência do braço direito."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> MS Esq.</span>}
+                                description="Medida da circunferência do braço esquerdo."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-heart-pulse"></i> Peito</span>}
+                                description="Medida da circunferência do tórax."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-ruler-horizontal"></i> Cintura</span>}
+                                description="Medida da circunferência da cintura."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-circle-dot"></i> Abdómen</span>}
+                                description="Medida da circunferência abdominal."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-person-dress"></i> Anca</span>}
+                                description="Medida da circunferência da anca."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-person-running"></i> Coxa Dir.</span>}
+                                description="Medida da circunferência da coxa direita."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-person-running"></i> Coxa Esq.</span>}
+                                description="Medida da circunferência da coxa esquerda."
+                                isAuto={false}
+                            />
+                        </th>
                         <th className="py-3 px-2 text-right font-semibold text-gray-700 whitespace-nowrap">Ações</th>
                     </tr>
                 </thead>
@@ -42,14 +92,46 @@ export const PerimetrosTable: React.FC<PerimetrosTableProps> = ({
                     {perimetros.map((p) => (
                         <tr key={p.id} className="border-b border-gray-300 hover:bg-gray-50 transition-colors">
                             <td className="py-3 px-2 whitespace-nowrap font-bold">{new Date(p.date).toLocaleDateString('pt-PT')}</td>
-                            <td className="py-3 px-2 text-center text-gray-600">{p.msRight || '-'}</td>
-                            <td className="py-3 px-2 text-center text-gray-600">{p.msLeft || '-'}</td>
-                            <td className="py-3 px-2 text-center text-gray-600">{p.chest || '-'}</td>
-                            <td className="py-3 px-2 text-center font-bold text-gray-800">{p.waist || '-'}</td>
-                            <td className="py-3 px-2 text-center font-bold text-gray-800">{p.abdomen || '-'}</td>
-                            <td className="py-3 px-2 text-center text-gray-600">{p.hips || '-'}</td>
-                            <td className="py-3 px-2 text-center text-gray-600">{p.thighR || '-'}</td>
-                            <td className="py-3 px-2 text-center text-gray-600">{p.thighL || '-'}</td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={BADGE_STYLES.BLUE}>
+                                    {p.msRight || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={BADGE_STYLES.BLUE}>
+                                    {p.msLeft || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={BADGE_STYLES.BLUE}>
+                                    {p.chest || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={BADGE_STYLES.BLUE}>
+                                    {p.waist || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={BADGE_STYLES.BLUE}>
+                                    {p.abdomen || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={BADGE_STYLES.BLUE}>
+                                    {p.hips || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={BADGE_STYLES.BLUE}>
+                                    {p.thighR || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={BADGE_STYLES.BLUE}>
+                                    {p.thighL || '-'}
+                                </span>
+                            </td>
                             <td className="py-3 px-2 text-right">
                                 <div className="flex justify-end gap-1">
                                     <button

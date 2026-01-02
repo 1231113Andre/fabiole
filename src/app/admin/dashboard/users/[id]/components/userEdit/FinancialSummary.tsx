@@ -72,18 +72,10 @@ export const FinancialSummary: React.FC<FinancialSummaryProps> = React.memo(({ u
                 <div className="border-b border-gray-200/60 pb-3">
                     <div className="flex justify-between items-center text-sm mb-1">
                         <span className="text-gray-600 font-semibold flex items-center gap-2">
-                            <i className={`fa-duotone fa-file-invoice-dollar text-xs ${user.paid === 'PAGO' ? 'text-emerald-500' :
-                                user.paid === 'PENDENTE' ? 'text-red-500' :
-                                    user.paid === 'EM ANÁLISE' ? 'text-amber-500' :
-                                        'text-gray-400'
-                                }`}></i>
+                            <i className={`fa-duotone fa-file-invoice-dollar text-xs ${(user.debtValue || 0) > 0 ? 'text-red-500' : 'text-emerald-500'}`}></i>
                             Valor em Dívida (€)
                         </span>
-                        <span className={`font-bold ${user.paid === 'PAGO' ? 'text-emerald-600' :
-                            user.paid === 'PENDENTE' ? 'text-red-500' :
-                                user.paid === 'EM ANÁLISE' ? 'text-amber-500' :
-                                    'text-gray-400'
-                            }`}>
+                        <span className={`font-bold ${(user.debtValue || 0) > 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                             {formatCurrency(user.debtValue || 0)}
                         </span>
                     </div>

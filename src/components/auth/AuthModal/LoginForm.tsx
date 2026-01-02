@@ -160,7 +160,10 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
                         Bloqueado ({formatTime(lockoutSeconds!)})
                     </>
                 ) : (
-                    'Entrar'
+                    <>
+                        <i className="fa-duotone fa-right-to-bracket mr-2"></i>
+                        Sign In
+                    </>
                 )}
             </NewButton>
         </form>

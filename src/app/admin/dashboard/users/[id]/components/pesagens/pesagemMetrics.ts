@@ -11,12 +11,15 @@ import {
     calculateH2O,
     getBmiClassColor,
     getFatClassColor,
-    getDeltaPesoColor
+    getDeltaPesoColor,
+    getBmiIcon,
+    getFatIcon,
+    BADGE_STYLES
 } from "@/lib/utils/bodyMetrics";
 import { Pesagem } from "../../types";
 
 // Re-export color functions for backward compatibility
-export { getBmiClassColor, getFatClassColor, getDeltaPesoColor };
+export { getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, BADGE_STYLES };
 
 export interface PesagemMetrics {
     bmi: number | null;

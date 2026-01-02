@@ -1,5 +1,16 @@
 import React from "react";
 import { Avaliacao } from "../../types";
+import { BADGE_STYLES } from "@/lib/utils/bodyMetrics";
+import { TooltipHeader } from "@/components/ui/TooltipHeader";
+
+const getMileResultStyle = (result: string | null): string => {
+    if (!result) return BADGE_STYLES.GRAY;
+    const r = result.toLowerCase();
+    if (r.includes('excelente') || r.includes('bom') || r.includes('apto') || r.includes('fit')) return BADGE_STYLES.GREEN;
+    if (r.includes('médio') || r.includes('medio') || r.includes('regular') || r.includes('atenção')) return BADGE_STYLES.YELLOW;
+    if (r.includes('fraco') || r.includes('not fit') || r.includes('mau') || r.includes('risco')) return BADGE_STYLES.RED;
+    return BADGE_STYLES.BLUE;
+}
 
 interface AvaliacoesTableProps {
     avaliacoes: Avaliacao[];
@@ -27,11 +38,41 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                 <thead>
                     <tr className="bg-gray-50 border-b">
                         <th className="py-3 px-2 text-left font-semibold text-gray-700 whitespace-nowrap">Data</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Flexões</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Abdominais</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Milha</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Resultado</th>
-                        <th className="py-3 px-2 text-left font-semibold text-gray-700 whitespace-nowrap">Notas</th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> Flexões</span>}
+                                description="Número de flexões realizadas."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> Abdominais</span>}
+                                description="Número de abdominais realizados."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-person-running"></i> Milha</span>}
+                                description="Tempo na milha."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-clipboard-check"></i> Resultado</span>}
+                                description="Classificação do resultado."
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                            <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-note-sticky"></i> Notas</span>}
+                                description="Observações adicionais."
+                                isAuto={false}
+                            />
+                        </th>
                         <th className="py-3 px-2 text-right font-semibold text-gray-700 whitespace-nowrap">Ações</th>
                     </tr>
                 </thead>
@@ -39,11 +80,35 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                     {avaliacoes.map((a) => (
                         <tr key={a.id} className="border-b border-gray-300 hover:bg-gray-50 transition-colors">
                             <td className="py-3 px-2 whitespace-nowrap font-bold">{new Date(a.date).toLocaleDateString('pt-PT')}</td>
-                            <td className="py-3 px-2 text-center font-bold text-gray-800">{a.pushUps || '-'}</td>
-                            <td className="py-3 px-2 text-center font-bold text-gray-800">{a.sitUps || '-'}</td>
-                            <td className="py-3 px-2 text-center text-gray-600">{a.mile || '-'}</td>
-                            <td className="py-3 px-2 text-center font-bold text-primary">{a.mileResult || '-'}</td>
-                            <td className="py-3 px-2 text-gray-600">{a.notes || '-'}</td>
+                            <td className="py-3 px-2 text-center hidden md:table-cell">
+                                <span className={BADGE_STYLES.PURPLE}>
+                                    {a.pushUps || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center hidden md:table-cell">
+                                <span className={BADGE_STYLES.PURPLE}>
+                                    {a.sitUps || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center hidden md:table-cell">
+                                <span className={BADGE_STYLES.INDIGO}>
+                                    {a.mile || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                <span className={getMileResultStyle(a.mileResult)}>
+                                    {a.mileResult || '-'}
+                                </span>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                                {a.notes ? (
+                                    <span className="inline-block px-2.5 py-1 bg-slate-50 border border-slate-200/60 rounded-lg text-gray-900 text-[11px] font-semibold leading-relaxed max-w-[200px] truncate" title={a.notes}>
+                                        {a.notes}
+                                    </span>
+                                ) : (
+                                    <span className="text-gray-400">-</span>
+                                )}
+                            </td>
                             <td className="py-3 px-2 text-right">
                                 <div className="flex justify-end gap-1">
                                     <button

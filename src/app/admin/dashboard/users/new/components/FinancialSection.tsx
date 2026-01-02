@@ -61,7 +61,7 @@ export function FinancialSection({ formData, handleChange }: FinancialSectionPro
                 </div>
                 <div>
                     <label className={LABEL_CLASSES}>
-                        <i className="fa-duotone fa-file-invoice-dollar text-gray-400 text-[10px]"></i>
+                        <i className={`fa-duotone fa-file-invoice-dollar text-[10px] ${(formData.debtValue || 0) > 0 ? 'text-red-500' : 'text-emerald-500'}`}></i>
                         Valor em Dívida (€)
                     </label>
                     <input

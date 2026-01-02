@@ -1,6 +1,7 @@
 "use client";
 
 import { AvaliacaoFisica } from "../types";
+import { BADGE_STYLES, getMileResultStyle } from "../../../lib/utils/bodyMetrics";
 
 interface AvaliacoesTabProps {
     avaliacoes: AvaliacaoFisica[];
@@ -43,22 +44,18 @@ export function AvaliacoesTab({ avaliacoes }: AvaliacoesTabProps) {
                                                 </div>
                                             </td>
                                             <td className="py-4 px-4 text-center">
-                                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">
-                                                    <i className="fa-duotone fa-hands-holding-circle text-xs"></i>
-                                                    {av.pushUps || "-"}
-                                                </div>
+                                                <span className={BADGE_STYLES.PURPLE}>{av.pushUps || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center">
-                                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full font-medium">
-                                                    <i className="fa-duotone fa-person-running text-xs"></i>
-                                                    {av.sitUps || "-"}
-                                                </div>
+                                                <span className={BADGE_STYLES.PURPLE}>{av.sitUps || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden md:table-cell">
-                                                <span className="text-gray-900 font-medium">{av.mile || "-"}</span>
+                                                <span className={BADGE_STYLES.INDIGO}>{av.mile || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden lg:table-cell">
-                                                <span className="text-gray-700">{av.mileResult || "-"}</span>
+                                                <span className={getMileResultStyle(av.mileResult || '')}>
+                                                    {av.mileResult || "-"}
+                                                </span>
                                             </td>
                                             <td className="py-4 px-4 hidden xl:table-cell">
                                                 <span className="text-gray-500 text-sm">{av.notes || "-"}</span>

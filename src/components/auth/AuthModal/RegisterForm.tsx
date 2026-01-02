@@ -368,7 +368,10 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                 {isLoading ? (
                     <LoadingSpinner size="h-6 w-6" color="text-primary-foreground" />
                 ) : (
-                    'Sign Up'
+                    <>
+                        <i className="fa-duotone fa-user-plus mr-2"></i>
+                        Sign Up
+                    </>
                 )}
             </NewButton>
         </form>

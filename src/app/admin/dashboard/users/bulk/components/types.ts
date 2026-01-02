@@ -28,3 +28,35 @@ export const TYPE_LABELS_PT: Record<BulkType, { singular: string; plural: string
     avaliacoes: { singular: 'avaliação', plural: 'avaliações' }
 };
 
+/**
+ * Required fields for each bulk type
+ * All these fields must have a value for a row to be valid
+ */
+export const REQUIRED_FIELDS: Record<BulkType, string[]> = {
+    pesagens: ['date', 'peso', 'height', 'percentualMG'],
+    perimetros: ['date', 'msRight', 'msLeft', 'chest', 'waist', 'abdomen', 'hips', 'thighR', 'thighL'],
+    avaliacoes: ['date', 'pushUps', 'sitUps', 'mile']
+};
+
+/**
+ * Field labels for displaying validation errors
+ */
+export const FIELD_LABELS: Record<string, string> = {
+    date: 'Data',
+    peso: 'Peso',
+    height: 'Altura',
+    percentualMG: '% MG',
+    msRight: 'MS Direito',
+    msLeft: 'MS Esquerdo',
+    chest: 'Peito',
+    waist: 'Cintura',
+    abdomen: 'Abdómen',
+    hips: 'Anca',
+    thighR: 'Coxa Dir.',
+    thighL: 'Coxa Esq.',
+    pushUps: 'Flexões',
+    sitUps: 'Abdominais',
+    mile: 'Milha'
+};
+
+

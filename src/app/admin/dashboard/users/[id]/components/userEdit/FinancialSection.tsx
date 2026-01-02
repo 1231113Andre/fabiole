@@ -67,7 +67,7 @@ export const FinancialSection: React.FC<FinancialSectionProps> = React.memo(({ u
                 </div>
                 <div>
                     <label className={labelClasses}>
-                        <i className="fa-duotone fa-file-invoice-dollar text-gray-400 text-[10px]"></i>
+                        <i className={`fa-duotone fa-file-invoice-dollar text-[10px] ${(user.debtValue || 0) > 0 ? 'text-red-500' : 'text-emerald-500'}`}></i>
                         Valor em Dívida (€)
                     </label>
                     <input

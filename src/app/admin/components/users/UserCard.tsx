@@ -18,7 +18,7 @@ const STAT_BADGES_CONFIG = [
 const FINANCIAL_BADGES_CONFIG = [
     { key: 'trainingCredit', icon: 'fa-dumbbell', colorClass: 'text-emerald-600 bg-emerald-50', label: 'Crédito', isCurrency: false },
     { key: 'trainingsScheduled', icon: 'fa-calendar-check', colorClass: 'text-blue-600 bg-blue-50', label: 'Agendados', isCurrency: false },
-    { key: 'debtValue', icon: 'fa-file-invoice-dollar', colorClass: 'text-red-600 bg-red-50', label: 'Dívida', isCurrency: true },
+    { key: 'debtValue', icon: 'fa-file-invoice-dollar', label: 'Dívida', isCurrency: true },
 ] as const;
 
 // ============================================================================
@@ -132,8 +132,12 @@ export const UserCard = memo<UserCardProps>(({ user }) => {
                             />
                         ))}
                         <div className="w-px h-4 bg-gray-400 mx-2 opacity-60" />
-                        {FINANCIAL_BADGES_CONFIG.map(({ key, icon, colorClass, label, isCurrency }) => {
+                        {FINANCIAL_BADGES_CONFIG.map(({ key, icon, label, isCurrency, ...config }) => {
                             const value = user[key as keyof AdminUser] as number ?? 0;
+                            const colorClass = (key === 'debtValue')
+                                ? (value > 0 ? 'text-red-600 bg-red-50' : 'text-emerald-600 bg-emerald-50')
+                                : (config as any).colorClass;
+
                             return (
                                 <div
                                     key={key}

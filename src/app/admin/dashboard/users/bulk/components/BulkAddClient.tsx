@@ -6,13 +6,14 @@ import Link from "next/link";
 import NewButton from "@/app/components/newButton";
 import { UserHeader } from "../../[id]/components/UserHeader";
 import { Tab } from "../../[id]/types";
+import { useNotification } from "@/components/NotificationContext";
 
 // Centralized React Query hooks
 import { useAdminUser, useAdminMutations } from "@/lib/react-query/hooks";
 import type { AdminUserData } from "@/lib/react-query/hooks";
 
 // Local components and hooks
-import { BulkAddClientProps, TYPE_LABELS, TYPE_LABELS_PT, MAX_ROWS_PER_PAGE } from "./types";
+import { BulkAddClientProps, TYPE_LABELS, TYPE_LABELS_PT, MAX_ROWS_PER_PAGE, REQUIRED_FIELDS, FIELD_LABELS, BulkRow } from "./types";
 import { useBulkState } from "./useBulkState";
 import { BulkTableHeader } from "./BulkTableHeader";
 import { BulkTableRow } from "./BulkTableRow";
@@ -21,6 +22,7 @@ import { getDescription } from "./BulkDescriptions";
 
 export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
     const router = useRouter();
+    const { notify } = useNotification();
 
     // Use centralized hook for fetching user data
     const { data: fetchedData } = useAdminUser(initialUser.id, initialUser as unknown as AdminUserData);
@@ -45,13 +47,60 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
         toggleOverride
     } = useBulkState(type, userData.gender || '');
 
+    /**
+     * Validate that all required fields are filled for each row
+     * Returns array of validation errors or empty if valid
+     */
+    const validateRows = useCallback((rows: BulkRow[]): { rowIndex: number; missingFields: string[] }[] => {
+        const requiredFields = REQUIRED_FIELDS[type];
+        const errors: { rowIndex: number; missingFields: string[] }[] = [];
+
+        rows.forEach((row, index) => {
+            const missingFields: string[] = [];
+            requiredFields.forEach(field => {
+                const value = row[field];
+                // Check if value is empty, null, undefined, or empty string
+                if (value === null || value === undefined || value === '' ||
+                    (typeof value === 'string' && value.trim() === '')) {
+                    missingFields.push(field);
+                }
+            });
+            if (missingFields.length > 0) {
+                errors.push({ rowIndex: index + 1, missingFields });
+            }
+        });
+
+        return errors;
+    }, [type]);
+
     const handleSave = useCallback(async () => {
         const allRows = getAllRows();
-        const validRows = allRows.filter(r => r.date);
-        if (validRows.length === 0) return;
+
+        // First check: no empty rows at all
+        if (allRows.length === 0) {
+            notify('Adicione pelo menos um registo antes de guardar.', 'error');
+            return;
+        }
+
+        // Validate all required fields
+        const validationErrors = validateRows(allRows);
+        if (validationErrors.length > 0) {
+            // Create detailed error message as array for notification details
+            const errorDetails = validationErrors.slice(0, 5).map(err => {
+                const fieldLabels = err.missingFields.map(f => FIELD_LABELS[f] || f).join(', ');
+                return `Linha ${err.rowIndex}: ${fieldLabels}`;
+            });
+
+            if (validationErrors.length > 5) {
+                errorDetails.push(`...e mais ${validationErrors.length - 5} linha(s) com erros.`);
+            }
+
+            notify('Campos obrigatórios em falta. Preencha todos os campos.', 'error', errorDetails);
+            return;
+        }
 
         // Prepare all records for bulk insert
-        const records = validRows.map(record => {
+        const records = allRows.map(record => {
             const payload: Record<string, any> = { ...record };
             delete payload.id;
             delete payload.overrides; // Remove overrides
@@ -64,12 +113,15 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
             return payload;
         });
 
+        // Show loading notification
+        notify("A guardar registos...", 'loading');
+
         bulkSave.mutate({
             userId: userData!.id,
             endpoint: type,
             records
         });
-    }, [getAllRows, userData, type, bulkSave]);
+    }, [getAllRows, userData, type, bulkSave, validateRows, notify]);
 
     // Calculate evolution for pesagens
     const getEvolution = useCallback((rowIndex: number): number | null => {

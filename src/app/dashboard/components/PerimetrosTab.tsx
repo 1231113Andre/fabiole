@@ -1,6 +1,7 @@
 "use client";
 
 import { PerimetroCorporal } from "../types";
+import { BADGE_STYLES } from "../../../lib/utils/bodyMetrics";
 
 interface PerimetrosTabProps {
     perimetros: PerimetroCorporal[];
@@ -48,34 +49,34 @@ export function PerimetrosTab({ perimetros }: PerimetrosTabProps) {
                                                 </div>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden md:table-cell">
-                                                <span className="text-gray-700">{p.msRight || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.msRight || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden lg:table-cell">
-                                                <span className="text-gray-700">{p.msRightFlex || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.msRightFlex || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden md:table-cell">
-                                                <span className="text-gray-700">{p.msLeft || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.msLeft || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden lg:table-cell">
-                                                <span className="text-gray-700">{p.msLeftFlex || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.msLeftFlex || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center">
-                                                <span className="font-bold text-gray-900">{p.chest || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.chest || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center">
-                                                <span className="font-bold text-gray-900">{p.waist || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.waist || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden md:table-cell">
-                                                <span className="text-gray-700">{p.abdomen || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.abdomen || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden lg:table-cell">
-                                                <span className="text-gray-700">{p.hips || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.hips || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden lg:table-cell">
-                                                <span className="text-gray-700">{p.thighR || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.thighR || "-"}</span>
                                             </td>
                                             <td className="py-4 px-4 text-center hidden lg:table-cell">
-                                                <span className="text-gray-700">{p.thighL || "-"}</span>
+                                                <span className={BADGE_STYLES.BLUE}>{p.thighL || "-"}</span>
                                             </td>
                                         </tr>
                                     ))}

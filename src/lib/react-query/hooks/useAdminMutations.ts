@@ -1,8 +1,8 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useNotification } from "@/components/NotificationContext";
 import { queryKeys } from "../queryKeys";
 import { apiPost, apiPut, apiDelete, ApiError } from "../apiClient";
 import type { AdminUserData } from "./useAdminUser";
@@ -126,6 +126,7 @@ export function useAdminMutations(userId: string, options?: {
 }) {
     const queryClient = useQueryClient();
     const router = useRouter();
+    const { notify } = useNotification();
     const queryKey = queryKeys.adminUser(userId);
 
     const { navigateOnBulkSave = false, showToasts = true } = options || {};
@@ -165,7 +166,7 @@ export function useAdminMutations(userId: string, options?: {
                 queryClient.setQueryData(queryKey, context.previousUser);
             }
             if (showToasts) {
-                toast.error(err.message || "Erro ao guardar registo");
+                notify(err.message || "Erro ao guardar registo.", 'error');
             }
         },
         onSettled: () => {
@@ -185,7 +186,7 @@ export function useAdminMutations(userId: string, options?: {
         },
         onSuccess: (_, { userId: uid }) => {
             if (showToasts) {
-                toast.success("Registos guardados com sucesso!");
+                notify("Registos guardados com sucesso!", 'success');
             }
             // Invalidate user query to refetch fresh data
             queryClient.invalidateQueries({ queryKey: queryKeys.adminUser(uid) });
@@ -197,7 +198,7 @@ export function useAdminMutations(userId: string, options?: {
         onError: (error) => {
             console.error(error);
             if (showToasts) {
-                toast.error(error.message || "Erro ao guardar registos.");
+                notify(error.message || "Erro ao guardar registos.", 'error');
             }
         }
     });
@@ -229,7 +230,7 @@ export function useAdminMutations(userId: string, options?: {
                 queryClient.setQueryData(queryKey, context.previousUser);
             }
             if (showToasts) {
-                toast.error(err.message || "Erro ao eliminar");
+                notify(err.message || "Erro ao eliminar.", 'error');
             }
         },
         onSettled: () => {
@@ -264,7 +265,7 @@ export function useAdminMutations(userId: string, options?: {
                 queryClient.setQueryData(queryKey, context.previousUser);
             }
             if (showToasts) {
-                toast.error(err.message || "Erro ao guardar utilizador");
+                notify(err.message || "Erro ao guardar utilizador.", 'error');
             }
         },
         onSettled: () => {

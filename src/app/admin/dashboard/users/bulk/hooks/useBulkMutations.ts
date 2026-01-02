@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useNotification } from "@/components/NotificationContext";
 
 interface BulkSaveParams {
     userId: string;
@@ -11,6 +11,7 @@ interface BulkSaveParams {
 export function useBulkMutations() {
     const queryClient = useQueryClient();
     const router = useRouter();
+    const { notify } = useNotification();
 
     const bulkSaveMutation = useMutation({
         mutationFn: async ({ userId, type, records }: BulkSaveParams) => {
@@ -28,14 +29,14 @@ export function useBulkMutations() {
             return response.json();
         },
         onSuccess: (_, { userId }) => {
-            toast.success("Registos guardados com sucesso!");
+            notify("Registos guardados com sucesso!", 'success');
             // Invalidate user query to refetch fresh data
             queryClient.invalidateQueries({ queryKey: ['adminUser', userId] });
             router.push(`/admin/dashboard/users/${userId}`);
         },
         onError: (error: Error) => {
             console.error(error);
-            toast.error(error.message || "Erro ao guardar registos.");
+            notify(error.message || "Erro ao guardar registos.", 'error');
         }
     });
 
@@ -43,3 +44,4 @@ export function useBulkMutations() {
         bulkSaveMutation
     };
 }
+

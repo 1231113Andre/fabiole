@@ -148,7 +148,14 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Experimental features disabled for stability
+  // Experimental features
+  experimental: {
+    serverActions: {
+      allowedOrigins: ["57.128.218.55", "localhost:3000"],
+    },
+    // @ts-ignore - Explicitly requested by Next.js error message for cross-origin dev
+    allowedDevOrigins: ["57.128.218.55"],
+  },
   // optimizePackageImports for recharts conflicts with dynamic imports in dashboard
 
   // Transpile recharts to fix HMR issues with Turbopack
