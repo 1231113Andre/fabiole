@@ -166,7 +166,10 @@ const nextConfig: NextConfig = {
   // Disable Turbopack for better compatibility with recharts
   // Use: npm run dev -- --turbo to enable Turbopack
   // Or remove this to use webpack (default)
-  turbopack: {},
+  turbopack: {
+    // Explicitly set root to avoid warnings on VPS with multiple lockfiles
+    root: process.cwd(),
+  },
 };
 
 export default nextConfig;
