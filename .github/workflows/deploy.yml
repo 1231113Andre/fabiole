@@ -16,6 +16,7 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            export PATH="$PATH:/root/.npm-global/bin:/usr/local/bin:$(npm bin -g 2>/dev/null)"
             cd /root/fabiole-app
             git pull origin main
             npm install
