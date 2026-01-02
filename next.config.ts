@@ -153,10 +153,11 @@ const nextConfig: NextConfig = {
     serverActions: {
       allowedOrigins: ["57.128.218.55", "localhost:3000"],
     },
-    // @ts-ignore - Explicitly requested by Next.js error message for cross-origin dev
-    allowedDevOrigins: ["57.128.218.55"],
   },
-  // optimizePackageImports for recharts conflicts with dynamic imports in dashboard
+
+  // Explicitly allowing cross-origin requests for development
+  // @ts-ignore - Check if property exists on type, if not ignore
+  allowedDevOrigins: ["57.128.218.55"],
 
   // Transpile recharts to fix HMR issues with Turbopack
   transpilePackages: ['recharts'],

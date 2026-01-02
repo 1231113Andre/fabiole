@@ -1,0 +1,23 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main  # Upewnij się, czy Twoja główna gałąź to 'main' czy 'master'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: 57.128.218.55
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /root/fabiole-app
+            git pull origin main
+            npm install
+            npm run build
+            pm2 restart fabiole-app || pm2 start npm --name "fabiole-app" -- run dev
