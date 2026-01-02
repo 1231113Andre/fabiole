@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # Upewnij się, czy Twoja główna gałąź to 'main' czy 'master'
+      - main  # Sprawdź czy w VS Code na dole masz 'main' czy 'master'
 
 jobs:
   deploy:
@@ -19,5 +19,8 @@ jobs:
             cd /root/fabiole-app
             git pull origin main
             npm install
+            npx prisma generate
             npm run build
-            pm2 restart fabiole-app || pm2 start npm --name "fabiole-app" -- run dev
+            # Restartujemy na porcie 3000 dla Nginxa
+            pm2 restart fabiole-app || PORT=3000 pm2 start npm --name "fabiole-app" -- run start
+            pm2 save
