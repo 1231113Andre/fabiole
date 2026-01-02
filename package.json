@@ -3,12 +3,14 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "set NODE_OPTIONS=--no-deprecation && next dev",
-    "dev:turbo": "set NODE_OPTIONS=--no-deprecation && next dev --turbo",
-    "dev:noturbo": "set NODE_OPTIONS=--no-deprecation && set \"NEXT_DISABLE_TURBOPACK=1\" && next dev --no-turbo",
+    "dev": "NODE_OPTIONS=--no-deprecation next dev",
+    "dev:turbo": "NODE_OPTIONS=--no-deprecation next dev --turbo",
+    "dev:noturbo": "NODE_OPTIONS=--no-deprecation NEXT_DISABLE_TURBOPACK=1 next dev --no-turbo",
+    "dev:win": "set NODE_OPTIONS=--no-deprecation && next dev",
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
-    "start": "set NODE_OPTIONS=--no-deprecation && next start",
+    "start": "NODE_OPTIONS=--no-deprecation next start",
+    "start:win": "set NODE_OPTIONS=--no-deprecation && next start",
     "lint": "eslint"
   },
   "dependencies": {
