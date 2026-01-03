@@ -4,6 +4,8 @@ import { AdminUser } from "@/app/admin/types";
 import { Avatar } from "@/components/Avatar";
 import { getRoleInlineStyles } from "@/app/admin/constants/roleConfig";
 import { StatBadge } from "./StatBadge";
+import { calculateAge } from "@/lib/utils/bodyMetrics";
+import { formatCurrency } from "@/lib/utils/formatters";
 
 // ============================================================================
 // CONSTANTS
@@ -20,25 +22,6 @@ const FINANCIAL_BADGES_CONFIG = [
     { key: 'trainingsScheduled', icon: 'fa-calendar-check', colorClass: 'text-blue-600 bg-blue-50', label: 'Agendados', isCurrency: false },
     { key: 'debtValue', icon: 'fa-file-invoice-dollar', label: 'Dívida', isCurrency: true },
 ] as const;
-
-// ============================================================================
-// HELPERS
-// ============================================================================
-
-function calculateAge(birthDate: Date | null): number | null {
-    if (!birthDate) return null;
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-    }
-    return age;
-}
-
-function formatCurrency(value: number): string {
-    return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(value);
-}
 
 // ============================================================================
 // COMPONENT

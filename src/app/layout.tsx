@@ -73,6 +73,13 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
 
+        {/* Preload default avatar to prevent flashing on navigation */}
+        <link
+          rel="preload"
+          href="/images/avatars/default.png"
+          as="image"
+        />
+
         {/* Load Font Awesome CSS with high priority */}
         <link
           rel="preload"

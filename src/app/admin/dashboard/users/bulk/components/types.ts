@@ -59,4 +59,3 @@ export const FIELD_LABELS: Record<string, string> = {
     mile: 'Milha'
 };
 
-

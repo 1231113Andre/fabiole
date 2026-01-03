@@ -5,6 +5,7 @@ import { PesagemRow } from "./PesagemRow";
 interface PesagensTableProps {
     pesagens: Pesagem[];
     gender: string;
+    userAge?: number | null;
     onEdit: (p: Pesagem) => void;
     onDelete: (id: number) => void;
 }
@@ -14,6 +15,7 @@ import { TooltipHeader } from "../../../../../../../components/ui/TooltipHeader"
 export const PesagensTable: React.FC<PesagensTableProps> = ({
     pesagens,
     gender,
+    userAge,
     onEdit,
     onDelete
 }) => {
@@ -39,10 +41,10 @@ export const PesagensTable: React.FC<PesagensTableProps> = ({
                         <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Altura (cm)</th>
                         <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">% MG</th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                            <TooltipHeader label="MM (kg)" description="Peso × (1 - %MG) - Massa Óssea. Automático ao inserir dados." />
+                            <TooltipHeader label="MM (kg)" description="Peso × (1 - %MG). Massa magra (LBM). Automático ao inserir dados." />
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                            <TooltipHeader label="H2O" description="Peso × Fator. Homem: 60%, Mulher: 55%. Automático ao inserir dados." />
+                            <TooltipHeader label="% H2O" description="Fórmula Watson: calcula água corporal baseado em peso, altura, idade e género. Valor em kg no tooltip." />
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
                             <TooltipHeader label="IMC" description="Peso ÷ Altura². Automático ao inserir dados." />
@@ -65,6 +67,7 @@ export const PesagensTable: React.FC<PesagensTableProps> = ({
                             key={p.id}
                             pesagem={p}
                             gender={gender}
+                            userAge={userAge}
                             previousPesagem={pesagens[index + 1]}
                             onEdit={onEdit}
                             onDelete={onDelete}

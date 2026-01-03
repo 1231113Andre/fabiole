@@ -59,35 +59,116 @@ export function calculateBMI(weightKg: number | null, heightCm: number | null): 
 }
 
 /**
- * Calculate Muscle Mass (MM)
- * Formula: peso - (peso * %MG / 100) - massaOssea
- * Returns null if peso is missing or result would be negative/zero
+ * Calculate Muscle Mass (MM) / Lean Body Mass (LBM)
+ * Formula: peso × (1 - %MG / 100)
+ * LBM includes: muscles, bones, organs, blood, skin - everything except fat
+ * Note: We do NOT subtract bone mass - bones are part of LBM by definition
  */
 export function calculateMM(
     peso: number | null,
-    percentualMG: number | null,
-    massaOssea: number | null
+    percentualMG: number | null
 ): number | null {
     if (!peso || peso <= 0) return null;
+    if (!percentualMG || percentualMG <= 0) return null;
 
-    const gordura = percentualMG && percentualMG > 0 ? (peso * percentualMG / 100) : 0;
-    const ossea = massaOssea && massaOssea > 0 ? massaOssea : 0;
-    const mm = peso - gordura - ossea;
+    // Standard LBM formula: weight × (1 - body fat %)
+    const lbm = peso * (1 - percentualMG / 100);
 
     // Only return if the result is positive and makes sense
-    return mm > 0 ? parseFloat(mm.toFixed(2)) : null;
+    return lbm > 0 ? parseFloat(lbm.toFixed(2)) : null;
 }
 
 /**
- * Calculate Body Water (H2O)
- * Formula: peso * factor (male: 60%, female: 50%)
+ * Calculate Body Water (H2O) using Watson Formula
+ * Watson formula is more accurate than simple percentage estimates
+ * 
+ * Males:   TBW (L) = 2.447 - (0.09156 × age) + (0.1074 × height_cm) + (0.3362 × peso_kg)
+ * Females: TBW (L) = -2.097 + (0.1069 × height_cm) + (0.2466 × peso_kg)
+ * 
+ * Returns H2O as percentage of body weight (e.g., 55.5 for 55.5%)
  */
-export function calculateH2O(peso: number | null, gender: Gender): number | null {
-    if (!peso) return null;
+export function calculateH2O(
+    peso: number | null,
+    height: number | null,
+    age: number | null,
+    gender: Gender
+): number | null {
+    if (!peso || peso <= 0) return null;
+    if (!height || height <= 0) return null;
+
     const g = gender.toString().toUpperCase();
     const isMale = g === 'MALE' || g === 'MASCULINO' || g === 'M';
-    const percentage = isMale ? 0.60 : 0.50;
-    return parseFloat((peso * percentage).toFixed(2));
+
+    let tbw: number;
+
+    if (isMale) {
+        // Watson formula for males (requires age)
+        // If no age provided, use a reasonable default of 30
+        const ageValue = age && age > 0 ? age : 30;
+        tbw = 2.447 - (0.09156 * ageValue) + (0.1074 * height) + (0.3362 * peso);
+    } else {
+        // Watson formula for females (doesn't use age)
+        tbw = -2.097 + (0.1069 * height) + (0.2466 * peso);
+    }
+
+    // Convert TBW (liters ≈ kg) to percentage of body weight
+    const h2oPercent = (tbw / peso) * 100;
+
+    return h2oPercent > 0 ? parseFloat(h2oPercent.toFixed(1)) : null;
+}
+
+/**
+ * Calculate Body Water with both percentage and kg values
+ * Use this when you need to display tooltip with kg value
+ */
+export function calculateH2OFull(
+    peso: number | null,
+    height: number | null,
+    age: number | null,
+    gender: Gender
+): { percent: number | null; kg: number | null } {
+    if (!peso || peso <= 0) return { percent: null, kg: null };
+    if (!height || height <= 0) return { percent: null, kg: null };
+
+    const g = gender.toString().toUpperCase();
+    const isMale = g === 'MALE' || g === 'MASCULINO' || g === 'M';
+
+    let tbw: number;
+
+    if (isMale) {
+        const ageValue = age && age > 0 ? age : 30;
+        tbw = 2.447 - (0.09156 * ageValue) + (0.1074 * height) + (0.3362 * peso);
+    } else {
+        tbw = -2.097 + (0.1069 * height) + (0.2466 * peso);
+    }
+
+    if (tbw <= 0) return { percent: null, kg: null };
+
+    const h2oPercent = (tbw / peso) * 100;
+
+    return {
+        percent: parseFloat(h2oPercent.toFixed(1)),
+        kg: parseFloat(tbw.toFixed(1))
+    };
+}
+
+/**
+ * Calculate age from birth date
+ */
+export function calculateAge(birthDate: Date | string | null): number | null {
+    if (!birthDate) return null;
+    const birth = birthDate instanceof Date ? birthDate : new Date(birthDate);
+    if (isNaN(birth.getTime())) return null;
+
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+
+    return age > 0 ? age : null;
 }
 
 /**
@@ -106,8 +187,8 @@ export interface CalculateAllMetricsInput {
     peso: number | null;
     height: number | null;
     percentualMG: number | null;
-    massaOssea: number | null;
     gender: Gender;
+    age?: number | null; // For Watson H2O formula
     // Manual overrides - if set, use these instead of calculating
     manualOverrides?: {
         imc?: number | null;
@@ -119,18 +200,18 @@ export interface CalculateAllMetricsInput {
 }
 
 export function calculateAllMetrics(input: CalculateAllMetricsInput): AutoCalculatedMetrics {
-    const { peso, height, percentualMG, massaOssea, gender, manualOverrides = {} } = input;
+    const { peso, height, percentualMG, gender, age, manualOverrides = {} } = input;
 
     // BMI calculation or use manual override
     const calculatedBMI = calculateBMI(peso, height);
     const imc = manualOverrides.imc !== undefined ? manualOverrides.imc : calculatedBMI;
 
-    // MM calculation or use manual override
-    const calculatedMM = calculateMM(peso, percentualMG, massaOssea);
+    // MM (LBM) calculation or use manual override - no longer needs massaOssea
+    const calculatedMM = calculateMM(peso, percentualMG);
     const mm = manualOverrides.mm !== undefined ? manualOverrides.mm : calculatedMM;
 
-    // H2O calculation or use manual override
-    const calculatedH2O = calculateH2O(peso, gender);
+    // H2O calculation using Watson formula - needs height and age
+    const calculatedH2O = calculateH2O(peso, height, age ?? null, gender);
     const h2o = manualOverrides.h2o !== undefined ? manualOverrides.h2o : calculatedH2O;
 
     // BMI classification - use IMC value (calculated or from input)
@@ -298,4 +379,20 @@ export function getMileResultStyle(result: string): string {
     }
 
     return BADGE_STYLES.GRAY;
+}
+
+/**
+ * Safely parse a number from string input (handles comma and dot)
+ * @example parseNumber("80,5") => 80.5
+ */
+export function parseNumber(value: unknown): number | null {
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') {
+        if (!value.trim()) return null;
+        // Replace comma with dot and parse
+        const normalized = value.replace(',', '.');
+        const parsed = parseFloat(normalized);
+        return isNaN(parsed) ? null : parsed;
+    }
+    return null;
 }

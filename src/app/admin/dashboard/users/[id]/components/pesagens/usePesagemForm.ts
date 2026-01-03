@@ -5,18 +5,23 @@ import {
     classifyBMI,
     classifyBodyFat,
     calculateMM,
-    calculateH2O
+    calculateH2O,
+    calculateAge,
+    parseNumber
 } from "@/lib/utils/bodyMetrics";
 
 interface UsePesagemFormProps {
     gender: string;
+    userBirth?: Date | string | null; // For Watson H2O formula
     onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Pesagem) => Promise<void>;
 }
 
 // Fields that are auto-calculated and can be manually overridden
 const AUTO_CALCULATED_FIELDS: (keyof Pesagem)[] = ['mm', 'h2o', 'imc', 'resultadoIMC', 'resultadoPercentMG'];
 
-export function usePesagemForm({ gender, onSave }: UsePesagemFormProps) {
+export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProps) {
+    // Calculate user age from birth date for Watson H2O formula
+    const userAge = userBirth ? calculateAge(userBirth) : null;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState<Partial<Pesagem> | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -61,17 +66,17 @@ export function usePesagemForm({ gender, onSave }: UsePesagemFormProps) {
                 }
             }
 
-            // Check MM override
-            if (peso && percentualMG && massaOssea) {
-                const calculatedMM = calculateMM(peso, percentualMG, massaOssea);
+            // Check MM override - LBM formula only needs peso and %MG
+            if (peso && percentualMG) {
+                const calculatedMM = calculateMM(peso, percentualMG);
                 if (record.mm && calculatedMM && Math.abs(record.mm - calculatedMM) > 0.1) {
                     overrides.add('mm');
                 }
             }
 
-            // Check H2O override
-            if (peso) {
-                const calculatedH2O = calculateH2O(peso, gender);
+            // Check H2O override - Watson formula needs peso, height, age, gender
+            if (peso && record.height) {
+                const calculatedH2O = calculateH2O(peso, record.height, userAge, gender);
                 if (record.h2o && calculatedH2O && Math.abs(record.h2o - calculatedH2O) > 0.1) {
                     overrides.add('h2o');
                 }
@@ -92,9 +97,9 @@ export function usePesagemForm({ gender, onSave }: UsePesagemFormProps) {
                     initialData.imc = bmi;
                     initialData.resultadoIMC = classifyBMI(bmi) || '';
                 }
-                const mm = calculateMM(initialData.peso, initialData.percentualMG, initialData.massaOssea);
+                const mm = calculateMM(initialData.peso, initialData.percentualMG);
                 if (mm) initialData.mm = mm;
-                const h2o = calculateH2O(initialData.peso, gender);
+                const h2o = calculateH2O(initialData.peso, initialData.height ?? null, userAge, gender);
                 if (h2o) initialData.h2o = h2o;
             }
             if (initialData.percentualMG) {
@@ -120,8 +125,8 @@ export function usePesagemForm({ gender, onSave }: UsePesagemFormProps) {
 
         // Auto-calculate BMI (IMC) - only if not manually overridden
         if (field === 'peso' || field === 'height') {
-            const p = field === 'peso' ? value : formData.peso;
-            const h = field === 'height' ? value : formData.height;
+            const p = field === 'peso' ? parseNumber(value) : parseNumber(formData.peso);
+            const h = field === 'height' ? parseNumber(value) : parseNumber(formData.height);
             const bmi = calculateBMI(p, h);
             if (bmi) {
                 if (!newOverrides.has('imc')) {
@@ -135,23 +140,24 @@ export function usePesagemForm({ gender, onSave }: UsePesagemFormProps) {
 
         // Auto-calculate Fat classification - only if not manually overridden
         if (field === 'percentualMG' && !newOverrides.has('resultadoPercentMG')) {
-            newFormData.resultadoPercentMG = classifyBodyFat(value, gender) || '';
+            newFormData.resultadoPercentMG = classifyBodyFat(parseNumber(value), gender) || '';
         }
 
-        // Auto-calculate MM (Massa Muscular) - only if not manually overridden
-        if ((field === 'peso' || field === 'percentualMG' || field === 'massaOssea') && !newOverrides.has('mm')) {
-            const p = field === 'peso' ? value : formData.peso;
-            const mg = field === 'percentualMG' ? value : formData.percentualMG;
-            const ossea = field === 'massaOssea' ? value : formData.massaOssea;
-            const mm = calculateMM(p, mg, ossea);
+        // Auto-calculate MM (Massa Muscular / LBM) - only if not manually overridden
+        if ((field === 'peso' || field === 'percentualMG') && !newOverrides.has('mm')) {
+            const p = field === 'peso' ? parseNumber(value) : parseNumber(formData.peso);
+            const mg = field === 'percentualMG' ? parseNumber(value) : parseNumber(formData.percentualMG);
+            const mm = calculateMM(p, mg);
             if (mm) {
                 newFormData.mm = mm;
             }
         }
 
-        // Auto-calculate H2O - only if not manually overridden
-        if (field === 'peso' && !newOverrides.has('h2o')) {
-            const h2o = calculateH2O(value, gender);
+        // Auto-calculate H2O using Watson formula - only if not manually overridden
+        if ((field === 'peso' || field === 'height') && !newOverrides.has('h2o')) {
+            const p = field === 'peso' ? parseNumber(value) : parseNumber(formData.peso);
+            const h = field === 'height' ? parseNumber(value) : parseNumber(formData.height);
+            const h2o = calculateH2O(p, h, userAge, gender);
             if (h2o) {
                 newFormData.h2o = h2o;
             }
@@ -175,21 +181,21 @@ export function usePesagemForm({ gender, onSave }: UsePesagemFormProps) {
         // Recalculate the cleared field
         const newFormData = { ...formData };
         if (field === 'imc' && formData.peso && formData.height) {
-            const bmi = calculateBMI(formData.peso, formData.height);
+            const bmi = calculateBMI(parseNumber(formData.peso), parseNumber(formData.height));
             if (bmi) newFormData.imc = bmi;
         }
         if (field === 'resultadoIMC' && formData.imc) {
             newFormData.resultadoIMC = classifyBMI(formData.imc as number) || '';
         }
         if (field === 'resultadoPercentMG' && formData.percentualMG) {
-            newFormData.resultadoPercentMG = classifyBodyFat(formData.percentualMG, gender) || '';
+            newFormData.resultadoPercentMG = classifyBodyFat(parseNumber(formData.percentualMG), gender) || '';
         }
         if (field === 'mm' && formData.peso) {
-            const mm = calculateMM(formData.peso, formData.percentualMG ?? null, formData.massaOssea ?? null);
+            const mm = calculateMM(parseNumber(formData.peso), parseNumber(formData.percentualMG));
             if (mm) newFormData.mm = mm;
         }
         if (field === 'h2o' && formData.peso) {
-            const h2o = calculateH2O(formData.peso, gender);
+            const h2o = calculateH2O(parseNumber(formData.peso), parseNumber(formData.height), userAge, gender);
             if (h2o) newFormData.h2o = h2o;
         }
         setFormData(newFormData);

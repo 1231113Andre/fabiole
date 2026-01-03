@@ -1,13 +1,10 @@
 import React from "react";
 import { UserData } from "../../types";
+import { formatCurrency } from "@/lib/utils/formatters";
 
 interface FinancialSummaryProps {
     user: UserData;
 }
-
-const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(val);
-};
 
 export const FinancialSummary: React.FC<FinancialSummaryProps> = React.memo(({ user }) => {
     return (

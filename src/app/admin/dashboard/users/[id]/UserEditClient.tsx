@@ -187,6 +187,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                             onBulkSave={(data) => handleBulkSave('pesagens', data)}
                             onDelete={(id) => handleDeleteRecord('pesagens', id, "Tem a certeza que deseja eliminar esta pesagem?")}
                             gender={user.gender}
+                            userBirth={user.birth}
                         />
                     </Suspense>
                 )}

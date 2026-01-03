@@ -1,7 +1,7 @@
 import { db } from '@/lib/db/client';
 import { UserSheetData, PersonalInfo, Pesagem, PerimetroCorporal, AvaliacaoFisica } from '@/lib/types/dashboard';
-import { classifyBMI, classifyBodyFat, calculateBMI } from '@/lib/utils/bodyMetrics';
-import { format, differenceInYears } from 'date-fns';
+import { classifyBMI, classifyBodyFat, calculateBMI, calculateAge } from '@/lib/utils/bodyMetrics';
+import { format } from 'date-fns';
 import {
   getUserData as getCachedUserData,
   setUserData as setCachedUserData,
@@ -13,15 +13,6 @@ import { Logger } from '@/lib/utils/logger';
 export interface GetUserDataOptions {
   /** Force refresh (bypass cache) */
   forceRefresh?: boolean;
-}
-
-/**
- * Calculates age from date string or Date object
- */
-function calculateAge(birthDate: string | Date | null): string {
-  if (!birthDate) return '';
-  const date = typeof birthDate === 'string' ? new Date(birthDate) : birthDate;
-  return differenceInYears(new Date(), date).toString();
 }
 
 /**
@@ -92,7 +83,7 @@ export class UserService {
         q4: userDB.q4 || '',
         goals: userDB.goals || '',
         notes: userDB.notes || '',
-        age: userDB.birth ? calculateAge(userDB.birth) : '',
+        age: userDB.birth ? String(calculateAge(userDB.birth) ?? '') : '',
         // Legacy
         notas: userDB.notes || '',
         inicio: userDB.gender || '',

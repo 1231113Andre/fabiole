@@ -6,10 +6,13 @@ import {
     classifyBMI,
     classifyBodyFat,
     calculateMM,
-    calculateH2O
+    calculateH2O,
+    calculateAge
 } from "@/lib/utils/bodyMetrics";
 
-export function useBulkState(type: BulkType, userGender: string) {
+export function useBulkState(type: BulkType, userGender: string, userBirthDate?: Date | string | null) {
+    // Calculate user age from birth date for Watson H2O formula
+    const userAge = userBirthDate ? calculateAge(userBirthDate) : null;
     const [pages, setPages] = useState<Record<number, BulkRow[]>>(() => {
         const today = new Date().toISOString().split('T')[0];
         return {
@@ -54,15 +57,16 @@ export function useBulkState(type: BulkType, userGender: string) {
                 }
             }
 
-            if ((field === 'peso' || field === 'percentualMG' || field === 'massaOssea') && !isMmOverride) {
+            // Calculate MM (LBM) - only needs peso and %MG
+            if ((field === 'peso' || field === 'percentualMG') && !isMmOverride) {
                 const mg = parseFloat(newRow.percentualMG) || null;
-                const mo = parseFloat(newRow.massaOssea) || null;
-                const mmValue = calculateMM(peso > 0 ? peso : null, mg, mo);
+                const mmValue = calculateMM(peso > 0 ? peso : null, mg);
                 newRow.mm = mmValue ? mmValue.toFixed(2) : '';
             }
 
-            if (field === 'peso' && !isH2oOverride) {
-                const h2oValue = calculateH2O(peso > 0 ? peso : null, userGender);
+            // Calculate H2O using Watson formula - needs peso, height, age, gender
+            if ((field === 'peso' || field === 'height') && !isH2oOverride) {
+                const h2oValue = calculateH2O(peso > 0 ? peso : null, height > 0 ? height : null, userAge, userGender);
                 newRow.h2o = h2oValue ? h2oValue.toFixed(2) : '';
             }
 
@@ -73,7 +77,7 @@ export function useBulkState(type: BulkType, userGender: string) {
         }
 
         return newRow;
-    }, [type, userGender]);
+    }, [type, userGender, userAge]);
 
     const addRow = useCallback(() => {
         setPages(prev => {

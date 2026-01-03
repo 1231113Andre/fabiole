@@ -5,6 +5,7 @@ import { calculatePesagemMetrics, getBmiClassColor, getFatClassColor, getDeltaPe
 interface PesagemRowProps {
     pesagem: Pesagem;
     gender: string;
+    userAge?: number | null;
     previousPesagem?: Pesagem;
     onEdit: (p: Pesagem) => void;
     onDelete: (id: number) => void;
@@ -20,16 +21,23 @@ const isValidValue = (val: any): boolean => {
 export const PesagemRow: React.FC<PesagemRowProps> = ({
     pesagem: p,
     gender,
+    userAge,
     previousPesagem,
     onEdit,
     onDelete
 }) => {
-    const metrics = calculatePesagemMetrics(p, gender, previousPesagem);
+    const metrics = calculatePesagemMetrics(p, gender, userAge, previousPesagem);
 
     return (
         <tr className="group hover:bg-gray-50/50 transition-colors duration-200 border-t border-solid border-gray-300 first:border-none">
             <td className="py-4 px-3 whitespace-nowrap font-medium text-gray-700">{new Date(p.date).toLocaleDateString('pt-PT')}</td>
-            <td className="py-4 px-3 text-center font-bold text-gray-900">{p.peso || '-'}</td>
+            <td className="py-4 px-3 text-center font-bold text-gray-900">
+                {p.peso ? (
+                    <span className="flex items-center justify-center">
+                        {p.peso}<sup className="text-[7px] ml-0.5">kg</sup>
+                    </span>
+                ) : '-'}
+            </td>
             <td className={`py-4 px-3 text-center font-semibold ${getDeltaPesoColor(metrics.deltaPeso)}`}>
                 {metrics.deltaPeso}
             </td>
@@ -47,13 +55,29 @@ export const PesagemRow: React.FC<PesagemRowProps> = ({
             <td className="py-4 px-3 text-center font-semibold text-gray-700">{p.percentualMG ? `${p.percentualMG}%` : '-'}</td>
             <td className="py-4 px-3 text-center">
                 <span className={BADGE_STYLES.PURPLE}>
-                    {p.mm ?? metrics.mm ?? '-'}
+                    {(p.mm ?? metrics.mm) ? (
+                        <span className="flex items-center justify-center">
+                            {p.mm ?? metrics.mm}<sup className="text-[7px] ml-0.5">kg</sup>
+                        </span>
+                    ) : '-'}
                 </span>
             </td>
             <td className="py-4 px-3 text-center">
-                <span className={BADGE_STYLES.BLUE}>
-                    {p.h2o ?? metrics.h2o ?? '-'}
-                </span>
+                {(p.h2o ?? metrics.h2o) ? (
+                    <span className={`${BADGE_STYLES.BLUE} flex flex-col items-center leading-tight`}>
+                        <span className="flex items-center gap-1">
+                            <i className="fa-duotone fa-droplet text-[9px]" />
+                            {p.h2o ?? metrics.h2o}%
+                        </span>
+                        {metrics.h2oKg && (
+                            <span className="text-[10px] flex items-center">
+                                ({metrics.h2oKg})<sup className="text-[7px] ml-0.5">kg</sup>
+                            </span>
+                        )}
+                    </span>
+                ) : (
+                    <span className={BADGE_STYLES.BLUE}>-</span>
+                )}
             </td>
             <td className="py-4 px-3 text-center">
                 <span className={BADGE_STYLES.GREEN}>

@@ -45,7 +45,7 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
         getAllRows,
         newRecordsCount,
         toggleOverride
-    } = useBulkState(type, userData.gender || '');
+    } = useBulkState(type, userData.gender || '', userData.birth);
 
     /**
      * Validate that all required fields are filled for each row

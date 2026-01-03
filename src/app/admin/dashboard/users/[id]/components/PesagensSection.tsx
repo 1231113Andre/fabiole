@@ -4,6 +4,7 @@ import { Pesagem } from "../types";
 import { usePesagemForm } from "./pesagens/usePesagemForm";
 import { PesagensTable } from "./pesagens/PesagensTable";
 import { PesagemModal } from "./pesagens/PesagemModal";
+import { calculateAge } from "@/lib/utils/bodyMetrics";
 import NewButton from "@/app/components/newButton";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -14,6 +15,7 @@ interface PesagensSectionProps {
     onBulkSave?: (data: any[]) => Promise<void>;
     onDelete: (id: number) => Promise<void>;
     gender: string;
+    userBirth?: Date | string | null; // For Watson H2O formula
 }
 
 export const PesagensSection: React.FC<PesagensSectionProps> = ({
@@ -21,7 +23,8 @@ export const PesagensSection: React.FC<PesagensSectionProps> = ({
     onSave,
     onBulkSave,
     onDelete,
-    gender
+    gender,
+    userBirth
 }) => {
     const {
         isModalOpen,
@@ -35,7 +38,10 @@ export const PesagensSection: React.FC<PesagensSectionProps> = ({
         handleSubmit,
         handleCloseModal,
         clearManualOverride
-    } = usePesagemForm({ gender, onSave });
+    } = usePesagemForm({ gender, userBirth, onSave });
+
+    // Calculate user age from birth date for Watson H2O formula
+    const userAge = userBirth ? calculateAge(userBirth) : null;
 
     const params = useParams();
     const userId = params.id;
@@ -72,6 +78,7 @@ export const PesagensSection: React.FC<PesagensSectionProps> = ({
             <PesagensTable
                 pesagens={pesagens}
                 gender={gender}
+                userAge={userAge}
                 onEdit={handleOpenModal}
                 onDelete={onDelete}
             />

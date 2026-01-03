@@ -52,10 +52,10 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                         <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Altura (cm)</th>
                                         <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">% MG</th>
                                         <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                                            <TooltipHeader label="MM (kg)" description="Peso × (1 - %MG) - Massa Óssea. Automático ao inserir dados." />
+                                            <TooltipHeader label="MM (kg)" description="Peso × (1 - %MG). Massa magra (LBM). Automático ao inserir dados." />
                                         </th>
                                         <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                                            <TooltipHeader label="H2O" description="Peso × Fator. Homem: 60%, Mulher: 55%. Automático ao inserir dados." />
+                                            <TooltipHeader label="% H2O" description="Fórmula Watson: calcula água corporal baseado em peso, altura, idade e género. Valor em kg abaixo." />
                                         </th>
                                         <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
                                             <TooltipHeader label="IMC" description="Peso ÷ Altura². Automático ao inserir dados." />
@@ -75,7 +75,13 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                     {pesagens.map((pesagem, index) => (
                                         <tr key={index} className="group hover:bg-gray-50/50 transition-colors duration-200 border-t border-solid border-gray-300 first:border-none">
                                             <td className="py-4 px-3 whitespace-nowrap font-medium text-gray-700">{pesagem.data}</td>
-                                            <td className="py-4 px-3 text-center font-bold text-gray-900">{pesagem.peso || "-"}</td>
+                                            <td className="py-4 px-3 text-center font-bold text-gray-900">
+                                                {pesagem.peso ? (
+                                                    <span className="flex items-center justify-center">
+                                                        {pesagem.peso}<sup className="text-[7px] ml-0.5">kg</sup>
+                                                    </span>
+                                                ) : "-"}
+                                            </td>
                                             <td className={`py-4 px-3 text-center font-semibold ${getDeltaPesoColor(pesagem.deltaPeso)}`}>
                                                 {pesagem.deltaPeso !== undefined && pesagem.deltaPeso !== null ? `${pesagem.deltaPeso > 0 ? '+' : ''}${pesagem.deltaPeso} kg` : '-'}
                                             </td>
@@ -94,10 +100,38 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                                 {pesagem.percentualMG ? `${pesagem.percentualMG}%` : '-'}
                                             </td>
                                             <td className="py-4 px-3 text-center">
-                                                <span className={BADGE_STYLES.PURPLE}>{pesagem.MM || "-"}</span>
+                                                <span className={BADGE_STYLES.PURPLE}>
+                                                    {pesagem.MM ? (
+                                                        <span className="flex items-center justify-center">
+                                                            {pesagem.MM}<sup className="text-[7px] ml-0.5">kg</sup>
+                                                        </span>
+                                                    ) : '-'}
+                                                </span>
                                             </td>
                                             <td className="py-4 px-3 text-center">
-                                                <span className={BADGE_STYLES.BLUE}>{pesagem.H2O || "-"}</span>
+                                                {pesagem.H2O ? (() => {
+                                                    // Calculate h2oKg from percentage and peso
+                                                    const h2oPercent = parseFloat(String(pesagem.H2O).replace(',', '.'));
+                                                    const peso = parseFloat(String(pesagem.peso).replace(',', '.'));
+                                                    const h2oKg = !isNaN(h2oPercent) && !isNaN(peso) && peso > 0
+                                                        ? ((h2oPercent / 100) * peso).toFixed(1)
+                                                        : null;
+                                                    return (
+                                                        <span className={`${BADGE_STYLES.BLUE} flex flex-col items-center leading-tight`}>
+                                                            <span className="flex items-center gap-1">
+                                                                <i className="fa-duotone fa-droplet text-[9px]" />
+                                                                {pesagem.H2O}%
+                                                            </span>
+                                                            {h2oKg && (
+                                                                <span className="text-[10px] flex items-center">
+                                                                    ({h2oKg})<sup className="text-[7px] ml-0.5">kg</sup>
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    );
+                                                })() : (
+                                                    <span className={BADGE_STYLES.BLUE}>-</span>
+                                                )}
                                             </td>
                                             <td className="py-4 px-3 text-center">
                                                 <span className={BADGE_STYLES.GREEN}>{pesagem.IMC ? pesagem.IMC.toFixed(1).replace('.', ',') : "-"}</span>
