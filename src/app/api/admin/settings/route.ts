@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { SettingsService } from "@/lib/api/services/SettingsService";
 import { Logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/sanitizers";
 
 export const GET = withAdminAuth(async () => {
     try {
