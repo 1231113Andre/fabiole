@@ -6,6 +6,7 @@ import { csrfMiddleware } from '@/lib/api/middleware/CsrfMiddleware';
 import { verifySession, isSessionExpired, SessionPayload } from '@/lib/security/session';
 import { getCachedSession, setCachedSession } from '@/lib/security/sessionCache';
 import { cookies } from 'next/headers';
+import { createOptionsHandler } from '@/lib/api/utils/cors';
 
 // Force dynamic - session validation should always be fresh
 export const dynamic = 'force-dynamic';
@@ -125,13 +126,7 @@ export const GET = getSessionHandler.toNextHandler();
 export const DELETE = deleteSessionHandler.toNextHandler();
 
 // Handle CORS preflight requests
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Methods': 'GET, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Token',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-}
+export const OPTIONS = createOptionsHandler({
+  methods: ['GET', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
+});

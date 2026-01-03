@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeValueForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
-import { invalidatePerimetrosCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
-import { clearUserData } from "@/lib/cache/userCache";
+import { Logger } from "@/lib/utils/logger";
+import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -24,6 +24,11 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         if (body.thighR !== undefined) updateData.thighR = sanitizeValueForUpdate(body.thighR);
         if (body.thighL !== undefined) updateData.thighL = sanitizeValueForUpdate(body.thighL);
 
+        // Validate that at least one field is being updated
+        if (Object.keys(updateData).length === 0) {
+            return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+        }
+
         const perimetro = await db.perimetroCorporal.update({
             where: { id: Number(id) },
             data: updateData,
@@ -31,15 +36,13 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         });
 
         // Invalidate caches
-        invalidatePerimetrosCache();
         if (perimetro.user) {
-            invalidateAdminUserDetail(perimetro.user.id);
-            if (perimetro.user.email) clearUserData(perimetro.user.email);
+            await invalidateUserCaches(perimetro.user.id, { perimetros: true });
         }
 
         return NextResponse.json(perimetro);
     } catch (error: unknown) {
-        console.error('Update perimetro error:', error);
+        Logger.error('Admin', `Failed to update perimetro ${id}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });
@@ -54,20 +57,22 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
             include: { user: { select: { id: true, email: true } } }
         });
 
+        if (!perimetro) {
+            return NextResponse.json({ error: 'Perimetro not found' }, { status: 404 });
+        }
+
         await db.perimetroCorporal.delete({
             where: { id: Number(id) }
         });
 
         // Invalidate caches
-        invalidatePerimetrosCache();
-        if (perimetro?.user) {
-            invalidateAdminUserDetail(perimetro.user.id);
-            if (perimetro.user.email) clearUserData(perimetro.user.email);
+        if (perimetro.user) {
+            await invalidateUserCaches(perimetro.user.id, { perimetros: true });
         }
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
-        console.error('Delete perimetro error:', error);
+        Logger.error('Admin', `Failed to delete perimetro ${id}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });

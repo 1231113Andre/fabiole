@@ -4,7 +4,7 @@ import { clearUserData } from "@/lib/cache/userCache";
 import { invalidateAdminUsers, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
-import { toNumber } from "@/lib/utils/sanitizers";
+import { toNumber, getErrorMessage } from "@/lib/utils/sanitizers";
 
 export const GET = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -81,9 +81,9 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
                 notes: a.notes
             }))
         });
-    } catch (error) {
+    } catch (error: unknown) {
         Logger.error('AdminService', `Profile Retrieval Failure: A critical exception occurred while fetching the full data set for User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });
 
@@ -94,7 +94,7 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
     try {
         // Build update data only for fields that are explicitly provided
         // This prevents overwriting existing data with null/defaults
-        const updateData: Record<string, any> = {};
+        const updateData: Record<string, unknown> = {};
 
         if (body.name !== undefined) updateData.name = body.name;
         if (body.surname !== undefined) updateData.surname = body.surname;
@@ -110,6 +110,11 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         if (body.paid !== undefined) updateData.paid = body.paid;
         if (body.avatarUrl !== undefined) updateData.avatarUrl = body.avatarUrl || null;
 
+        // Validate that at least one field is being updated
+        if (Object.keys(updateData).length === 0) {
+            return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+        }
+
         const user = await db.user.update({
             where: { id },
             data: updateData
@@ -121,9 +126,9 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         invalidateAdminUsers();
 
         return NextResponse.json({ success: true, user: { id: user.id, name: user.name } });
-    } catch (error) {
+    } catch (error: unknown) {
         Logger.error('AdminService', `Profile Update Failure: A critical exception occurred while committing changes to User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });
 
@@ -135,6 +140,10 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
         // We can try to fetch first.
         const user = await db.user.findUnique({ where: { id }, select: { email: true } });
 
+        if (!user) {
+            return NextResponse.json({ error: 'User not found' }, { status: 404 });
+        }
+
         await db.user.delete({ where: { id } });
 
         // Clear caches
@@ -145,8 +154,8 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
         invalidateAdminUsers();
 
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch (error: unknown) {
         Logger.error('AdminService', `Account Termination Failure: A critical exception occurred during the administrative deletion of User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });

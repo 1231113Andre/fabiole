@@ -4,6 +4,7 @@ import { db } from "@/lib/db/client";
 import { clearCachedSession } from "@/lib/security/sessionCache";
 import { cookies } from "next/headers";
 import { AuthService } from "@/lib/api/services/AuthService";
+import { Logger } from "@/lib/utils/logger";
 
 export async function POST(req: NextRequest) {
     try {
@@ -68,8 +69,8 @@ export async function POST(req: NextRequest) {
         }
 
         return NextResponse.json({ success: true, avatarUrl: cacheBustedUrl });
-    } catch (error) {
-        console.error("Error updating avatar URL:", error);
+    } catch (error: unknown) {
+        Logger.error('User', 'Failed to update avatar URL', error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

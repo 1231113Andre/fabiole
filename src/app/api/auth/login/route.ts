@@ -15,6 +15,7 @@ import {
   clearFailedAttempts,
   getClientIp,
 } from '@/lib/security/accountLockout';
+import { createOptionsHandler } from '@/lib/api/utils/cors';
 
 // Login handler - CSRF not required as this is anonymous endpoint
 // Protected by: rate limiting, account lockout, password hashing
@@ -31,7 +32,7 @@ const loginHandler = new BaseRouteHandler()
       const ip = getClientIp(context.request);
 
       // Check if account is locked
-      const lockoutCheck = checkAccountLockout(email, ip);
+      const lockoutCheck = await checkAccountLockout(email, ip);
       if (lockoutCheck.isLocked) {
         return ApiResponse.error(
           `Conta temporariamente bloqueada. Tenta novamente em ${lockoutCheck.remainingSeconds} segundos.`,
@@ -44,7 +45,7 @@ const loginHandler = new BaseRouteHandler()
         const user = await AuthService.login(email, password);
 
         // Clear failed attempts on successful login
-        clearFailedAttempts(email, ip);
+        await clearFailedAttempts(email, ip);
 
         const sessionCookies = await AuthService.createSessionCookie(user);
 
@@ -62,7 +63,7 @@ const loginHandler = new BaseRouteHandler()
         return response;
       } catch (loginError) {
         // Record failed attempt
-        const lockoutResult = recordFailedAttempt(email, ip);
+        const lockoutResult = await recordFailedAttempt(email, ip);
 
         if (lockoutResult.isLocked) {
           return ApiResponse.error(
@@ -83,13 +84,7 @@ const loginHandler = new BaseRouteHandler()
 export const POST = loginHandler.toNextHandler();
 
 // Handle CORS preflight requests
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Token',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-}
+export const OPTIONS = createOptionsHandler({
+  methods: ['POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
+});

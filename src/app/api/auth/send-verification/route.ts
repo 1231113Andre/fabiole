@@ -11,6 +11,7 @@ import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddlew
 import { RATE_LIMITS } from '@/lib/security/rateLimit';
 import { VerificationCodeService } from '@/lib/email';
 import { z } from 'zod';
+import { createOptionsHandler } from '@/lib/api/utils/cors';
 
 const sendVerificationSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -43,13 +44,7 @@ const sendVerificationHandler = new BaseRouteHandler()
 
 export const POST = sendVerificationHandler.toNextHandler();
 
-export async function OPTIONS() {
-    return new Response(null, {
-        status: 204,
-        headers: {
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type',
-            'Access-Control-Max-Age': '86400',
-        },
-    });
-}
+export const OPTIONS = createOptionsHandler({
+  methods: ['POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type'],
+});

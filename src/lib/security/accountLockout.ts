@@ -1,9 +1,10 @@
 import { Logger } from '../utils/logger';
+import { getRedisClient, isRedisEnabled } from '@/lib/cache/redis';
 
 /**
  * @fileoverview Account lockout mechanism
  * @description Tracks failed login attempts and locks accounts after threshold
- *              Uses in-memory storage with automatic cleanup
+ *              Uses Redis for persistent storage
  */
 
 interface LockoutEntry {
@@ -13,44 +14,93 @@ interface LockoutEntry {
 }
 
 /**
- * In-memory store for account lockouts
- * Key format: email:ip or just email
- */
-const lockoutStore = new Map<string, LockoutEntry>();
-
-/**
  * Configuration
  */
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
-const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const REDIS_KEY_PREFIX = 'fabiole:lockout:';
+const EXPIRED_LOCKOUT_TTL_SECONDS = 3600; // 1 hour - how long to keep expired lockout entries
 
 /**
- * Cleanup expired lockout entries
+ * Get lockout entry from Redis
  */
-let cleanupScheduled = false;
-function scheduleCleanup() {
-  if (cleanupScheduled) return;
-  cleanupScheduled = true;
-
-  setTimeout(() => {
-    cleanupScheduled = false;
-    const now = Date.now();
-    let cleaned = 0;
-
-    for (const [key, entry] of lockoutStore.entries()) {
-      // Remove if lockout expired and no recent attempts
-      if (entry.lockedUntil < now && entry.lastAttempt < now - LOCKOUT_DURATION_MS) {
-        lockoutStore.delete(key);
-        cleaned++;
-      }
-    }
-
-    if (cleaned > 0) {
-      Logger.info('Security', `Automated Account Protection: Purged ${cleaned} stale lockout tracking entries from memory.`);
-    }
-  }, CLEANUP_INTERVAL_MS);
+async function getLockoutEntryFromRedis(key: string): Promise<LockoutEntry | null> {
+  if (!isRedisEnabled()) {
+    throw new Error('Redis is not enabled or not connected');
+  }
+  
+  const redis = getRedisClient();
+  if (!redis || redis.status !== 'ready') {
+    throw new Error('Redis client is not ready');
+  }
+  
+  const data = await redis.get(`${REDIS_KEY_PREFIX}${key}`);
+  if (!data) return null;
+  
+  try {
+    return JSON.parse(data) as LockoutEntry;
+  } catch (parseError) {
+    // If data in Redis is corrupted, delete it and return null
+    Logger.error('Security', `Corrupted lockout entry in Redis for key: ${key}, deleting it`, parseError);
+    await redis.del(`${REDIS_KEY_PREFIX}${key}`).catch(() => {
+      // Ignore deletion errors
+    });
+    return null;
+  }
 }
+
+/**
+ * Set lockout entry in Redis
+ */
+async function setLockoutEntryInRedis(key: string, entry: LockoutEntry, ttlSeconds?: number): Promise<void> {
+  if (!isRedisEnabled()) {
+    throw new Error('Redis is not enabled or not connected');
+  }
+  
+  const redis = getRedisClient();
+  if (!redis || redis.status !== 'ready') {
+    throw new Error('Redis client is not ready');
+  }
+  
+  const redisKey = `${REDIS_KEY_PREFIX}${key}`;
+  const now = Date.now();
+  
+  // Calculate TTL based on lockedUntil or use provided TTL
+  let ttl: number;
+  if (ttlSeconds !== undefined) {
+    ttl = ttlSeconds;
+  } else if (entry.lockedUntil > now) {
+    // Account is currently locked - TTL until lockout expires
+    ttl = Math.ceil((entry.lockedUntil - now) / 1000);
+  } else {
+    // Lockout expired or no lockout - keep entry for tracking attempts history
+    // This prevents immediate retry attacks while not storing data indefinitely
+    ttl = EXPIRED_LOCKOUT_TTL_SECONDS;
+  }
+  
+  // Ensure minimum TTL of 60 seconds
+  ttl = Math.max(ttl, 60);
+  
+  // ioredis: set(key, value, 'EX', seconds)
+  await redis.set(redisKey, JSON.stringify(entry), 'EX', ttl);
+}
+
+/**
+ * Delete lockout entry from Redis
+ */
+async function deleteLockoutEntryFromRedis(key: string): Promise<void> {
+  if (!isRedisEnabled()) {
+    throw new Error('Redis is not enabled or not connected');
+  }
+  
+  const redis = getRedisClient();
+  if (!redis || redis.status !== 'ready') {
+    throw new Error('Redis client is not ready');
+  }
+  
+  await redis.del(`${REDIS_KEY_PREFIX}${key}`);
+}
+
 
 /**
  * Get lockout key from email and optional IP
@@ -65,30 +115,38 @@ function getLockoutKey(email: string, ip?: string): string {
  * @param ip - Optional IP address
  * @returns Object with isLocked boolean and remaining time in seconds
  */
-export function checkAccountLockout(
+export async function checkAccountLockout(
   email: string,
   ip?: string
-): { isLocked: boolean; remainingSeconds?: number } {
+): Promise<{ isLocked: boolean; remainingSeconds?: number }> {
   const key = getLockoutKey(email, ip);
-  const entry = lockoutStore.get(key);
+  
+  try {
+    const entry = await getLockoutEntryFromRedis(key);
+    
+    if (!entry) {
+      return { isLocked: false };
+    }
 
-  if (!entry) {
+    const now = Date.now();
+
+    // Check if still locked
+    if (entry.lockedUntil > now) {
+      const remainingSeconds = Math.ceil((entry.lockedUntil - now) / 1000);
+      return {
+        isLocked: true,
+        remainingSeconds,
+      };
+    }
+
+    // Lockout expired, but keep entry for tracking attempts
+    return { isLocked: false };
+  } catch (error) {
+    // If Redis is unavailable, allow access (fail open)
+    // This prevents Redis outages from blocking all logins
+    Logger.error('Security', 'Failed to check account lockout status, allowing access', error);
     return { isLocked: false };
   }
-
-  const now = Date.now();
-
-  // Check if still locked
-  if (entry.lockedUntil > now) {
-    const remainingSeconds = Math.ceil((entry.lockedUntil - now) / 1000);
-    return {
-      isLocked: true,
-      remainingSeconds,
-    };
-  }
-
-  // Lockout expired, but keep entry for tracking attempts
-  return { isLocked: false };
 }
 
 /**
@@ -97,48 +155,55 @@ export function checkAccountLockout(
  * @param ip - Optional IP address
  * @returns Object with isLocked boolean and attempts count
  */
-export function recordFailedAttempt(
+export async function recordFailedAttempt(
   email: string,
   ip?: string
-): { isLocked: boolean; attempts: number; remainingSeconds?: number } {
+): Promise<{ isLocked: boolean; attempts: number; remainingSeconds?: number }> {
   const key = getLockoutKey(email, ip);
   const now = Date.now();
-  let entry = lockoutStore.get(key);
-
-  if (!entry) {
-    entry = {
+  
+  try {
+    // Get existing entry from Redis
+    const existing = await getLockoutEntryFromRedis(key);
+    const entry: LockoutEntry = existing || {
       attempts: 0,
       lockedUntil: 0,
       lastAttempt: now,
     };
+
+    entry.attempts++;
+    entry.lastAttempt = now;
+
+    // Lock account if threshold reached
+    if (entry.attempts >= MAX_ATTEMPTS) {
+      entry.lockedUntil = now + LOCKOUT_DURATION_MS;
+      Logger.warn('Security', `Account Lockout Triggered: Identity ${email} has reached the maximum failed attempt threshold (${entry.attempts}). Access restricted for 15 minutes.`);
+    }
+
+    // Save to Redis
+    await setLockoutEntryInRedis(key, entry);
+
+    const isLocked = entry.lockedUntil > now;
+    const remainingSeconds = isLocked
+      ? Math.ceil((entry.lockedUntil - now) / 1000)
+      : undefined;
+
+    return {
+      isLocked,
+      attempts: entry.attempts,
+      remainingSeconds,
+    };
+  } catch (error) {
+    // If Redis is unavailable, log error but don't block the login attempt
+    // This prevents Redis outages from breaking authentication flow
+    Logger.error('Security', 'Failed to record failed login attempt', error);
+    
+    // Return unlocked state so login can proceed
+    return {
+      isLocked: false,
+      attempts: 0,
+    };
   }
-
-  entry.attempts++;
-  entry.lastAttempt = now;
-
-  // Lock account if threshold reached
-  if (entry.attempts >= MAX_ATTEMPTS) {
-    entry.lockedUntil = now + LOCKOUT_DURATION_MS;
-    Logger.warn('Security', `Account Lockout Triggered: Identity ${email} has reached the maximum failed attempt threshold (${entry.attempts}). Access restricted for 15 minutes.`);
-  }
-
-  lockoutStore.set(key, entry);
-
-  // Schedule cleanup if needed
-  if (lockoutStore.size > 1000 && !cleanupScheduled) {
-    scheduleCleanup();
-  }
-
-  const isLocked = entry.lockedUntil > now;
-  const remainingSeconds = isLocked
-    ? Math.ceil((entry.lockedUntil - now) / 1000)
-    : undefined;
-
-  return {
-    isLocked,
-    attempts: entry.attempts,
-    remainingSeconds,
-  };
 }
 
 /**
@@ -146,10 +211,16 @@ export function recordFailedAttempt(
  * @param email - User email
  * @param ip - Optional IP address
  */
-export function clearFailedAttempts(email: string, ip?: string): void {
+export async function clearFailedAttempts(email: string, ip?: string): Promise<void> {
   const key = getLockoutKey(email, ip);
-  lockoutStore.delete(key);
-  Logger.success('Security', `Account Protection Reset: Login restrictions and attempt tracking cleared for identity: ${email}.`);
+  
+  try {
+    await deleteLockoutEntryFromRedis(key);
+    Logger.success('Security', `Account Protection Reset: Login restrictions and attempt tracking cleared for identity: ${email}.`);
+  } catch (error) {
+    // Log error but don't throw - clearing lockout is not critical
+    Logger.error('Security', 'Failed to clear failed attempts', error);
+  }
 }
 
 /**

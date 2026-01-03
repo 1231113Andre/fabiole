@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeValue, sanitizeStringValue, getErrorMessage } from "@/lib/utils/sanitizers";
-import { invalidatePesagensCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
-import { clearUserData } from "@/lib/cache/userCache";
+import { Logger } from "@/lib/utils/logger";
+import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: user_uuid } = await params;
@@ -35,16 +35,11 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
         });
 
         // Invalidate relevant caches
-        invalidatePesagensCache();
-        invalidateAdminUserDetail(user_uuid);
-        
-        // Also invalidate user's client cache (get email from user)
-        const user = await db.user.findUnique({ where: { id: user_uuid }, select: { email: true } });
-        if (user?.email) clearUserData(user.email);
+        await invalidateUserCaches(user_uuid, { pesagens: true });
 
         return NextResponse.json(pesagem);
     } catch (error: unknown) {
-        console.error('Create pesagem error:', error);
+        Logger.error('Admin', `Failed to create pesagem for user ${user_uuid}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });

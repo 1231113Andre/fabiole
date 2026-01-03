@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { invalidatePesagensCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
-import { clearUserData } from "@/lib/cache/userCache";
 import { sanitizeValue, sanitizeStringValue, getErrorMessage } from "@/lib/utils/sanitizers";
+import { Logger } from "@/lib/utils/logger";
+import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
 
 interface PesagemRecord {
     date: string;
@@ -67,10 +67,7 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
         });
 
         // Invalidate caches
-        invalidatePesagensCache();
-        invalidateAdminUserDetail(user_uuid);
-        const user = await db.user.findUnique({ where: { id: user_uuid }, select: { email: true } });
-        if (user?.email) clearUserData(user.email);
+        await invalidateUserCaches(user_uuid, { pesagens: true });
 
         return NextResponse.json({
             success: true,
@@ -78,7 +75,7 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
             message: `${result.count} pesagens created successfully`
         });
     } catch (error: unknown) {
-        console.error('Bulk create pesagens error:', error);
+        Logger.error('Admin', `Failed to bulk create pesagens for user ${user_uuid}`, error);
         return NextResponse.json({ error: 'Internal error', details: getErrorMessage(error) }, { status: 500 });
     }
 });

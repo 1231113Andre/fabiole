@@ -10,6 +10,7 @@ import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddlew
 import { registerSchema } from '@/lib/api/validators/auth.validator';
 import { AuthService } from '@/lib/api/services/AuthService';
 import { RATE_LIMITS } from '@/lib/security/rateLimit';
+import { createOptionsHandler } from '@/lib/api/utils/cors';
 
 const registerHandler = new BaseRouteHandler()
   .use(requestIdMiddleware)
@@ -56,13 +57,7 @@ const registerHandler = new BaseRouteHandler()
 export const POST = registerHandler.toNextHandler();
 
 // Handle CORS preflight requests
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, X-CSRF-Token',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-}
+export const OPTIONS = createOptionsHandler({
+  methods: ['POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
+});

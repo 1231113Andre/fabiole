@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
+import { Logger } from "@/lib/utils/logger";
 
 export const GET = withAdminAuth(async (req, session) => {
     try {
@@ -21,8 +22,8 @@ export const GET = withAdminAuth(async (req, session) => {
         return NextResponse.json({
             roles: Array.from(roleValues)
         });
-    } catch (error) {
-        console.error('Error fetching roles:', error);
+    } catch (error: unknown) {
+        Logger.error('Admin', 'Failed to fetch roles', error);
         return NextResponse.json({ error: 'Failed to fetch roles' }, { status: 500 });
     }
 });

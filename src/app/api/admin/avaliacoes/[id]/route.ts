@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeIntForUpdate, sanitizeStringForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
-import { invalidateAvaliacoesCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
-import { clearUserData } from "@/lib/cache/userCache";
+import { Logger } from "@/lib/utils/logger";
+import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -19,6 +19,11 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         if (body.mileResult !== undefined) updateData.mileResult = sanitizeStringForUpdate(body.mileResult);
         if (body.notes !== undefined) updateData.notes = sanitizeStringForUpdate(body.notes);
 
+        // Validate that at least one field is being updated
+        if (Object.keys(updateData).length === 0) {
+            return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+        }
+
         const avaliacao = await db.avaliacaoFisica.update({
             where: { id: Number(id) },
             data: updateData,
@@ -26,15 +31,13 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         });
 
         // Invalidate caches
-        invalidateAvaliacoesCache();
         if (avaliacao.user) {
-            invalidateAdminUserDetail(avaliacao.user.id);
-            if (avaliacao.user.email) clearUserData(avaliacao.user.email);
+            await invalidateUserCaches(avaliacao.user.id, { avaliacoes: true });
         }
 
         return NextResponse.json(avaliacao);
     } catch (error: unknown) {
-        console.error('Update avaliacao error:', error);
+        Logger.error('Admin', `Failed to update avaliacao ${id}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });
@@ -49,20 +52,22 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
             include: { user: { select: { id: true, email: true } } }
         });
 
+        if (!avaliacao) {
+            return NextResponse.json({ error: 'Avaliacao not found' }, { status: 404 });
+        }
+
         await db.avaliacaoFisica.delete({
             where: { id: Number(id) }
         });
 
         // Invalidate caches
-        invalidateAvaliacoesCache();
-        if (avaliacao?.user) {
-            invalidateAdminUserDetail(avaliacao.user.id);
-            if (avaliacao.user.email) clearUserData(avaliacao.user.email);
+        if (avaliacao.user) {
+            await invalidateUserCaches(avaliacao.user.id, { avaliacoes: true });
         }
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
-        console.error('Delete avaliacao error:', error);
+        Logger.error('Admin', `Failed to delete avaliacao ${id}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });

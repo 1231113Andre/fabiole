@@ -6,6 +6,7 @@ import { compressionMiddleware } from '@/lib/api/middleware/CompressionMiddlewar
 import { authMiddleware } from '@/lib/api/middleware/AuthMiddleware';
 import { UserService } from '@/lib/api/services/UserService';
 import { Logger } from '@/lib/utils/logger';
+import { createOptionsHandler } from '@/lib/api/utils/cors';
 
 // No static caching - always fetch fresh data
 export const dynamic = 'force-dynamic';
@@ -78,13 +79,7 @@ const getUserDataHandler = new BaseRouteHandler()
 export const GET = getUserDataHandler.toNextHandler();
 
 // Handle CORS preflight requests
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-}
+export const OPTIONS = createOptionsHandler({
+  methods: ['GET', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+});

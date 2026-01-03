@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeValueForUpdate, sanitizeStringForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
-import { invalidatePesagensCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
-import { clearUserData } from "@/lib/cache/userCache";
+import { Logger } from "@/lib/utils/logger";
+import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -12,7 +12,7 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
     try {
         const updateData: Record<string, unknown> = {};
 
-        if (body.date) updateData.date = new Date(body.date);
+        if (body.date !== undefined) updateData.date = new Date(body.date);
         if (body.peso !== undefined) updateData.peso = sanitizeValueForUpdate(body.peso);
         if (body.height !== undefined) updateData.height = sanitizeValueForUpdate(body.height);
         if (body.percentualMG !== undefined) updateData.percentualMG = sanitizeValueForUpdate(body.percentualMG);
@@ -26,6 +26,11 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         if (body.resultadoPercentMG !== undefined) updateData.resultadoPercentMG = sanitizeStringForUpdate(body.resultadoPercentMG);
         if (body.notas !== undefined) updateData.notas = sanitizeStringForUpdate(body.notas);
 
+        // Validate that at least one field is being updated
+        if (Object.keys(updateData).length === 0) {
+            return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+        }
+
         const pesagem = await db.pesagem.update({
             where: { id: Number(id) },
             data: updateData,
@@ -33,15 +38,13 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         });
 
         // Invalidate caches
-        invalidatePesagensCache();
         if (pesagem.user) {
-            invalidateAdminUserDetail(pesagem.user.id);
-            if (pesagem.user.email) clearUserData(pesagem.user.email);
+            await invalidateUserCaches(pesagem.user.id, { pesagens: true });
         }
 
         return NextResponse.json(pesagem);
     } catch (error: unknown) {
-        console.error('Update pesagem error:', error);
+        Logger.error('Admin', `Failed to update pesagem ${id}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });
@@ -56,20 +59,22 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
             include: { user: { select: { id: true, email: true } } }
         });
 
+        if (!pesagem) {
+            return NextResponse.json({ error: 'Pesagem not found' }, { status: 404 });
+        }
+
         await db.pesagem.delete({
             where: { id: Number(id) }
         });
 
         // Invalidate caches
-        invalidatePesagensCache();
-        if (pesagem?.user) {
-            invalidateAdminUserDetail(pesagem.user.id);
-            if (pesagem.user.email) clearUserData(pesagem.user.email);
+        if (pesagem.user) {
+            await invalidateUserCaches(pesagem.user.id, { pesagens: true });
         }
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
-        console.error('Delete pesagem error:', error);
+        Logger.error('Admin', `Failed to delete pesagem ${id}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });

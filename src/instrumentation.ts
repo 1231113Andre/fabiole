@@ -170,6 +170,61 @@ function checkSession(): ServiceStatus {
     return { name: 'Session Security', status: 'OK', message: 'Active', latency: Date.now() - start };
 }
 
+// Check Redis connection
+async function checkRedis(): Promise<ServiceStatus> {
+    const start = Date.now();
+    try {
+        const redisUrl = process.env.REDIS_URL;
+        if (!redisUrl) {
+            return { 
+                name: 'Redis Cache', 
+                status: 'SKIP', 
+                message: 'REDIS_URL not configured (using in-memory fallback)', 
+                latency: Date.now() - start 
+            };
+        }
+
+        // Try to import and check Redis connection
+        const redisModule = await import('./lib/cache/redis');
+        const { getRedisClient, isRedisEnabled } = redisModule;
+        
+        const client = getRedisClient();
+        if (!client) {
+            return { 
+                name: 'Redis Cache', 
+                status: 'FAIL', 
+                message: 'Redis client not initialized', 
+                latency: Date.now() - start 
+            };
+        }
+
+        // Try to ping Redis
+        try {
+            await client.ping();
+            return { 
+                name: 'Redis Cache', 
+                status: 'OK', 
+                message: isRedisEnabled() ? 'Connected' : 'Connecting...', 
+                latency: Date.now() - start 
+            };
+        } catch (pingError: any) {
+            return { 
+                name: 'Redis Cache', 
+                status: 'WARN', 
+                message: `Connection issue: ${pingError.message || 'Unable to ping'}. Using in-memory fallback.`, 
+                latency: Date.now() - start 
+            };
+        }
+    } catch (error: any) {
+        return { 
+            name: 'Redis Cache', 
+            status: 'WARN', 
+            message: `Initialization error: ${error.message || 'Unknown error'}. Using in-memory fallback.`, 
+            latency: Date.now() - start 
+        };
+    }
+}
+
 // Check Next.js configuration
 function checkNextJsConfig(): ServiceStatus {
     const start = Date.now();
@@ -235,6 +290,17 @@ async function runStartupChecks(): Promise<void> {
     services.push(sessionStatus);
     if (sessionStatus.status === 'OK') {
         Logger.success('Security', `Encryption Protocol: AES-256 equivalent session signing is active and correctly configured.`);
+    }
+
+    // Redis check
+    const redisStatus = await checkRedis();
+    services.push(redisStatus);
+    if (redisStatus.status === 'OK') {
+        Logger.success('Redis IO FAST KEY', `REDIS: ${redisStatus.message}.`);
+    } else if (redisStatus.status === 'SKIP') {
+        Logger.info('Redis IO FAST KEY', `REDIS: ${redisStatus.message}.`);
+    } else {
+        Logger.warn('Redis IO FAST KEY', `REDIS: ${redisStatus.message}.`);
     }
 
     timings.push({ name: 'Services Check', duration: Date.now() - servicesStart });

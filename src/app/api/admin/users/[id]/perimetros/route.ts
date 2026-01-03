@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeValue, getErrorMessage } from "@/lib/utils/sanitizers";
-import { invalidatePerimetrosCache, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
-import { clearUserData } from "@/lib/cache/userCache";
+import { Logger } from "@/lib/utils/logger";
+import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: user_uuid } = await params;
@@ -33,14 +33,11 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
         });
 
         // Invalidate caches
-        invalidatePerimetrosCache();
-        invalidateAdminUserDetail(user_uuid);
-        const user = await db.user.findUnique({ where: { id: user_uuid }, select: { email: true } });
-        if (user?.email) clearUserData(user.email);
+        await invalidateUserCaches(user_uuid, { perimetros: true });
 
         return NextResponse.json(perimetro);
     } catch (error: unknown) {
-        console.error('Create perimetro error:', error);
+        Logger.error('Admin', `Failed to create perimetro for user ${user_uuid}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });

@@ -3,6 +3,7 @@ import { verifySession } from "../../../../lib/security/session";
 import { r2Client, R2_BUCKET_NAME } from "../../../../lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Logger } from "@/lib/utils/logger";
 
 // Note: I'll use native crypto.randomUUID()
 export async function POST(req: NextRequest) {
@@ -41,8 +42,8 @@ export async function POST(req: NextRequest) {
             uploadUrl,
             key,
         });
-    } catch (error: any) {
-        console.error("Presigned URL error:", error);
+    } catch (error: unknown) {
+        Logger.error('Upload', 'Failed to generate presigned URL for avatar upload', error);
         return NextResponse.json({ error: "Failed to generate upload URL" }, { status: 500 });
     }
 }

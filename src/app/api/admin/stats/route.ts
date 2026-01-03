@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
-import { toNumber, toISOStringOrNull } from "@/lib/utils/sanitizers";
+import { toNumber, toISOStringOrNull, getErrorMessage } from "@/lib/utils/sanitizers";
 
 export const GET = withAdminAuth(async (req, session) => {
     try {
@@ -124,8 +124,8 @@ export const GET = withAdminAuth(async (req, session) => {
             recentSignups: formattedRecentSignups,
             recentPesagens: formattedRecentPesagens
         });
-    } catch (error) {
+    } catch (error: unknown) {
         Logger.error('AdminService', 'Analytics Synchronization Failure: A critical exception occurred while compiling master dashboard statistics and user metrics.', error);
-        return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
     }
 });
