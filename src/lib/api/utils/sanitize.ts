@@ -32,7 +32,7 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
   }
 
   if (typeof obj === 'string') {
-    return sanitizeString(obj) as T;
+    return sanitizeString(obj) as unknown as T;
   }
 
   if (Array.isArray(obj)) {
@@ -42,7 +42,7 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
         : typeof item === 'string' 
           ? sanitizeString(item) 
           : item
-    ) as T;
+    ) as unknown as T;
   }
 
   if (typeof obj !== 'object') {
