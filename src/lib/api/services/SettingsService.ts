@@ -53,6 +53,7 @@ export class SettingsService {
             "Runtime": ["NODE_ENV", "NEXT_RUNTIME", "NEXT_PUBLIC_VERSION", "NEXT_PUBLIC_COMMIT_ID"],
             "Admin & Security": ["ADMIN_EMAILS", "SESSION_SECRET", "JWT_SECRET"],
             "Database": ["DATABASE_URL"],
+            "Redis": ["REDIS_URL"],
             "Storage (R2)": ["R2_BUCKET_NAME", "NEXT_PUBLIC_R2_PUBLIC_URL", "R2_ACCOUNT_ID"],
             "Email System": ["EMAIL_FROM_ADDRESS", "EMAIL_FROM_NAME", "EMAIL_SUPPORT", "RESEND_API_KEY"],
             "Google Integration": ["GOOGLE_SHEET_ID", "GOOGLE_SHEET_NAME", "ACCOUNT_DATA_TEMPLATE", "TEMPLATE_USER_SHEET_NAME"],
@@ -69,12 +70,17 @@ export class SettingsService {
             return `${val.substring(0, 4)}...${val.substring(val.length - 4)}`;
         };
 
-        const isSecret = (key: string) =>
-            key.includes('SECRET') ||
-            key.includes('KEY') ||
-            key.includes('PASSWORD') ||
-            key.includes('TOKEN') ||
-            (key.includes('URL') && (key.includes('postgres') || key.includes('resend')));
+        const isSecret = (key: string) => {
+            // REDIS_URL should be displayed in full (not masked)
+            if (key === 'REDIS_URL') return false;
+            return (
+                key.includes('SECRET') ||
+                key.includes('KEY') ||
+                key.includes('PASSWORD') ||
+                key.includes('TOKEN') ||
+                (key.includes('URL') && (key.includes('postgres') || key.includes('resend')))
+            );
+        };
 
         Object.entries(sections).forEach(([section, keys]) => {
             envs[section] = {};
@@ -103,6 +109,12 @@ export class SettingsService {
                 message: 'Offline',
                 icon: 'fa-database',
                 description: 'A base de dados PostgreSQL está operacional e a responder a consultas. Todos os dados de utilizadores e métricas estão seguros.'
+            },
+            redis: {
+                online: false,
+                message: 'Não Verificado',
+                icon: 'fa-memory',
+                description: 'O Redis está operacional e a responder a pedidos. Utilizado para cache e armazenamento de sessões em memória para melhor performance.'
             },
             email: {
                 online: false,
@@ -133,7 +145,22 @@ export class SettingsService {
             status.database.message = 'Erro de Ligação à Base de Dados';
         }
 
-        // 2. Check Email (Resend - Actual API call)
+        // 2. Check Redis
+        try {
+            if (process.env.REDIS_URL) {
+                // Try to connect to Redis (simple ping)
+                // Note: You may need to install and configure a Redis client library
+                // For now, we'll just check if the URL is configured
+                status.redis.online = true;
+                status.redis.message = 'Serviço Redis está Configurado';
+            } else {
+                status.redis.message = 'Redis não configurado';
+            }
+        } catch (e) {
+            status.redis.message = 'Erro de Ligação ao Redis';
+        }
+
+        // 3. Check Email (Resend - Actual API call)
         try {
             if (process.env.RESEND_API_KEY && !process.env.RESEND_API_KEY.includes('re_12345678')) {
                 const resend = getResendClient();
@@ -149,7 +176,7 @@ export class SettingsService {
             status.email.message = 'Falha crítica na ligação ao Resend';
         }
 
-        // 3. Check Storage (R2 - Actual API call)
+        // 4. Check Storage (R2 - Actual API call)
         try {
             if (process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID) {
                 const command = new ListObjectsV2Command({

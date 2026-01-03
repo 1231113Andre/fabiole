@@ -100,13 +100,18 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
         }
 
         // Prepare all records for bulk insert
+        // Fields that should remain as strings (not parsed to numbers)
+        const stringFields = new Set(['date', 'notas', 'notes', 'mile', 'mileResult']);
+        
         const records = allRows.map(record => {
-            const payload: Record<string, any> = { ...record };
+            const payload: Record<string, unknown> = { ...record };
             delete payload.id;
-            delete payload.overrides; // Remove overrides
+            delete payload.overrides;
+            
+            // Convert numeric fields
             Object.keys(payload).forEach(key => {
-                if (key !== 'date' && key !== 'notas' && key !== 'notes' && key !== 'mile' && key !== 'mileResult' && payload[key]) {
-                    const val = parseFloat(payload[key].toString());
+                if (!stringFields.has(key) && payload[key]) {
+                    const val = parseFloat(String(payload[key]));
                     if (!isNaN(val)) payload[key] = val;
                 }
             });

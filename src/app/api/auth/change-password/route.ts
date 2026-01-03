@@ -1,30 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/security/session';
-import { comparePassword, hashPassword } from '@/lib/security/password';
+import { hashPassword, validatePasswordStrength } from '@/lib/security/password';
 import { db } from '@/lib/db/client';
 import { Logger } from '@/lib/utils/logger';
+import { getAuthenticatedUser, verifyPasswordWithFallback } from '@/lib/auth/helpers';
 
 export async function POST(request: NextRequest) {
     try {
-        // Get session from cookie
-        const cookieStore = await cookies();
-        const sessionCookie = cookieStore.get('auth_session');
-
-        if (!sessionCookie) {
-            return NextResponse.json(
-                { success: false, error: 'Não autenticado' },
-                { status: 401 }
-            );
-        }
-
-        // Verify session
-        const session = await verifySession(sessionCookie.value);
-        if (!session || !session.email) {
-            return NextResponse.json(
-                { success: false, error: 'Sessão inválida' },
-                { status: 401 }
-            );
+        // Get authenticated user
+        const userResult = await getAuthenticatedUser();
+        if (userResult.response) {
+            return userResult.response;
         }
 
         const body = await request.json();
@@ -37,25 +22,21 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 1. Find user in Prisma
-        const userDB = await db.user.findUnique({
-            where: { email: session.email }
-        });
-
-        if (!userDB) {
+        // Validate new password strength
+        const passwordValidation = validatePasswordStrength(newPassword);
+        if (!passwordValidation.isValid) {
             return NextResponse.json(
-                { success: false, error: 'Utilizador não encontrado' },
-                { status: 404 }
+                { success: false, error: passwordValidation.error || 'Password não cumpre os requisitos' },
+                { status: 400 }
             );
         }
 
-        // 2. Verify current password
-        let isPasswordValid = await comparePassword(currentPassword, userDB.password);
-
-        // Fallback for legacy plain text passwords
-        if (!isPasswordValid) {
-            isPasswordValid = userDB.password === currentPassword;
-        }
+        // Verify current password
+        const isPasswordValid = await verifyPasswordWithFallback(
+            currentPassword,
+            userResult.user!.password,
+            userResult.user!.email
+        );
 
         if (!isPasswordValid) {
             return NextResponse.json(
@@ -64,14 +45,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 3. Update in Prisma
+        // Update password
         const hashedNewPassword = await hashPassword(newPassword);
         await db.user.update({
-            where: { id: userDB.id },
+            where: { id: userResult.user!.id },
             data: { password: hashedNewPassword }
         });
 
-        Logger.success('Security', `Password changed for: ${session.email}.`);
+        Logger.success('Security', `Password changed for: ${userResult.user!.email}.`);
 
         return NextResponse.json({
             success: true,

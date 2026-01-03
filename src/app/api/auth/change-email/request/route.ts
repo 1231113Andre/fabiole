@@ -5,8 +5,8 @@ import { z } from 'zod';
 import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware';
 import { VerificationCodeService } from '@/lib/email/VerificationCodeService';
 import { db } from '@/lib/db/client';
-import { comparePassword } from '@/lib/security/password';
 import { Logger } from '@/lib/utils/logger';
+import { verifyPasswordWithFallback, normalizeEmail } from '@/lib/auth/helpers';
 
 // Validation schema
 const requestChangeEmailSchema = z.object({
@@ -30,8 +30,8 @@ const handler = new BaseRouteHandler()
             };
 
             // 2. Normalize emails
-            const currentEmail = session.email.toLowerCase();
-            const nextEmail = newEmail.toLowerCase();
+            const currentEmail = normalizeEmail(session.email);
+            const nextEmail = normalizeEmail(newEmail);
 
             // Note: Flow control tracking for sensitive identity updates
             if (currentEmail === nextEmail) {
@@ -47,7 +47,11 @@ const handler = new BaseRouteHandler()
                 return ApiResponse.unauthorized("Utilizador não encontrado.");
             }
 
-            const isPasswordValid = await comparePassword(currentPassword, userDB.password);
+            const isPasswordValid = await verifyPasswordWithFallback(
+                currentPassword,
+                userDB.password,
+                userDB.email
+            );
             if (!isPasswordValid) {
                 return ApiResponse.unauthorized("Password incorreta.");
             }

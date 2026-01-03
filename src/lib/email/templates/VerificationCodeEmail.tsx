@@ -4,11 +4,41 @@
 import * as React from 'react';
 import { getCurrentYear } from '../../utils/date';
 
+type VerificationPurpose = 'registration' | 'password-reset' | 'email-change';
+
 interface VerificationCodeEmailProps {
   code: string;
   firstName?: string;
   expiryMinutes?: number;
+  purpose?: VerificationPurpose;
 }
+
+// Content based on purpose
+const PURPOSE_CONTENT: Record<VerificationPurpose, {
+  title: string;
+  description: string;
+  ctaText: string;
+  disclaimer: string;
+}> = {
+  'registration': {
+    title: 'Verification Code',
+    description: 'Use the code below to complete your registration<br/>and start your fitness journey with us.',
+    ctaText: 'Your Fitness Journey Starts Now!',
+    disclaimer: "If you didn't request this code, you can safely ignore this email.",
+  },
+  'password-reset': {
+    title: 'Password Reset',
+    description: 'Use the code below to reset your password<br/>and regain access to your account.',
+    ctaText: 'Secure Your Account',
+    disclaimer: "If you didn't request a password reset, you can safely ignore this email.",
+  },
+  'email-change': {
+    title: 'Email Verification',
+    description: 'Use the code below to confirm your new email address.',
+    ctaText: 'Verify Your New Email',
+    disclaimer: "If you didn't request this change, you can safely ignore this email.",
+  },
+};
 
 // Fabiole brand colors from globals.css
 const COLORS = {
@@ -29,7 +59,8 @@ const COLORS = {
  * Note: Logo removed due to email client limitations - using text logo instead
  */
 export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): string {
-  const { code, firstName = 'there', expiryMinutes = 10 } = props;
+  const { code, firstName = 'there', expiryMinutes = 10, purpose = 'registration' } = props;
+  const content = PURPOSE_CONTENT[purpose];
 
   return `
 <!DOCTYPE html>
@@ -38,7 +69,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Código de Verificação - Fabiole</title>
+  <title>${content.title} - Fabiole</title>
   <!--[if mso]>
   <style type="text/css">
     table, td, div, p { font-family: Arial, Helvetica, sans-serif !important; }
@@ -77,7 +108,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
           <tr>
             <td align="center" style="padding: 24px 48px 24px 48px;">
               <h2 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 2px;">
-                Verification Code
+                ${content.title}
               </h2>
               <div style="width: 60px; height: 3px; background: linear-gradient(90deg, #e6915b, #fb923c); margin: 16px auto 0 auto; border-radius: 2px;"></div>
             </td>
@@ -96,7 +127,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
           <tr>
             <td align="center" style="padding: 0 48px 32px 48px;">
               <p style="margin: 0; font-size: 15px; color: #8a99af; line-height: 1.7;">
-                Use the code below to complete your registration<br/>and start your fitness journey with us.
+                ${content.description}
               </p>
             </td>
           </tr>
@@ -129,7 +160,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
           <tr>
             <td align="center" style="padding: 0 48px 40px 48px;">
               <p style="margin: 0; font-size: 13px; color: #8a99af; line-height: 1.6;">
-                If you didn't request this code, you can safely ignore this email.
+                ${content.disclaimer}
               </p>
             </td>
           </tr>
@@ -141,7 +172,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
                 <tr>
                   <td align="center">
                     <p style="margin: 0; font-size: 14px; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 1px;">
-                      Your Fitness Journey Starts Now!
+                      ${content.ctaText}
                     </p>
                   </td>
                 </tr>

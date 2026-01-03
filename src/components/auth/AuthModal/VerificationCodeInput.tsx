@@ -22,6 +22,13 @@ export const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({
 }) => {
     const [values, setValues] = useState<string[]>(Array(length).fill(''));
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const hasCalledComplete = useRef(false);
+    const onCompleteRef = useRef(onComplete);
+
+    // Keep onComplete ref updated without triggering effects
+    useEffect(() => {
+        onCompleteRef.current = onComplete;
+    }, [onComplete]);
 
     // Focus first input on mount
     useEffect(() => {
@@ -30,13 +37,21 @@ export const VerificationCodeInput: React.FC<VerificationCodeInputProps> = ({
         }
     }, [autoFocus]);
 
-    // Check if code is complete
+    // Reset hasCalledComplete when error occurs (allow retry)
+    useEffect(() => {
+        if (error) {
+            hasCalledComplete.current = false;
+        }
+    }, [error]);
+
+    // Check if code is complete - only call once per complete code
     useEffect(() => {
         const code = values.join('');
-        if (code.length === length && values.every(v => v !== '')) {
-            onComplete(code);
+        if (code.length === length && values.every(v => v !== '') && !hasCalledComplete.current) {
+            hasCalledComplete.current = true;
+            onCompleteRef.current(code);
         }
-    }, [values, length, onComplete]);
+    }, [values, length]);
 
     const handleChange = useCallback((index: number, value: string) => {
         // Only accept digits

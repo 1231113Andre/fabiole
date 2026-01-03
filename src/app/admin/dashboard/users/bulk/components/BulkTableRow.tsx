@@ -1,6 +1,7 @@
 import React, { memo, useCallback } from "react";
 import { BulkRow, BulkType } from "./types";
 import { INPUT_CLASS, BOX_CLASS, getBmiClassColor, getFatClassColor, getDeltaPesoColor, formatDelta } from "./utils";
+import { parseNumber } from "@/lib/utils/bodyMetrics";
 
 interface BulkTableRowProps {
     row: BulkRow;
@@ -212,10 +213,9 @@ const PesagensRow = memo(function PesagensRow({
                             prefixIcon="fa-droplet"
                             iconColor="text-blue-400"
                             secondaryValue={(() => {
-                                if (!row.h2o || !row.peso) return null;
-                                const h2oVal = parseFloat(row.h2o.replace(',', '.'));
-                                const pesoVal = parseFloat(row.peso.replace(',', '.'));
-                                if (isNaN(h2oVal) || isNaN(pesoVal)) return null;
+                                const h2oVal = parseNumber(row.h2o);
+                                const pesoVal = parseNumber(row.peso);
+                                if (h2oVal === null || pesoVal === null) return null;
                                 const kgValue = ((h2oVal / 100) * pesoVal).toFixed(1);
                                 return (
                                     <span className="font-bold whitespace-nowrap">

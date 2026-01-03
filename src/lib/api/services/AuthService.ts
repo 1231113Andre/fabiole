@@ -4,6 +4,7 @@ import { comparePassword, hashPassword } from '@/lib/security/password';
 import { signSession } from '@/lib/security/session';
 import { randomUUID } from 'crypto';
 import { Logger } from '@/lib/utils/logger';
+import { verifyPasswordWithFallback } from '@/lib/auth/helpers';
 
 export interface UserResponse {
   name: string;
@@ -23,26 +24,24 @@ export class AuthService {
    * Login user
    */
   static async login(email: string, password: string): Promise<UserResponse> {
+    // Normalize email (lowercase + trim) for consistent lookups
+    const normalizedEmail = email.toLowerCase().trim();
+    
     // 1. Find user in Prisma
     const user = await db.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
       throw new Error('Invalid email or password');
     }
 
-    // 2. Verify password
-    let isPasswordValid = await comparePassword(password, user.password);
-
-    // Fallback for legacy plain text passwords from migration
-    // If bcrypt compare fails (because password is not hashed), try direct comparison
-    if (!isPasswordValid) {
-      isPasswordValid = user.password === password;
-      if (isPasswordValid) {
-        Logger.warn('AuthService', `Security Warning: User ${email} authenticated using legacy plain-text password. Migration recommended.`);
-      }
-    }
+    // 2. Verify password with fallback for legacy passwords
+    const isPasswordValid = await verifyPasswordWithFallback(
+      password,
+      user.password,
+      normalizedEmail
+    );
 
     if (!isPasswordValid) {
       throw new Error('Invalid email or password');
@@ -65,8 +64,11 @@ export class AuthService {
    * Register new user
    */
   static async register(userData: RegisterInput): Promise<UserResponse> {
+    // Normalize email for consistent lookups
+    const normalizedEmail = userData.email.toLowerCase().trim();
+    
     // 1. Check if user exists in DB
-    const existing = await db.user.findUnique({ where: { email: userData.email } });
+    const existing = await db.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {
       throw new Error('User with this email already exists');
     }
@@ -84,7 +86,7 @@ export class AuthService {
       data: {
         name: userData.name,
         surname: userData.surname,
-        email: userData.email,
+        email: normalizedEmail,
         password: hashedPassword,
         birth: birthDate,
         gender: userData.gender,

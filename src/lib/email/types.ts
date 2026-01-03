@@ -42,4 +42,4 @@ export interface SendVerificationEmailOptions {
 }
 
 export const VERIFICATION_CODE_EXPIRY_MINUTES = 10;
-export const MAX_VERIFICATION_ATTEMPTS = 3;
+export const MAX_VERIFICATION_ATTEMPTS = 5;

@@ -1,30 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/security/session';
-import { comparePassword } from '@/lib/security/password';
 import { db } from '@/lib/db/client';
 import { Logger } from '@/lib/utils/logger';
+import { getAuthenticatedUser, verifyPasswordWithFallback } from '@/lib/auth/helpers';
 
 export async function DELETE(request: NextRequest) {
     try {
-        // Get session from cookie
-        const cookieStore = await cookies();
-        const sessionCookie = cookieStore.get('auth_session');
-
-        if (!sessionCookie) {
-            return NextResponse.json(
-                { success: false, error: 'Não autenticado' },
-                { status: 401 }
-            );
-        }
-
-        // Verify session
-        const session = await verifySession(sessionCookie.value);
-        if (!session || !session.email) {
-            return NextResponse.json(
-                { success: false, error: 'Sessão inválida' },
-                { status: 401 }
-            );
+        // Get authenticated user
+        const userResult = await getAuthenticatedUser();
+        if (userResult.response) {
+            return userResult.response;
         }
 
         const body = await request.json();
@@ -37,20 +21,13 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        // 1. Find user in Prisma
-        const userDB = await db.user.findUnique({
-            where: { email: session.email }
-        });
+        // Verify password
+        const isPasswordValid = await verifyPasswordWithFallback(
+            password,
+            userResult.user!.password,
+            userResult.user!.email
+        );
 
-        if (!userDB) {
-            return NextResponse.json(
-                { success: false, error: 'Utilizador não encontrado' },
-                { status: 404 }
-            );
-        }
-
-        // 2. Verify password
-        const isPasswordValid = await comparePassword(password, userDB.password);
         if (!isPasswordValid) {
             return NextResponse.json(
                 { success: false, error: 'Password incorreta' },
@@ -58,9 +35,9 @@ export async function DELETE(request: NextRequest) {
             );
         }
 
-        // 3. Delete from Prisma
+        // Delete user
         await db.user.delete({
-            where: { id: userDB.id }
+            where: { id: userResult.user!.id }
         });
 
         // Clear session cookie
@@ -77,7 +54,7 @@ export async function DELETE(request: NextRequest) {
             path: '/',
         });
 
-        Logger.warn('Security', `Account Termination: User profile ${session.email} has been permanently deleted from the database registry.`);
+        Logger.warn('Security', `Account Termination: User profile ${userResult.user!.email} has been permanently deleted from the database registry.`);
 
         return response;
     } catch (error) {

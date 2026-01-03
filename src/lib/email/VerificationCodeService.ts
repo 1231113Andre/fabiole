@@ -1,6 +1,7 @@
 // src/lib/email/VerificationCodeService.ts
 // Service for generating, storing, and validating verification codes
 
+import { randomInt } from 'crypto';
 import {
     VerificationCode,
     VerificationResult,
@@ -22,16 +23,32 @@ declare global {
 const verificationCodes = globalThis.verificationCodesStore ?? new Map<string, VerificationCode>();
 globalThis.verificationCodesStore = verificationCodes;
 
+// Auto-cleanup: periodically clean expired codes (every 5 minutes)
+let cleanupInterval: NodeJS.Timeout | null = null;
+function startAutoCleanup() {
+    if (cleanupInterval) return; // Already started
+    
+    cleanupInterval = setInterval(() => {
+        VerificationCodeService.cleanupExpiredCodes();
+    }, 5 * 60 * 1000); // 5 minutes
+}
+
+// Start auto-cleanup if in Node.js environment
+if (typeof setInterval !== 'undefined') {
+    startAutoCleanup();
+}
+
 /**
  * Verification Code Service
  * Handles generation, storage, and validation of verification codes
  */
 export class VerificationCodeService {
     /**
-     * Generate a random 6-digit verification code
+     * Generate a cryptographically secure random 6-digit verification code
      */
     static generateCode(): string {
-        return Math.floor(100000 + Math.random() * 900000).toString();
+        // Using crypto.randomInt for cryptographically secure random numbers
+        return randomInt(100000, 1000000).toString();
     }
 
     /**
@@ -56,10 +73,27 @@ export class VerificationCodeService {
 
     /**
      * Get stored verification code for an email
+     * Lazy cleanup: removes expired codes on access for better performance
      */
     static getCode(email: string): VerificationCode | undefined {
         const normalizedEmail = email.toLowerCase().trim();
-        return verificationCodes.get(normalizedEmail);
+        const stored = verificationCodes.get(normalizedEmail);
+        
+        // Lazy cleanup: remove expired code if found
+        if (stored && new Date() > stored.expiresAt) {
+            verificationCodes.delete(normalizedEmail);
+            return undefined;
+        }
+        
+        return stored;
+    }
+
+    /**
+     * Delete a verification code for an email
+     */
+    static deleteCode(email: string): boolean {
+        const normalizedEmail = email.toLowerCase().trim();
+        return verificationCodes.delete(normalizedEmail);
     }
 
     /**
@@ -110,7 +144,8 @@ export class VerificationCodeService {
      */
     static async sendVerificationCode(
         email: string,
-        firstName?: string
+        firstName?: string,
+        purpose: 'registration' | 'password-reset' | 'email-change' = 'registration'
     ): Promise<{ success: boolean; error?: string }> {
         try {
             const normalizedEmail = email.toLowerCase().trim();
@@ -124,7 +159,7 @@ export class VerificationCodeService {
                     Logger.warn('Security', `Rate Limiting: Suppressing redundant verification request for ${normalizedEmail} to prevent spam/abuse.`);
                     return {
                         success: false,
-                        error: 'Please wait before requesting another code',
+                        error: 'Por favor, aguarda antes de solicitar outro código.',
                     };
                 }
             }
@@ -138,6 +173,7 @@ export class VerificationCodeService {
                 email: normalizedEmail,
                 code,
                 firstName,
+                purpose,
             });
 
             if (!result.success) {
@@ -179,5 +215,27 @@ export class VerificationCodeService {
             total: verificationCodes.size,
             expired,
         };
+    }
+
+    /**
+     * Clean up expired codes to prevent memory leaks
+     * Call this periodically (e.g., every 5 minutes)
+     */
+    static cleanupExpiredCodes(): number {
+        const now = new Date();
+        let cleaned = 0;
+
+        verificationCodes.forEach((code, email) => {
+            if (now > code.expiresAt) {
+                verificationCodes.delete(email);
+                cleaned++;
+            }
+        });
+
+        if (cleaned > 0) {
+            Logger.info('Security', `Cleanup: Removed ${cleaned} expired verification code(s). Active sessions: ${verificationCodes.size}.`);
+        }
+
+        return cleaned;
     }
 }

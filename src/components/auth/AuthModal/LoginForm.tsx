@@ -27,7 +27,12 @@ const formatTime = (seconds: number): string => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export const LoginForm = ({ onClose }: { onClose: () => void }) => {
+interface LoginFormProps {
+    onClose: () => void;
+    onForgotPassword?: () => void;
+}
+
+export const LoginForm = ({ onClose, onForgotPassword }: LoginFormProps) => {
     const router = useRouter();
     const { notify } = useNotification();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -132,7 +137,13 @@ export const LoginForm = ({ onClose }: { onClose: () => void }) => {
             />
             <div className="flex justify-between items-center text-sm">
                 <div></div>
-                <a href="/forgot-password" className="font-medium text-[var(--primary)] hover:underline cursor-pointer">Esqueceste a password?</a>
+                <button 
+                    type="button"
+                    onClick={onForgotPassword}
+                    className="font-semibold text-[var(--primary)] hover:text-[var(--primary-hover)] cursor-pointer bg-transparent border-none transition-colors"
+                >
+                    Esqueceste a password?
+                </button>
             </div>
             {errors.root?.serverError && (
                 <div className={cn(

@@ -20,7 +20,8 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             export PATH="$PATH:/root/.npm-global/bin:/usr/local/bin:$(npm bin -g 2>/dev/null)"
             cd /root/fabiole-app
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             npm install
             npx prisma generate
             npm run build

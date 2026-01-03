@@ -1,30 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { verifySession } from '@/lib/security/session';
-import { comparePassword } from '@/lib/security/password';
 import { db } from '@/lib/db/client';
 import { Logger } from '@/lib/utils/logger';
+import { getAuthenticatedUser, verifyPasswordWithFallback, normalizeEmail } from '@/lib/auth/helpers';
 
 export async function POST(request: NextRequest) {
     try {
-        // Get session from cookie
-        const cookieStore = await cookies();
-        const sessionCookie = cookieStore.get('auth_session');
-
-        if (!sessionCookie) {
-            return NextResponse.json(
-                { success: false, error: 'Não autenticado' },
-                { status: 401 }
-            );
-        }
-
-        // Verify session
-        const session = await verifySession(sessionCookie.value);
-        if (!session || !session.email) {
-            return NextResponse.json(
-                { success: false, error: 'Sessão inválida' },
-                { status: 401 }
-            );
+        // Get authenticated user
+        const userResult = await getAuthenticatedUser();
+        if (userResult.response) {
+            return userResult.response;
         }
 
         const body = await request.json();
@@ -37,8 +21,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 1. Check if new email is already in use (in Prisma)
-        const emailExists = await db.user.findUnique({ where: { email: newEmail.toLowerCase() } });
+        const normalizedNewEmail = normalizeEmail(newEmail);
+
+        // Check if new email is already in use
+        const emailExists = await db.user.findUnique({ where: { email: normalizedNewEmail } });
         if (emailExists) {
             return NextResponse.json(
                 { success: false, error: 'Este email já está registado' },
@@ -46,25 +32,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // 2. Find user in Prisma
-        const user = await db.user.findUnique({
-            where: session.uuid ? { id: session.uuid } : { email: session.email }
-        });
-
-        if (!user) {
-            return NextResponse.json(
-                { success: false, error: 'Utilizador não encontrado' },
-                { status: 404 }
-            );
-        }
-
-        // 3. Verify password
-        let passwordMatches = await comparePassword(password, user.password);
-
-        // Fallback for legacy plain text passwords
-        if (!passwordMatches) {
-            passwordMatches = user.password === password;
-        }
+        // Verify password
+        const passwordMatches = await verifyPasswordWithFallback(
+            password,
+            userResult.user!.password,
+            userResult.user!.email
+        );
 
         if (!passwordMatches) {
             return NextResponse.json(
@@ -73,15 +46,15 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const oldEmail = session.email;
+        const oldEmail = userResult.user!.email;
 
-        // 4. Update email in Prisma
+        // Update email
         await db.user.update({
-            where: { id: user.id },
-            data: { email: newEmail.toLowerCase() }
+            where: { id: userResult.user!.id },
+            data: { email: normalizedNewEmail }
         });
 
-        Logger.success('Security', `Identity Maintenance: Primary email successfully updated for profile ${user.id}. Mapping change: ${oldEmail} -> ${newEmail}.`);
+        Logger.success('Security', `Identity Maintenance: Primary email successfully updated for profile ${userResult.user!.id}. Mapping change: ${oldEmail} -> ${normalizedNewEmail}.`);
 
         // Clear session cookie to force re-login with new email
         const response = NextResponse.json({

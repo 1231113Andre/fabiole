@@ -7,6 +7,8 @@ import { VerificationCodeService } from '@/lib/email/VerificationCodeService';
 import { db } from '@/lib/db/client';
 import { AuthService } from '@/lib/api/services/AuthService';
 import { revalidatePath } from 'next/cache';
+import { normalizeEmail } from '@/lib/auth/helpers';
+import { Logger } from '@/lib/utils/logger';
 
 // Validation schema
 const verifyChangeEmailSchema = z.object({
@@ -29,8 +31,8 @@ const handler = new BaseRouteHandler()
                 newEmail: string;
             };
 
-            const currentEmail = session.email.toLowerCase();
-            const nextEmail = newEmail.toLowerCase();
+            const currentEmail = normalizeEmail(session.email);
+            const nextEmail = normalizeEmail(newEmail);
 
             // 2. Verify Code
             const verificationResult = VerificationCodeService.verifyCode(currentEmail, code);
@@ -57,7 +59,7 @@ const handler = new BaseRouteHandler()
                 uuid: session.uuid,
             };
 
-            console.log(`🔄 [ChangeEmailVerify] Creating new session cookie for: ${nextEmail}`);
+            Logger.info('Auth', `Creating new session cookie for email change: ${nextEmail}`);
             const sessionCookies = await AuthService.createSessionCookie(updatedUser);
 
             const response = ApiResponse.success({
@@ -67,7 +69,7 @@ const handler = new BaseRouteHandler()
 
             // Apply new cookies
             response.cookies = sessionCookies;
-            console.log(`✅ [ChangeEmailVerify] Session cookies prepared for: ${nextEmail}`);
+            Logger.success('Auth', `Email changed successfully for user: ${session.uuid}`);
 
             // Force re-render of SSR components (navbar, etc.)
             revalidatePath('/', 'layout');
@@ -76,7 +78,7 @@ const handler = new BaseRouteHandler()
             return response;
 
         } catch (error) {
-            console.error("[ChangeEmailVerify] Error:", error);
+            Logger.error('Auth', 'Error verifying email change', error);
             if (error instanceof Error) {
                 return ApiResponse.badRequest(error.message);
             }
