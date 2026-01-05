@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import Link from "next/link";
 import { AdminUser } from "@/app/admin/types";
 import { sortUsersAlphabetically } from "@/app/admin/helpers";
@@ -16,6 +16,7 @@ interface UserTableProps {
     users: AdminUser[];
     searchTerm: string;
     onSearchChange: (value: string) => void;
+    renderTitle?: (count: number, filteredUsers: AdminUser[]) => React.ReactNode;
 }
 
 // ============================================================================
@@ -33,11 +34,7 @@ function filterUsers(users: AdminUser[], searchTerm: string): AdminUser[] {
     );
 }
 
-// ============================================================================
-// COMPONENT
-// ============================================================================
-
-export const UserTable = memo<UserTableProps>(({ users, searchTerm, onSearchChange }) => {
+export const UserTable = memo<UserTableProps>(({ users, searchTerm, onSearchChange, renderTitle }) => {
     // Memoize filtered and sorted users for performance
     const filteredUsers = useMemo(() =>
         sortUsersAlphabetically(filterUsers(users, searchTerm))
@@ -48,11 +45,14 @@ export const UserTable = memo<UserTableProps>(({ users, searchTerm, onSearchChan
             {/* Header */}
             <div className="p-6 border-b border-gray-100 flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
-                        <i className="fa-duotone fa-users text-primary" />
-                        Todos os <span className="text-primary">{filteredUsers.length}</span> Utilizadores
-                    </h3>
-                    {filteredUsers.filter(u => u.role === 'ADMINISTRATOR').length > 0 && (
+                    {renderTitle ? renderTitle(filteredUsers.length, filteredUsers) : (
+                        <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                            <i className="fa-duotone fa-users text-primary" />
+                            Todos os <span className="text-primary">{filteredUsers.length}</span> Utilizadores
+                        </h3>
+                    )}
+
+                    {!renderTitle && filteredUsers.filter(u => u.role === 'ADMINISTRATOR').length > 0 && (
                         <Link
                             href="/"
                             className="text-sm text-gray-600 font-semibold ml-9 -mt-1 flex items-center gap-2 hover:text-primary transition-colors cursor-pointer w-fit"
@@ -65,7 +65,6 @@ export const UserTable = memo<UserTableProps>(({ users, searchTerm, onSearchChan
                 <SearchInput value={searchTerm} onChange={onSearchChange} />
             </div>
 
-            {/* User List */}
             <div className="divide-y divide-gray-100 max-h-[calc(100vh-300px)] overflow-y-auto">
                 {filteredUsers.length === 0 ? (
                     <EmptyState />

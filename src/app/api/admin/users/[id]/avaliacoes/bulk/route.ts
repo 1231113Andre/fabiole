@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeInt, sanitizeStringValue, getErrorMessage } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
-import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
+import { avaliacaoRepository } from "@/lib/db/repositories/AvaliacaoRepository";
+import type { CreateAvaliacaoDTO } from "@/lib/db/repositories/AvaliacaoRepository";
 
 interface AvaliacaoRecord {
     date: string;
@@ -33,28 +33,29 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
     }
 
     try {
-        const records = body.map((record: AvaliacaoRecord) => ({
-            user_uuid,
+        // Prepare all records for batch insert using repository DTO format
+        const records: CreateAvaliacaoDTO[] = body.map((record: AvaliacaoRecord) => ({
+            userId: user_uuid,
             date: new Date(record.date),
-            pushUps: sanitizeInt(record.pushUps),
-            sitUps: sanitizeInt(record.sitUps),
-            mile: sanitizeStringValue(record.mile),
-            mileResult: sanitizeStringValue(record.mileResult),
-            notes: sanitizeStringValue(record.notes),
+            pushUps: sanitizeInt(record.pushUps) ?? undefined,
+            sitUps: sanitizeInt(record.sitUps) ?? undefined,
+            mile: sanitizeStringValue(record.mile) ?? undefined,
+            mileResult: sanitizeStringValue(record.mileResult) ?? undefined,
+            notes: sanitizeStringValue(record.notes) ?? undefined,
         }));
 
-        const result = await db.avaliacaoFisica.createMany({
-            data: records,
-            skipDuplicates: false
-        });
+        // Use repository - automatically invalidates cache for all affected users
+        const result = await avaliacaoRepository.createMany(records);
 
-        // Invalidate caches
-        await invalidateUserCaches(user_uuid, { avaliacoes: true });
+        if (!result.success) {
+            Logger.error('Admin', `Failed to bulk create avaliacoes for user ${user_uuid}`, result.error);
+            return NextResponse.json({ error: 'Internal error', details: getErrorMessage(result.error) }, { status: 500 });
+        }
 
         return NextResponse.json({
             success: true,
-            count: result.count,
-            message: `${result.count} avaliacoes created successfully`
+            count: result.data,
+            message: `${result.data} avaliacoes created successfully`
         });
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to bulk create avaliacoes for user ${user_uuid}`, error);

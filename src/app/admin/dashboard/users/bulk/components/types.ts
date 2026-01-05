@@ -55,7 +55,9 @@ export const FIELD_LABELS: Record<string, string> = {
     thighR: 'Coxa Dir.',
     thighL: 'Coxa Esq.',
     pushUps: 'Flexões',
+    pushUpsResult: 'Res. Flexões',
     sitUps: 'Abdominais',
-    mile: 'Milha'
+    mile: 'Milha',
+    mileResult: 'Res. Milha'
 };
 

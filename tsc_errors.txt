@@ -1,0 +1,15 @@
+﻿src/app/admin/dashboard/users/[id]/components/avaliacoes/AvaliacoesTable.tsx(100,75): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/admin/dashboard/users/[id]/components/avaliacoes/AvaliacoesTable.tsx(104,75): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/admin/dashboard/users/[id]/page.tsx(40,28): error TS2322: Type 'AdminUserDetail' is not assignable to type 'UserData'.
+  Types of property 'avaliacoes' are incompatible.
+    Type '{ id: number; date: string; pushUps: number | null; sitUps: number | null; mile: string | null; mileResult: string | null; notes: string | null; }[]' is not assignable to type 'Avaliacao[]'.
+      Property 'pushUpsResult' is missing in type '{ id: number; date: string; pushUps: number | null; sitUps: number | null; mile: string | null; mileResult: string | null; notes: string | null; }' but required in type 'Avaliacao'.
+src/app/dashboard/components/AvaliacoesTab.tsx(46,58): error TS2339: Property 'pushUpsResult' does not exist on type 'AvaliacaoFisica'.
+src/app/dashboard/evaluations/components/EvaluationsClient.tsx(49,82): error TS2339: Property 'gender' does not exist on type 'PersonalInfo'.
+src/app/dashboard/evaluations/components/EvaluationsClient.tsx(50,81): error TS2339: Property 'birth' does not exist on type 'PersonalInfo'.
+src/app/dashboard/lib/transformers.ts(190,9): error TS2353: Object literal may only specify known properties, and 'gender' does not exist in type 'PersonalInfo'.
+src/lib/api/services/UserService.ts(104,13): error TS2739: Type '{ userName: string; userSurname: string; userEmail: string; userPhone: string; userBirth: string; trainingCredit: string; trainingsScheduled: string; debtValue: string; paid: string; q1: string; ... 8 more ...; avatarUrl: string | undefined; }' is missing the following properties from type 'PersonalInfo': gender, birth
+src/lib/api/services/UserService.ts(174,13): error TS2322: Type '{ date: string; pushUps: string; sitUps: string; mile: string; mileResult: string; notes: string; }[]' is not assignable to type 'AvaliacaoFisica[]'.
+  Property 'pushUpsResult' is missing in type '{ date: string; pushUps: string; sitUps: string; mile: string; mileResult: string; notes: string; }' but required in type 'AvaliacaoFisica'.

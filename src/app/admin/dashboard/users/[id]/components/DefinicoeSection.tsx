@@ -1,19 +1,52 @@
 "use client";
 
 import { useState } from "react";
+import { AccountStatusSection } from "./definicoes/AccountStatusSection";
 import { AdminChangePasswordSection } from "./definicoes/AdminChangePasswordSection";
 import { AdminChangeEmailSection } from "./definicoes/AdminChangeEmailSection";
 import { AdminDeleteAccountSection } from "./definicoes/AdminDeleteAccountSection";
+import { AccountStatus } from "@/app/admin/types";
 
 interface Props {
     userId: string;
     userEmail: string;
     userName: string;
+    status: string;
+    statusChangedBy?: string | null;
+    statusChangedAt?: string | null;
+    statusReason?: string | null;
+    userRole: string;
+    userCreatedAt?: string | Date;
+    userSurname?: string;
+    userGender?: string | null;
+    userDebt?: number;
+    userCredits?: number;
+    userScheduled?: number;
+    userPaid?: string;
     onEmailChanged: (newEmail: string) => void;
+    onStatusChanged: (newStatus: string) => void;
 }
 
-export function DefinicoeSection({ userId, userEmail, userName, onEmailChanged }: Props) {
-    const [activeSection, setActiveSection] = useState<string | null>("password");
+export function DefinicoeSection({
+    userId,
+    userEmail,
+    userName,
+    status,
+    statusChangedBy,
+    statusChangedAt,
+    statusReason,
+    userRole,
+    userCreatedAt,
+    userSurname,
+    userGender,
+    userDebt,
+    userCredits,
+    userScheduled,
+    userPaid,
+    onEmailChanged,
+    onStatusChanged
+}: Props) {
+    const [activeSection, setActiveSection] = useState<string | null>("status");
 
     return (
         <div className="space-y-6">
@@ -24,6 +57,27 @@ export function DefinicoeSection({ userId, userEmail, userName, onEmailChanged }
             <div className="custom-divider" />
 
             <div className="space-y-4">
+                <AccountStatusSection
+                    userId={userId}
+                    userName={userName}
+                    userSurname={userSurname}
+                    userEmail={userEmail}
+                    userRole={userRole}
+                    userCreatedAt={userCreatedAt}
+                    userGender={userGender}
+                    userDebt={userDebt}
+                    userCredits={userCredits}
+                    userScheduled={userScheduled}
+                    userPaid={userPaid}
+                    currentStatus={status}
+                    statusChangedBy={statusChangedBy}
+                    statusChangedAt={statusChangedAt}
+                    statusReason={statusReason}
+                    isOpen={activeSection === "status"}
+                    onToggle={() => setActiveSection(activeSection === "status" ? null : "status")}
+                    onStatusChanged={onStatusChanged}
+                />
+
                 <AdminChangePasswordSection
                     userId={userId}
                     isOpen={activeSection === "password"}

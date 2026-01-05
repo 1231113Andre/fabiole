@@ -3,6 +3,7 @@ import { hashPassword, validatePasswordStrength } from '@/lib/security/password'
 import { db } from '@/lib/db/client';
 import { Logger } from '@/lib/utils/logger';
 import { getAuthenticatedUser, verifyPasswordWithFallback } from '@/lib/auth/helpers';
+import { clearCachedAuthUser } from '@/lib/cache/userCache';
 
 export async function POST(request: NextRequest) {
     try {
@@ -51,6 +52,11 @@ export async function POST(request: NextRequest) {
             where: { id: userResult.user!.id },
             data: { password: hashedNewPassword }
         });
+
+        // Invalidate auth cache to enforce new password on next login
+        if (userResult.user?.email) {
+            await clearCachedAuthUser(userResult.user.email);
+        }
 
         Logger.success('Security', `Password changed for: ${userResult.user!.email}.`);
 

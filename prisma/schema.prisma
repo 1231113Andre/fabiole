@@ -38,6 +38,10 @@ model User {
   updatedAt          DateTime            @updatedAt @db.Timestamptz(6)
   role               String              @default("USER") @db.VarChar(20)
   avatarUrl          String?             @db.VarChar(512)
+  status             String              @default("ACTIVE") @db.VarChar(20)
+  statusChangedBy    String?             @db.VarChar(255)
+  statusChangedAt    DateTime?           @db.Timestamptz(6)
+  statusReason       String?             @db.Text
   avaliacoes         AvaliacaoFisica[]
   perimetros         PerimetroCorporal[]
   pesagens           Pesagem[]
@@ -94,16 +98,17 @@ model PerimetroCorporal {
 }
 
 model AvaliacaoFisica {
-  id         Int      @id @default(autoincrement())
-  date       DateTime @db.Date
-  pushUps    Int?
-  sitUps     Int?
-  mile       String?  @db.VarChar(20)
-  mileResult String?  @db.VarChar(50)
-  notes      String?
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  user_uuid  String   @map("user_uuid") @db.Uuid
-  user       User     @relation(fields: [user_uuid], references: [id], onDelete: Cascade)
+  id            Int      @id @default(autoincrement())
+  date          DateTime @db.Date
+  pushUps       Int?
+  sitUps        Int?
+  mile          String?  @db.VarChar(20)
+  mileResult    String?
+  pushUpsResult String?
+  notes         String?
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  user_uuid     String   @map("user_uuid") @db.Uuid
+  user          User     @relation(fields: [user_uuid], references: [id], onDelete: Cascade)
 
   @@index([user_uuid])
   @@index([user_uuid, date])

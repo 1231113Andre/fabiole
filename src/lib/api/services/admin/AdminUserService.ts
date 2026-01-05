@@ -28,6 +28,10 @@ export interface AdminUserDetail {
     paid: string;
     avatarUrl: string | null;
     updatedAt: string;
+    status: string;
+    statusChangedBy: string | null;
+    statusChangedAt: string | null;
+    statusReason: string | null;
     pesagens: Array<{
         id: number;
         date: string;
@@ -65,6 +69,7 @@ export interface AdminUserDetail {
         sitUps: number | null;
         mile: string | null;
         mileResult: string | null;
+        pushUpsResult: string | null;
         notes: string | null;
     }>;
 }
@@ -76,7 +81,7 @@ export class AdminUserService {
      */
     static async getAllUsers(): Promise<AdminUser[]> {
         // Check cache first
-        const cached = getAdminUsers<AdminUser[]>();
+        const cached = await getAdminUsers<AdminUser[]>();
         if (cached) {
             Logger.info('AdminUsers', 'Cache hit: returning cached user list');
             return cached;
@@ -97,6 +102,9 @@ export class AdminUserService {
                 trainingCredit: true,
                 trainingsScheduled: true,
                 debtValue: true,
+                status: true,
+                statusChangedBy: true,
+                statusChangedAt: true,
                 _count: {
                     select: {
                         pesagens: true,
@@ -123,11 +131,14 @@ export class AdminUserService {
             avaliacoesCount: u._count.avaliacoes,
             trainingCredit: u.trainingCredit ? Number(u.trainingCredit) : 0,
             trainingsScheduled: u.trainingsScheduled ?? 0,
-            debtValue: u.debtValue ? Number(u.debtValue) : 0
+            debtValue: u.debtValue ? Number(u.debtValue) : 0,
+            status: (u.status as 'ACTIVE' | 'SUSPENDED' | 'BANNED') || 'ACTIVE',
+            statusChangedBy: u.statusChangedBy ?? null,
+            statusChangedAt: u.statusChangedAt?.toISOString() ?? null
         }));
 
         // Cache for next requests
-        setAdminUsers(result);
+        await setAdminUsers(result);
 
         return result;
     }
@@ -138,7 +149,7 @@ export class AdminUserService {
      */
     static async getRecentSignups(limit: number = 5): Promise<RecentUser[]> {
         // Check cache first
-        const cached = getRecentSignups<RecentUser[]>();
+        const cached = await getRecentSignups<RecentUser[]>();
         if (cached) {
             Logger.info('AdminUsers', 'Cache hit: returning cached recent signups');
             return cached;
@@ -171,7 +182,7 @@ export class AdminUserService {
         }));
 
         // Cache for next requests
-        setRecentSignups(result);
+        await setRecentSignups(result);
 
         return result;
     }
@@ -182,7 +193,7 @@ export class AdminUserService {
      */
     static async getUserById(userId: string): Promise<AdminUserDetail | null> {
         // Check cache first
-        const cached = getAdminUserDetail<AdminUserDetail>(userId);
+        const cached = await getAdminUserDetail<AdminUserDetail>(userId);
         if (cached) {
             Logger.info('AdminUsers', `Cache hit: returning cached user detail for ${userId}`);
             return cached;
@@ -218,6 +229,10 @@ export class AdminUserService {
             paid: user.paid ?? 'PENDENTE',
             avatarUrl: user.avatarUrl,
             updatedAt: user.updatedAt.toISOString(),
+            status: user.status || 'ACTIVE',
+            statusChangedBy: user.statusChangedBy ?? null,
+            statusChangedAt: user.statusChangedAt?.toISOString() ?? null,
+            statusReason: user.statusReason ?? null,
             pesagens: user.pesagens.map(p => ({
                 id: p.id,
                 date: p.date.toISOString(),
@@ -255,12 +270,13 @@ export class AdminUserService {
                 sitUps: a.sitUps,
                 mile: a.mile,
                 mileResult: a.mileResult,
+                pushUpsResult: a.pushUpsResult,
                 notes: a.notes
             }))
         };
 
         // Cache for next requests
-        setAdminUserDetail(userId, result);
+        await setAdminUserDetail(userId, result);
 
         return result;
     }

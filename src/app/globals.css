@@ -288,3 +288,24 @@ body::-webkit-scrollbar-thumb:hover {
   margin: 1rem 0;
   opacity: 0.7;
 }
+
+/* Custom Checkbox */
+.custom-checkbox {
+  @apply appearance-none w-5 h-5 rounded border border-gray-300 bg-transparent cursor-pointer transition-all duration-200 ease-in-out relative flex items-center justify-center shrink-0;
+}
+
+.custom-checkbox:checked {
+  @apply bg-[var(--primary)] border-[var(--primary)];
+}
+
+.custom-checkbox::after {
+  content: "\f00c";
+  /* fa-check */
+  font-family: "Font Awesome 6 Pro";
+  font-weight: 900;
+  @apply text-white text-[12px] opacity-0 transform scale-50 transition-all duration-200 absolute;
+}
+
+.custom-checkbox:checked::after {
+  @apply opacity-100 scale-100;
+}

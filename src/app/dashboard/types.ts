@@ -18,6 +18,9 @@ export interface PersonalInfo {
     notes: string;
     age: string;
     avatarUrl?: string; // Properly added
+    surname?: string;
+    gender?: string;
+    birth?: string;
 }
 
 export interface Pesagem {
@@ -56,6 +59,7 @@ export interface PerimetroCorporal {
 export interface AvaliacaoFisica {
     date: string;
     pushUps: number;
+    pushUpsResult: string;
     sitUps: number;
     mile: string;
     mileResult: string;

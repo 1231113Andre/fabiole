@@ -4,6 +4,7 @@ import { hashPassword, validatePasswordStrength } from "@/lib/security/password"
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils/sanitizers";
+import { clearCachedAuthUser } from '@/lib/cache/userCache';
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -14,10 +15,9 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
         return NextResponse.json({ error: 'Nova password é obrigatória' }, { status: 400 });
     }
 
-    // Validate password strength using shared helper
-    const validation = validatePasswordStrength(newPassword);
-    if (!validation.isValid) {
-        return NextResponse.json({ error: validation.error }, { status: 400 });
+    // Validate password length (min 8 chars)
+    if (newPassword.length < 8) {
+        return NextResponse.json({ error: 'A password deve ter pelo menos 8 caracteres' }, { status: 400 });
     }
 
     try {
@@ -33,6 +33,9 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
             where: { id },
             data: { password: hashedPassword }
         });
+
+        // Invalidate auth cache
+        await clearCachedAuthUser(user.email);
 
         Logger.success('Security', `Administrative Credential Update: Password for User [${user.email}] has been changed by Admin [${session.email}].`);
 

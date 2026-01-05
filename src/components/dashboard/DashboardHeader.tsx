@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 
@@ -16,6 +16,7 @@ interface DashboardHeaderProps {
     lastRefreshTime?: Date;
     onLogout?: () => void;
     isLoggingOut?: boolean;
+    isCollapsed?: boolean; // Sidebar collapsed state for positioning
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -30,10 +31,18 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     lastRefreshTime,
     onLogout,
     isLoggingOut = false,
+    isCollapsed,
 }) => {
     const router = useRouter();
     const [showDropdown, setShowDropdown] = useState(false);
+    const [isDesktop, setIsDesktop] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return window.innerWidth >= 1024;
+        }
+        return false;
+    });
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const headerRef = useRef<HTMLElement>(null);
     const pathname = usePathname();
     const isAdminArea = pathname?.startsWith('/admin');
 
@@ -52,8 +61,44 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Track desktop/mobile breakpoint
+    useEffect(() => {
+        const checkDesktop = () => {
+            setIsDesktop(window.innerWidth >= 1024);
+        };
+        
+        window.addEventListener('resize', checkDesktop);
+        return () => window.removeEventListener('resize', checkDesktop);
+    }, []);
+
+    // Set header left position based on sidebar state (desktop only)
+    // Use useLayoutEffect to set position before paint to avoid flash
+    useLayoutEffect(() => {
+        if (!headerRef.current) return;
+        
+        const isCurrentlyDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+        
+        if (isCurrentlyDesktop) {
+            if (isCollapsed !== undefined) {
+                // Use prop value directly (both dashboards)
+                const sidebarWidth = isCollapsed ? '90px' : '290px';
+                headerRef.current.style.left = sidebarWidth;
+            } else {
+                // Use CSS variable as fallback
+                const sidebarWidth = getComputedStyle(document.documentElement).getPropertyValue('--sidebar-width') || '290px';
+                headerRef.current.style.left = sidebarWidth.trim() || '290px';
+            }
+        } else {
+            // Mobile: always start from left edge
+            headerRef.current.style.left = '0';
+        }
+    }, [isDesktop, isCollapsed]);
+
     return (
-        <header className="fixed top-0 left-0 right-0 lg:left-[var(--sidebar-width,290px)] h-[72px] bg-white shadow-sm z-[998] flex items-center px-6 transition-[left] duration-300 border-b border-transparent">
+        <header 
+            ref={headerRef}
+            className="fixed top-0 left-0 right-0 h-[72px] bg-white shadow-sm z-[998] flex items-center px-6 transition-[left] duration-300 border-b border-transparent"
+        >
             <div className="flex items-center gap-4">
                 {/* Mobile Menu Button */}
                 {/* Mobile Menu Button */}

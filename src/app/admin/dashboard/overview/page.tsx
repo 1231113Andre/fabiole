@@ -20,6 +20,7 @@ export default async function AdminOverview() {
         <>
             <AdminHeader
                 title="Visão Geral"
+                subtitle="Acompanhe estatísticas, métricas e atividades recentes do sistema"
                 icon="fa-grid-2"
             />
             <StatsCards stats={stats} />

@@ -13,7 +13,7 @@ import {
 interface UsePesagemFormProps {
     gender: string;
     userBirth?: Date | string | null; // For Watson H2O formula
-    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Pesagem) => Promise<void>;
+    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Pesagem, overrides?: string[]) => Promise<void>;
 }
 
 // Fields that are auto-calculated and can be manually overridden
@@ -205,7 +205,12 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await onSave(e, editingRecord?.id, editingRecord ? (editingRecord as Pesagem) : undefined);
+            await onSave(
+                e,
+                editingRecord?.id,
+                editingRecord ? (editingRecord as Pesagem) : undefined,
+                Array.from(manualOverrides)
+            );
             setIsModalOpen(false);
             setEditingRecord(null);
         } catch (err: any) {

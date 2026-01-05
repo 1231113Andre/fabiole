@@ -29,7 +29,7 @@ export class ApiResponse {
     details?: unknown
   ): ApiResponseType {
     const isProduction = process.env.NODE_ENV === 'production';
-    
+
     return {
       status,
       body: {
@@ -81,12 +81,12 @@ export class ApiResponse {
   /**
    * Create rate limit response
    */
-  static rateLimit(retryAfter?: number): ApiResponseType {
+  static rateLimit(retryAfter?: number, message: string = 'Too many requests'): ApiResponseType {
     return {
       status: 429,
       body: {
         success: false,
-        error: 'Too many requests',
+        error: message,
         retryAfter,
       },
       headers: {

@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from "react";
 import { BulkRow, BulkType } from "./types";
-import { INPUT_CLASS, BOX_CLASS, getBmiClassColor, getFatClassColor, getDeltaPesoColor, formatDelta } from "./utils";
+import { INPUT_CLASS, BOX_CLASS, getBmiClassColor, getFatClassColor, getDeltaPesoColor, formatDelta, getMileResultStyle } from "./utils";
 import { parseNumber } from "@/lib/utils/bodyMetrics";
 
 interface BulkTableRowProps {
@@ -287,9 +287,14 @@ const AvaliacoesRow = memo(function AvaliacoesRow({
     return (
         <>
             <td className="py-3 px-1 font-bold text-center"><RowInput type="number" value={row.pushUps || ''} onChange={(v) => onUpdate('pushUps', v)} className="text-center font-bold !text-gray-800" /></td>
+            <td className="py-3 px-1 text-center">
+                <ClassBadge value={row.pushUpsResult} colorFn={getMileResultStyle} />
+            </td>
             <td className="py-3 px-1 font-bold text-center"><RowInput type="number" value={row.sitUps || ''} onChange={(v) => onUpdate('sitUps', v)} className="text-center font-bold !text-gray-800" /></td>
             <td className="py-3 px-1 text-center"><RowInput type="text" value={row.mile || ''} onChange={(v) => onUpdate('mile', v)} className="text-center !text-gray-600" /></td>
-            <td className="py-3 px-1 text-center font-bold text-primary text-[10px]">{row.mileResult || '-'}</td>
+            <td className="py-3 px-1 text-center">
+                <ClassBadge value={row.mileResult} colorFn={getMileResultStyle} />
+            </td>
             <td className="py-3 px-1"><RowInput type="text" value={row.notes || ''} onChange={(v) => onUpdate('notes', v)} className="!text-gray-600" placeholder="..." /></td>
         </>
     );

@@ -1,49 +1,49 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { clearUserData } from "@/lib/cache/userCache";
-import { invalidateAdminUsers, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
+import { clearCachedAuthUser, clearUserData } from "@/lib/cache/userCache";
+import { invalidateAdminUsers, invalidateAdminUserDetail, invalidateAdminStats } from "@/lib/cache/adminCache";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
 import { toNumber, getErrorMessage } from "@/lib/utils/sanitizers";
+import { AdminUserService } from "@/lib/api/services/admin/AdminUserService";
 
 export const GET = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
 
     try {
-        const user = await db.user.findUnique({
-            where: { id },
-            include: {
-                pesagens: { orderBy: { date: 'desc' } },
-                perimetros: { orderBy: { date: 'desc' } },
-                avaliacoes: { orderBy: { date: 'desc' } }
-            }
-        });
+        // Use AdminUserService which has Redis cache (10s TTL)
+        const user = await AdminUserService.getUserById(id);
 
         if (!user) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
+        // Map AdminUserDetail to API response format (with toNumber helper for consistency)
         return NextResponse.json({
             id: user.id,
             name: user.name,
             surname: user.surname,
             email: user.email,
-            createdAt: user.createdAt.toISOString(),
-            updatedAt: user.updatedAt.toISOString(),
-            phone: user.phone || '',
-            birth: user.birth?.toISOString() || '',
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            phone: user.phone,
+            birth: user.birth,
             role: user.role,
-            gender: user.gender || '',
-            trainingCredit: Number(user.trainingCredit),
+            gender: user.gender,
+            trainingCredit: user.trainingCredit,
             trainingsScheduled: user.trainingsScheduled,
-            debtValue: Number(user.debtValue),
-            goals: user.goals || '',
-            notes: user.notes || '',
-            paid: user.paid || '-',
+            debtValue: user.debtValue,
+            goals: user.goals,
+            notes: user.notes,
+            paid: user.paid || '-', // Use '-' as default for API response
+            status: user.status,
+            statusChangedBy: user.statusChangedBy,
+            statusChangedAt: user.statusChangedAt,
+            statusReason: user.statusReason,
             avatarUrl: user.avatarUrl,
-            pesagens: user.pesagens.map((p: typeof user.pesagens[number]) => ({
+            pesagens: user.pesagens.map(p => ({
                 id: p.id,
-                date: p.date.toISOString(),
+                date: p.date,
                 peso: toNumber(p.peso),
                 percentualMG: toNumber(p.percentualMG),
                 mm: toNumber(p.mm),
@@ -57,9 +57,9 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
                 resultadoPercentMG: p.resultadoPercentMG,
                 notas: p.notas
             })),
-            perimetros: user.perimetros.map((p: typeof user.perimetros[number]) => ({
+            perimetros: user.perimetros.map(p => ({
                 id: p.id,
-                date: p.date.toISOString(),
+                date: p.date,
                 msRight: toNumber(p.msRight),
                 msRightFlex: toNumber(p.msRightFlex),
                 msLeft: toNumber(p.msLeft),
@@ -71,9 +71,9 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
                 thighR: toNumber(p.thighR),
                 thighL: toNumber(p.thighL)
             })),
-            avaliacoes: user.avaliacoes.map((a: typeof user.avaliacoes[number]) => ({
+            avaliacoes: user.avaliacoes.map(a => ({
                 id: a.id,
-                date: a.date.toISOString(),
+                date: a.date,
                 pushUps: a.pushUps,
                 sitUps: a.sitUps,
                 mile: a.mile,
@@ -107,7 +107,25 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         if (body.debtValue !== undefined) updateData.debtValue = body.debtValue ?? 0;
         if (body.goals !== undefined) updateData.goals = body.goals || null;
         if (body.notes !== undefined) updateData.notes = body.notes || null;
-        if (body.paid !== undefined) updateData.paid = body.paid;
+        if (body.paid !== undefined) {
+            updateData.paid = body.paid;
+            // When setting status to "PAGO" and debtValue is not being explicitly set to 0,
+            // automatically set debtValue to 0 to reduce "Receita Pendente"
+            if (body.paid === 'PAGO' && body.debtValue === undefined) {
+                // Fetch current user to get current debtValue
+                const currentUser = await db.user.findUnique({
+                    where: { id },
+                    select: { debtValue: true }
+                });
+                // If user has debt and we're not explicitly setting debtValue, set it to 0
+                if (currentUser && currentUser.debtValue) {
+                    const debtNum = toNumber(currentUser.debtValue);
+                    if (debtNum !== null && debtNum > 0) {
+                        updateData.debtValue = 0;
+                    }
+                }
+            }
+        }
         if (body.avatarUrl !== undefined) updateData.avatarUrl = body.avatarUrl || null;
 
         // Validate that at least one field is being updated
@@ -120,10 +138,14 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
             data: updateData
         });
 
-        // Clear caches
-        clearUserData(user.email);
-        invalidateAdminUserDetail(id);
-        invalidateAdminUsers();
+        // Clear caches in parallel for better performance
+        await Promise.all([
+            clearUserData(user.email),
+            clearCachedAuthUser(user.email), // Also clear auth cache so next login fetches fresh profile data
+            invalidateAdminUserDetail(id),
+            invalidateAdminUsers(),
+            invalidateAdminStats()
+        ]);
 
         return NextResponse.json({ success: true, user: { id: user.id, name: user.name } });
     } catch (error: unknown) {
@@ -146,12 +168,16 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
 
         await db.user.delete({ where: { id } });
 
-        // Clear caches
+        // Clear caches in parallel for better performance
+        const cachePromises: Promise<void>[] = [
+            invalidateAdminUserDetail(id),
+            invalidateAdminUsers(),
+            invalidateAdminStats()
+        ];
         if (user) {
-            clearUserData(user.email);
+            cachePromises.push(clearUserData(user.email));
         }
-        invalidateAdminUserDetail(id);
-        invalidateAdminUsers();
+        await Promise.all(cachePromises);
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {

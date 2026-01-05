@@ -116,6 +116,7 @@ export function transformAvaliacoes(rawAvaliacoes: SheetAvaliacao[]): AvaliacaoF
             sitUps: parseNumber(a.sitUps),
             mile: a.mile || "",
             mileResult: a.mileResult || "",
+            pushUpsResult: a.pushUpsResult || "",
             notes: a.notes || "",
         }))
         .filter((a) => a.pushUps > 0 || a.sitUps > 0 || a.mile)
@@ -168,7 +169,8 @@ export function calculateStats(
  */
 export function transformPersonalInfo(userData: UserSheetData, lastWeight?: number): PersonalInfo {
     return {
-        name: `${userData.personalInfo.userName} ${userData.personalInfo.userSurname}`,
+        name: userData.personalInfo.userName,
+        surname: userData.personalInfo.userSurname,
         email: userData.personalInfo.userEmail,
         birthDate: userData.personalInfo.userBirth,
         phone: userData.personalInfo.userPhone || "",
@@ -185,6 +187,8 @@ export function transformPersonalInfo(userData: UserSheetData, lastWeight?: numb
         q3: userData.personalInfo.q3 || "",
         q4: userData.personalInfo.q4 || "",
         age: userData.personalInfo.age || "",
+        gender: userData.personalInfo.gender || "masculino", // Default validation
+        birth: userData.personalInfo.userBirth || "", // Alias for userBirth
         avatarUrl: userData.personalInfo.avatarUrl || undefined,
     };
 }

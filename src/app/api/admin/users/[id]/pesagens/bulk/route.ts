@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeValue, sanitizeStringValue, getErrorMessage } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
-import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
+import { pesagemRepository } from "@/lib/db/repositories/PesagemRepository";
+import type { CreatePesagemDTO } from "@/lib/db/repositories/PesagemRepository";
 
 interface PesagemRecord {
     date: string;
@@ -42,37 +42,36 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
     }
 
     try {
-        // Prepare all records for batch insert
-        const records = body.map((record: PesagemRecord) => ({
-            user_uuid,
+        // Prepare all records for batch insert using repository DTO format
+        const records: CreatePesagemDTO[] = body.map((record: PesagemRecord) => ({
+            userId: user_uuid,
             date: new Date(record.date),
-            peso: sanitizeValue(record.peso),
-            height: sanitizeValue(record.height),
-            percentualMG: sanitizeValue(record.percentualMG),
-            mm: sanitizeValue(record.mm),
-            h2o: sanitizeValue(record.h2o),
-            imc: sanitizeValue(record.imc),
-            gordVisceral: sanitizeValue(record.gordVisceral),
-            idMetabolica: sanitizeValue(record.idMetabolica),
-            massaOssea: sanitizeValue(record.massaOssea),
-            resultadoIMC: sanitizeStringValue(record.resultadoIMC),
-            resultadoPercentMG: sanitizeStringValue(record.resultadoPercentMG),
-            notas: sanitizeStringValue(record.notas),
+            peso: sanitizeValue(record.peso) ?? undefined,
+            height: sanitizeValue(record.height) ?? undefined,
+            percentualMG: sanitizeValue(record.percentualMG) ?? undefined,
+            mm: sanitizeValue(record.mm) ?? undefined,
+            h2o: sanitizeValue(record.h2o) ?? undefined,
+            imc: sanitizeValue(record.imc) ?? undefined,
+            gordVisceral: sanitizeValue(record.gordVisceral) ?? undefined,
+            idMetabolica: sanitizeValue(record.idMetabolica) ?? undefined,
+            massaOssea: sanitizeValue(record.massaOssea) ?? undefined,
+            resultadoIMC: sanitizeStringValue(record.resultadoIMC) ?? undefined,
+            resultadoPercentMG: sanitizeStringValue(record.resultadoPercentMG) ?? undefined,
+            notas: sanitizeStringValue(record.notas) ?? undefined,
         }));
 
-        // Single batch insert - much faster than individual inserts
-        const result = await db.pesagem.createMany({
-            data: records,
-            skipDuplicates: false
-        });
+        // Use repository - automatically invalidates cache for all affected users
+        const result = await pesagemRepository.createMany(records);
 
-        // Invalidate caches
-        await invalidateUserCaches(user_uuid, { pesagens: true });
+        if (!result.success) {
+            Logger.error('Admin', `Failed to bulk create pesagens for user ${user_uuid}`, result.error);
+            return NextResponse.json({ error: 'Internal error', details: getErrorMessage(result.error) }, { status: 500 });
+        }
 
         return NextResponse.json({
             success: true,
-            count: result.count,
-            message: `${result.count} pesagens created successfully`
+            count: result.data,
+            message: `${result.data} pesagens created successfully`
         });
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to bulk create pesagens for user ${user_uuid}`, error);

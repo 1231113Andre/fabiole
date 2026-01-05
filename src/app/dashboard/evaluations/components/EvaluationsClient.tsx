@@ -44,7 +44,11 @@ export function EvaluationsClient({ initialData }: EvaluationsClientProps) {
             </div>
 
             {/* Content */}
-            <AvaliacoesTab avaliacoes={avaliacoes} />
+            <AvaliacoesTab
+                avaliacoes={avaliacoes}
+                gender={useDashboardData(initialData || undefined).personalInfo?.gender}
+                birth={useDashboardData(initialData || undefined).personalInfo?.birth}
+            />
         </>
     );
 }

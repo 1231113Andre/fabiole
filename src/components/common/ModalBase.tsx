@@ -122,7 +122,7 @@ export const ModalBase = ({ isOpen, onClose, children, title, titleId, size = 'm
                         <h2 id={titleId} className="text-xl font-bold">
                             {title}
                         </h2>
-                        <button ref={closeButtonRef} onClick={handleClose} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-2 rounded-full hover:bg-[var(--muted)]" aria-label="Close">
+                        <button ref={closeButtonRef} onClick={handleClose} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors p-2 rounded-full hover:bg-gray-500/15 cursor-pointer" aria-label="Close">
                             <i className="fa-solid fa-xmark fa-lg"></i>
                         </button>
                     </div>

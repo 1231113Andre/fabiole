@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
 import { Logger } from '@/lib/utils/logger';
 import { getAuthenticatedUser, verifyPasswordWithFallback } from '@/lib/auth/helpers';
+import { clearUserData, clearCachedAuthUser } from '@/lib/cache/userCache';
 
 export async function DELETE(request: NextRequest) {
     try {
@@ -39,6 +40,11 @@ export async function DELETE(request: NextRequest) {
         await db.user.delete({
             where: { id: userResult.user!.id }
         });
+
+        // Clear all caches for this user
+        // Ensure no stale data remains if user tries to register again or if session is hijacked
+        await clearUserData(userResult.user!.email);
+        await clearCachedAuthUser(userResult.user!.email);
 
         // Clear session cookie
         const response = NextResponse.json({

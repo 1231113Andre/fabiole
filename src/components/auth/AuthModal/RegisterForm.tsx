@@ -1,84 +1,81 @@
-// Plik: components/auth/AuthModal/RegisterForm.tsx
 "use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useCallback } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
-import { useNotification } from '@/components/NotificationContext';
-import { useRegister } from '@/lib/react-query/hooks/useAuth';
-import { getCsrfToken } from '@/lib/react-query/hooks/useCsrfToken';
-import NewButton from '@/app/components/newButton';
-import { cn } from '@/lib/utils';
 import { Input } from './Input';
+import NewButton from '@/app/components/newButton';
 import { LoadingSpinner } from '@/components/ui/spinner';
-import { VerificationCodeInput } from './VerificationCodeInput';
+import { useNotification } from '@/components/NotificationContext';
+import { getCsrfToken } from '@/lib/react-query/hooks/useCsrfToken';
 
-// Adapted Schema for Fabiole: firstName, lastName, email, password, birthDate
-const registerSchema = z.object({
-    firstName: z.string().min(2, 'First name is required'),
-    lastName: z.string().min(2, 'Last name is required'),
-    email: z.string().email('Please enter a valid email address.'),
-    password: z.string()
-        .min(8, 'Password must be at least 8 characters long.')
-        .refine((password) => /[A-Z]/.test(password), 'Password must contain at least one uppercase letter.')
-        .refine((password) => /[a-z]/.test(password), 'Password must contain at least one lowercase letter.')
-        .refine((password) => /[0-9]/.test(password), 'Password must contain at least one number.'),
-    birthDate: z.string().min(1, "Birth date is required"),
-    gender: z.enum(['Masculino', 'Feminino', 'Outro']),
-    terms: z.boolean().refine(val => val === true, {
-        message: 'You must agree to the terms of service.',
-    }),
-});
-type RegisterSchema = z.infer<typeof registerSchema>;
+// Import schemas
+import { registerSchema, type RegisterSchema } from './RegisterForm/schemas/registerSchema';
+
+// Import hooks
+import { useCodeTimer } from './RegisterForm/hooks/useCodeTimer';
+import { useVerificationCode } from './RegisterForm/hooks/useVerificationCode';
+
+// Import components
+import { VerificationStep } from './RegisterForm/components/VerificationStep';
+import { PersonalInfoFields } from './RegisterForm/components/PersonalInfoFields';
+import { PasswordField } from './RegisterForm/components/PasswordField';
+import { BirthDateGenderFields } from './RegisterForm/components/BirthDateGenderFields';
+import { TermsCheckbox } from './RegisterForm/components/TermsCheckbox';
 
 type Step = 'form' | 'verify';
 
-export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
-    const router = useRouter();
+interface RegisterFormProps {
+    onClose: () => void;
+}
+
+/**
+ * Create headers with CSRF token
+ */
+function createHeaders(): HeadersInit {
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+    };
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+    }
+    return headers;
+}
+
+/**
+ * Main registration form component
+ * Orchestrates the registration flow with form and verification steps
+ */
+export const RegisterForm = ({ onClose }: RegisterFormProps) => {
     const { notify } = useNotification();
-    const registerMutation = useRegister();
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [step, setStep] = useState<Step>('form');
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [verifyError, setVerifyError] = useState<string | undefined>();
     const [formData, setFormData] = useState<RegisterSchema | null>(null);
-    const [timeLeft, setTimeLeft] = useState(0);
+    const [timeLeft, startTimer] = useCodeTimer(60);
 
-    // Timer logic
-    useEffect(() => {
-        if (timeLeft <= 0) return;
-
-        const timerId = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
-        }, 1000);
-
-        return () => clearInterval(timerId);
-    }, [timeLeft]);
-
-    const { register, handleSubmit, formState: { errors }, setError, getValues } = useForm<RegisterSchema>({
+    const { register, handleSubmit, formState: { errors }, setError } = useForm<RegisterSchema>({
         resolver: zodResolver(registerSchema),
     });
 
-    // Step 1: Send verification code
-    const onSubmit: SubmitHandler<RegisterSchema> = async (data) => {
+    // Verification code hook
+    const {
+        isLoading: isVerificationLoading,
+        verifyError,
+        handleVerifyCode,
+        handleResend,
+    } = useVerificationCode({ formData, onClose });
+
+    // Handle form submission - send verification code
+    const onSubmit: SubmitHandler<RegisterSchema> = useCallback(async (data) => {
         setIsLoading(true);
         setFormData(data);
 
         try {
-            const csrfToken = getCsrfToken();
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json'
-            };
-            if (csrfToken) {
-                headers['X-CSRF-Token'] = csrfToken;
-            }
-
             const response = await fetch('/api/auth/send-verification', {
                 method: 'POST',
-                headers,
+                headers: createHeaders(),
                 body: JSON.stringify({
                     email: data.email,
                     firstName: data.firstName,
@@ -91,9 +88,8 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
                 throw new Error(result.error || 'Failed to send verification code');
             }
 
-            // Move to verification step
             setStep('verify');
-            setTimeLeft(60);
+            startTimer(60);
             notify('Verification code sent to your email!', 'success');
         } catch (error: any) {
             setError('root.serverError', {
@@ -103,273 +99,105 @@ export const RegisterForm = ({ onClose }: { onClose: () => void }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [setError, notify, startTimer]);
 
-    // Step 2: Verify code and complete registration
-    const handleVerifyCode = useCallback(async (code: string) => {
-        if (!formData) return;
+    // Handle verification code
+    const onVerifyCode = useCallback(async (code: string) => {
+        await handleVerifyCode(code);
+    }, [handleVerifyCode]);
 
-        setIsLoading(true);
-        setVerifyError(undefined);
+    // Handle resend code
+    const onResend = useCallback(async () => {
+        await handleResend();
+        startTimer(60);
+    }, [handleResend, startTimer]);
 
-        try {
-            const csrfToken = getCsrfToken();
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json'
-            };
-            if (csrfToken) {
-                headers['X-CSRF-Token'] = csrfToken;
-            }
-
-            // First verify the code
-            const verifyResponse = await fetch('/api/auth/verify-code', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    email: formData.email,
-                    code,
-                }),
-            });
-
-            const verifyResult = await verifyResponse.json();
-
-            if (!verifyResponse.ok || !verifyResult.success) {
-                throw new Error(verifyResult.error || 'Invalid verification code');
-            }
-
-            // Code verified! Now complete registration
-            await registerMutation.mutateAsync({
-                name: formData.firstName,
-                surname: formData.lastName,
-                email: formData.email,
-                password: formData.password,
-                birth: formData.birthDate,
-                gender: formData.gender,
-            });
-
-            // Success handled by hook (session update, notification)
-            onClose();
-            
-            // Redirect immediately for snappy UX
-            router.push("/dashboard");
-
-        } catch (error: any) {
-            setVerifyError(error.message || 'Verification failed');
-            setIsLoading(false);
-        }
-    }, [formData, notify, onClose, router]);
-
-    // Go back to form
-    const handleBack = () => {
+    // Handle back to form
+    const handleBack = useCallback(() => {
         setStep('form');
-        setVerifyError(undefined);
-    };
+    }, []);
 
-    // Resend code
-    const handleResend = async () => {
-        if (!formData) return;
+    // Toggle password visibility
+    const togglePasswordVisibility = useCallback(() => {
+        setIsPasswordVisible(prev => !prev);
+    }, []);
 
-        setIsLoading(true);
-        setVerifyError(undefined);
-
-        try {
-            const csrfToken = getCsrfToken();
-            const headers: HeadersInit = {
-                'Content-Type': 'application/json'
-            };
-            if (csrfToken) {
-                headers['X-CSRF-Token'] = csrfToken;
-            }
-
-            const response = await fetch('/api/auth/send-verification', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify({
-                    email: formData.email,
-                    firstName: formData.firstName,
-                }),
-            });
-
-            const result = await response.json();
-
-            if (!response.ok || !result.success) {
-                throw new Error(result.error || 'Failed to resend code');
-            }
-
-            notify('New code sent!', 'success');
-            setTimeLeft(60);
-        } catch (error: any) {
-            setVerifyError(error.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const passwordIcon = (
-        <button type="button" onClick={() => setIsPasswordVisible(p => !p)} className="text-[var(--muted-foreground)] hover:text-[var(--foreground)] cursor-pointer border-none bg-transparent">
-            <i className={cn("fa-solid fa-fw", isPasswordVisible ? "fa-eye-slash" : "fa-eye")} style={{ fontSize: 14 }}></i>
-        </button>
-    );
+    // Combined loading state
+    const isFormLoading = isLoading || isVerificationLoading;
 
     // Verification Step UI
-    if (step === 'verify') {
+    if (step === 'verify' && formData) {
         return (
-            <div className="space-y-6 py-4">
-                {/* Header */}
-                <div className="text-center space-y-2">
-                    <div className="w-16 h-16 mx-auto bg-[var(--primary)]/10 rounded-full flex items-center justify-center">
-                        <i className="fa-solid fa-envelope text-2xl text-[var(--primary)]" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-white">
-                        Check your email
-                    </h3>
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                        We sent a 6-digit code to<br />
-                        <span className="font-medium text-white">{formData?.email}</span>
-                    </p>
-                </div>
-
-                {/* Code Input */}
-                <VerificationCodeInput
-                    onComplete={handleVerifyCode}
-                    disabled={isLoading}
-                    error={verifyError}
-                />
-
-                {/* Loading indicator */}
-                {isLoading && (
-                    <div className="flex justify-center">
-                        <LoadingSpinner size="h-6 w-6" color="text-primary" />
-                    </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex flex-col gap-3 pt-2">
-                    <div className="flex justify-center">
-                        <NewButton
-                            onClick={handleResend}
-                            disabled={isLoading || timeLeft > 0}
-                            variant="new_destructive_no_bg_rounded"
-                            className="bg-transparent"
-                            h="10"
-                        >
-                            {timeLeft > 0 ? (
-                                `Resend code in ${timeLeft}s`
-                            ) : (
-                                "Didn't receive the code? Resend"
-                            )}
-                        </NewButton>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={handleBack}
-                        disabled={isLoading}
-                        className="text-sm text-[var(--muted-foreground)] hover:text-white disabled:opacity-50"
-                    >
-                        <i className="fa-solid fa-arrow-left mr-2" />
-                        Back to form
-                    </button>
-                </div>
-            </div>
+            <VerificationStep
+                email={formData.email}
+                isLoading={isVerificationLoading}
+                verifyError={verifyError}
+                timeLeft={timeLeft}
+                onVerifyCode={onVerifyCode}
+                onResend={onResend}
+                onBack={handleBack}
+            />
         );
     }
 
     // Registration Form UI
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
-            <div className="flex gap-2">
-                <Input
-                    id="firstName" label="First Name" type="text"
-                    registration={register('firstName')}
-                    placeholder="John"
-                    error={errors.firstName}
-                    disabled={isLoading} autoComplete="given-name"
-                    className="flex-1"
-                />
-                <Input
-                    id="lastName" label="Last Name" type="text"
-                    registration={register('lastName')}
-                    placeholder="Doe"
-                    error={errors.lastName}
-                    disabled={isLoading} autoComplete="family-name"
-                    className="flex-1"
-                />
-            </div>
+            <PersonalInfoFields
+                register={register}
+                errors={errors}
+                disabled={isFormLoading}
+            />
 
             <Input
-                id="email" label="Email address" type="email"
+                id="email"
+                label="Email address"
+                type="email"
                 registration={register('email')}
                 placeholder="mail@example.com"
                 error={errors.email}
-                disabled={isLoading} autoComplete="email"
+                disabled={isFormLoading}
+                autoComplete="email"
             />
-            <Input
-                id="password" label="Password"
-                type={isPasswordVisible ? 'text' : 'password'}
-                placeholder="********"
-                registration={register('password')}
-                error={errors.password}
-                disabled={isLoading}
-                autoComplete="new-password"
-                icon={passwordIcon}
-            />
-            <div className="flex gap-2">
-                <Input
-                    id="birthDate" label="Birth Date" type="date"
-                    registration={register('birthDate')}
-                    error={errors.birthDate}
-                    disabled={isLoading}
-                    className="flex-1"
-                />
-                <div className="flex-1 space-y-2">
-                    <label htmlFor="gender" className="block text-sm font-medium text-muted-foreground cursor-pointer">
-                        Género
-                    </label>
-                    <div className="relative">
-                        <select
-                            id="gender"
-                            className={cn(
-                                "block w-full rounded-lg border border-[var(--border)] bg-[var(--background)] py-3 px-4 text-[var(--foreground)] shadow-sm transition-colors duration-200",
-                                "focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]",
-                                "sm:text-sm sm:leading-6 font-montserrat appearance-none cursor-pointer",
-                                errors.gender && "border-[var(--destructive)] focus:border-[var(--destructive)] focus:ring-[var(--destructive)]"
-                            )}
-                            disabled={isLoading}
-                            {...register('gender')}
-                        >
-                            <option value="">Selecionar</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Feminino">Feminino</option>
-                            <option value="Outro">Outro</option>
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-[var(--muted-foreground)]">
-                            <i className="fa-solid fa-chevron-down text-xs"></i>
-                        </div>
-                    </div>
-                    {errors.gender && <p className="mt-1 text-xs text-destructive">{errors.gender.message}</p>}
-                </div>
-            </div>
 
-            <div>
-                <div className="flex items-start gap-3 mt-2">
-                    <input id="terms" type="checkbox" {...register('terms')} className="w-4 h-4 flex-shrink-0 mt-0.5 rounded border-[var(--border)] bg-[var(--muted)] text-[var(--primary)] focus:ring-[var(--primary)] focus:ring-offset-[var(--background)] cursor-pointer" disabled={isLoading} />
-                    <label htmlFor="terms" className="text-sm select-none text-[var(--muted-foreground)] cursor-pointer">
-                        I agree to the <a href="/terms" className="font-medium text-[var(--primary)] hover:underline">terms of service</a> and <a href="/privacy" className="font-medium text-[var(--primary)] hover:underline">privacy policy</a>.
-                    </label>
-                </div>
-                {errors.terms && <p className="mt-1 text-xs text-destructive">{errors.terms.message}</p>}
-            </div>
+            <PasswordField
+                register={register}
+                errors={errors}
+                isPasswordVisible={isPasswordVisible}
+                onToggleVisibility={togglePasswordVisibility}
+                disabled={isFormLoading}
+            />
+
+            <BirthDateGenderFields
+                register={register}
+                errors={errors}
+                disabled={isFormLoading}
+            />
+
+            <TermsCheckbox
+                register={register}
+                errors={errors}
+                disabled={isFormLoading}
+            />
+
             {errors.root?.serverError && (
-                <p className="text-sm text-center text-destructive font-medium">
+                <p className="text-sm text-center text-destructive font-medium whitespace-pre-line">
                     {errors.root.serverError.message}
                 </p>
             )}
-            <NewButton type="submit" h='12' variant='new_primary_rounded' className="w-full !py-3 !text-base !font-semibold" disabled={isLoading}>
-                {isLoading ? (
+
+            <NewButton
+                type="submit"
+                h="12"
+                variant="new_primary_rounded"
+                className="w-full !py-3 !text-base !font-semibold"
+                disabled={isFormLoading}
+            >
+                {isFormLoading ? (
                     <LoadingSpinner size="h-6 w-6" color="text-primary-foreground" />
                 ) : (
                     <>
-                        <i className="fa-duotone fa-user-plus mr-2"></i>
+                        <i className="fa-duotone fa-user-plus mr-2" />
                         Sign Up
                     </>
                 )}

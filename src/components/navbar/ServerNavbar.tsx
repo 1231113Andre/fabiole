@@ -21,6 +21,7 @@ interface User {
     name?: string;
     surname?: string;
     email?: string;
+    avatarUrl?: string;
 }
 
 /**
@@ -47,7 +48,8 @@ export default async function ServerNavbar() {
                 initialUser = {
                     name: payload.name as string,
                     surname: payload.surname as string,
-                    email: payload.email as string
+                    email: payload.email as string,
+                    avatarUrl: payload.avatarUrl as string | undefined
                 };
             }
         }

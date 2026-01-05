@@ -1,3 +1,5 @@
+import { AccountStatus } from "@/app/admin/types";
+
 export interface UserData {
     id: string;
     name: string;
@@ -15,6 +17,10 @@ export interface UserData {
     notes: string;
     paid: string | boolean;
     avatarUrl: string | null;
+    status: string;
+    statusChangedBy: string | null;
+    statusChangedAt: string | null;
+    statusReason: string | null;
     pesagens: Pesagem[];
     perimetros: Perimetro[];
     avaliacoes: Avaliacao[];
@@ -60,6 +66,7 @@ export interface Avaliacao {
     sitUps: number | null;
     mile: string | null;
     mileResult: string | null;
+    pushUpsResult: string | null;
     notes: string | null;
 }
 

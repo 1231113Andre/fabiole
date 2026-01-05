@@ -5,6 +5,8 @@ import { signSession } from '@/lib/security/session';
 import { randomUUID } from 'crypto';
 import { Logger } from '@/lib/utils/logger';
 import { verifyPasswordWithFallback } from '@/lib/auth/helpers';
+import { createSession, deleteSession, deleteAllUserSessions } from '@/lib/security/sessionStore';
+import { getCachedAuthUser, setCachedAuthUser } from '@/lib/cache/userCache';
 
 export interface UserResponse {
   name: string;
@@ -21,22 +23,45 @@ export interface UserResponse {
  */
 export class AuthService {
   /**
-   * Login user
+   * Login user with Redis caching
    */
   static async login(email: string, password: string): Promise<UserResponse> {
-    // Normalize email (lowercase + trim) for consistent lookups
     const normalizedEmail = email.toLowerCase().trim();
-    
-    // 1. Find user in Prisma
-    const user = await db.user.findUnique({
-      where: { email: normalizedEmail },
-    });
+
+    // 1. Try Cache First
+    type CachedUser = {
+      id: string;
+      email: string;
+      name: string;
+      surname: string;
+      password: string;
+      birth: Date | string | null;
+      avatarUrl: string | null;
+      status: string;
+      statusChangedBy: string | null;
+      statusChangedAt: Date | string | null;
+      statusReason: string | null;
+    };
+    let user = await getCachedAuthUser<CachedUser>(normalizedEmail);
+
+    if (!user) {
+      // 2. Fallback to DB
+      user = await db.user.findUnique({
+        where: { email: normalizedEmail },
+      });
+
+      if (user) {
+        // Cache the user record (including password hash) for future logins
+        // This avoids DB hits on every login
+        await setCachedAuthUser(normalizedEmail, user);
+      }
+    }
 
     if (!user) {
       throw new Error('Invalid email or password');
     }
 
-    // 2. Verify password with fallback for legacy passwords
+    // 2. Verify password (using cached or DB hash)
     const isPasswordValid = await verifyPasswordWithFallback(
       password,
       user.password,
@@ -47,12 +72,24 @@ export class AuthService {
       throw new Error('Invalid email or password');
     }
 
+    // 3. Check account status
+    if (user.status === 'SUSPENDED') {
+      const date = user.statusChangedAt ? new Date(user.statusChangedAt).toISOString() : '';
+      const reason = user.statusReason || '';
+      throw new Error(`ACCOUNT_SUSPENDED|${user.statusChangedBy || 'administrator'}|${date}|${reason}`);
+    }
+    if (user.status === 'BANNED') {
+      const date = user.statusChangedAt ? new Date(user.statusChangedAt).toISOString() : '';
+      const reason = user.statusReason || '';
+      throw new Error(`ACCOUNT_BANNED|${user.statusChangedBy || 'administrator'}|${date}|${reason}`);
+    }
+
     // 3. User Response
     const userResponse: UserResponse = {
       name: user.name,
       surname: user.surname,
       email: user.email,
-      birth: user.birth ? user.birth.toISOString() : '',
+      birth: user.birth instanceof Date ? user.birth.toISOString() : (user.birth || ''), // Handle String/Date/Null from JSON/DB
       avatarUrl: user.avatarUrl || undefined,
       uuid: user.id
     };
@@ -66,7 +103,7 @@ export class AuthService {
   static async register(userData: RegisterInput): Promise<UserResponse> {
     // Normalize email for consistent lookups
     const normalizedEmail = userData.email.toLowerCase().trim();
-    
+
     // 1. Check if user exists in DB
     const existing = await db.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {
@@ -106,8 +143,14 @@ export class AuthService {
 
   /**
    * Set session cookie with signed JWT
+   * Supports 'Remember Me' (30 days) vs Session (1 day)
    */
-  static async createSessionCookie(user: UserResponse): Promise<Array<{
+  static async createSessionCookie(
+    user: UserResponse,
+    userAgent?: string,
+    ipAddress?: string,
+    rememberMe: boolean = false
+  ): Promise<Array<{
     name: string;
     value: string;
     options: {
@@ -118,7 +161,11 @@ export class AuthService {
       path: string;
     };
   }>> {
-    const maxAge = 60 * 60 * 24 * 7; // 7 days
+    // Session duration constants
+    const SESSION_DEFAULT = 60 * 60 * 24 * 7;      // 7 days
+    const SESSION_REMEMBER_ME = 60 * 60 * 24 * 30; // 30 days
+
+    const maxAge = rememberMe ? SESSION_REMEMBER_ME : SESSION_DEFAULT;
 
     // Sign session with JWT
     const token = await signSession(
@@ -133,8 +180,14 @@ export class AuthService {
       maxAge
     );
 
+    // Store session in Redis for tracking
+    if (user.uuid) {
+      createSession(user.uuid, user.email, userAgent, ipAddress).catch((error) => {
+        Logger.error('AuthService', 'Failed to store session in Redis.', error);
+      });
+    }
+
     return [
-      // 1. Secure Session Cookie (HttpOnly) - for server-side auth
       {
         name: 'auth_session',
         value: token,
@@ -146,13 +199,11 @@ export class AuthService {
           path: '/',
         },
       },
-      // 2. Session Indicator Cookie (Not HttpOnly) - for client-side check
-      // This allows the client to know if a session exists without making a request
       {
         name: 'has_session',
         value: '1',
         options: {
-          httpOnly: false, // Accessible by JS
+          httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
           maxAge,
@@ -160,5 +211,15 @@ export class AuthService {
         },
       },
     ];
+  }
+
+  /**
+   * Force logout user from all devices
+   * Deletes all sessions from Redis
+   */
+  static async logoutAllDevices(userId: string): Promise<number> {
+    const deletedCount = await deleteAllUserSessions(userId);
+    Logger.info('AuthService', `Force logout: ${deletedCount} sessions deleted for user ${userId}.`);
+    return deletedCount;
   }
 }

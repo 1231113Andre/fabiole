@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 import { Avatar } from "./Avatar";
 import NewButton from "@/app/components/newButton";
 
@@ -91,9 +92,9 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
             toast.success("Avatar atualizado com sucesso!");
 
             // Directly update the session cache with the new avatarUrl
-            // This is more reliable than invalidateQueries because the browser
-            // may still send the old cookie until the page is refreshed
-            queryClient.setQueryData(['session'], (oldData: { authenticated: boolean; user?: { name: string; surname: string; email: string; birth: string; avatarUrl?: string } } | undefined) => {
+            // This ensures immediate UI update without race conditions
+            // No invalidateQueries needed - setQueryData provides immediate cache update
+            queryClient.setQueryData(queryKeys.session, (oldData: { authenticated: boolean; user?: { name: string; surname: string; email: string; birth: string; avatarUrl?: string } } | undefined) => {
                 if (!oldData?.user) return oldData;
                 return {
                     ...oldData,

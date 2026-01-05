@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useLogout } from "@/lib/react-query/hooks/useAuth";
 import { AdminSidebar } from "./components/AdminSidebar";
@@ -27,6 +27,34 @@ export default function AdminLayout({
     const pathname = usePathname();
     const logoutMutation = useLogout();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    // Initialize from cookie on mount
+    useEffect(() => {
+        const collapsed = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith("sidebar:collapsed="))
+            ?.split("=")[1];
+        if (collapsed === "true") {
+            setIsCollapsed(true);
+        }
+    }, []);
+
+    const toggleCollapse = useCallback(() => {
+        setIsCollapsed((prev) => {
+            const newState = !prev;
+            document.cookie = `sidebar:collapsed=${newState}; path=/; max-age=31536000; SameSite=Lax`;
+            return newState;
+        });
+    }, []);
+
+    const handleCloseSidebar = useCallback(() => {
+        setSidebarOpen(false);
+    }, []);
+
+    const handleToggleSidebar = useCallback(() => {
+        setSidebarOpen((prev) => !prev);
+    }, []);
 
     // Reuse dashboard data for user info (admin is also a user)
     const {
@@ -47,6 +75,20 @@ export default function AdminLayout({
         }
     }, [isLoading, isAuthenticated, router]);
 
+    // Memoize activeTab calculation
+    const activeTab = useMemo(() => getActiveTabFromPath(pathname), [pathname]);
+
+    // Memoize sidebar margin calculation
+    const sidebarMargin = useMemo(() => {
+        return isCollapsed ? "lg:ml-[90px]" : "lg:ml-[290px]";
+    }, [isCollapsed]);
+
+    // Set CSS variable for sidebar width dynamically
+    useEffect(() => {
+        const sidebarWidth = isCollapsed ? "90px" : "290px";
+        document.documentElement.style.setProperty("--sidebar-width", sidebarWidth);
+    }, [isCollapsed]);
+
     if (isLoading) {
         return (
             <div className="flex h-screen items-center justify-center bg-gray-50">
@@ -55,33 +97,35 @@ export default function AdminLayout({
         );
     }
 
-    const activeTab = getActiveTabFromPath(pathname);
-
     return (
         <div className="flex min-h-screen bg-gray-50 text-gray-900">
             {/* Admin Sidebar - uses Link prefetch for instant navigation */}
             <AdminSidebar
                 isOpen={sidebarOpen}
-                onClose={() => setSidebarOpen(false)}
+                onClose={handleCloseSidebar}
                 activeTab={activeTab}
                 userName={user?.name}
                 userSurname={user?.surname}
+                avatarUrl={user?.avatarUrl}
+                isCollapsed={isCollapsed}
+                onToggle={toggleCollapse}
             />
 
             {/* Header - Reusing DashboardHeader but styled for Admin context if needed */}
             {/* Note: DashboardHeader is fixed with proper z-index and checks sidebar width variable */}
             <DashboardHeader
-                onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+                onMenuClick={handleToggleSidebar}
                 userName={user?.name}
                 userSurname={user?.surname}
                 userEmail={user?.email}
                 avatarUrl={user?.avatarUrl}
                 onLogout={handleLogout}
                 isLoggingOut={logoutMutation.isPending}
+                isCollapsed={isCollapsed}
             />
 
             {/* Main Content */}
-            <main className="flex-1 ml-0 lg:ml-[var(--sidebar-width,290px)] mt-[72px] p-6 min-h-[calc(100vh-72px)] bg-gray-50 transition-[margin-left] duration-300">
+            <main className={`flex-1 ml-0 ${sidebarMargin} mt-[72px] p-6 min-h-[calc(100vh-72px)] bg-gray-50 transition-[margin-left] duration-300`}>
                 <div className="max-w-screen-2xl mx-auto">
                     {children}
                 </div>

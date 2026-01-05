@@ -17,7 +17,7 @@ export class AdminDashboardService {
      */
     static async getDashboardData(): Promise<AdminStatsData> {
         // Check cache for complete dashboard data
-        const cached = getAdminDashboardData<AdminStatsData>();
+        const cached = await getAdminDashboardData<AdminStatsData>();
         if (cached) {
             Logger.info('AdminDashboard', 'Cache hit: returning cached dashboard data');
             return cached;
@@ -34,7 +34,7 @@ export class AdminDashboardService {
         const result = { stats, users, recentSignups, recentPesagens };
 
         // Cache for next requests
-        setAdminDashboardData(result);
+        await setAdminDashboardData(result);
 
         return result;
     }
@@ -45,7 +45,7 @@ export class AdminDashboardService {
      */
     static async getRecentPesagens(limit: number = 5): Promise<RecentPesagem[]> {
         // Check cache first
-        const cached = getRecentPesagens<RecentPesagem[]>();
+        const cached = await getRecentPesagens<RecentPesagem[]>();
         if (cached) {
             Logger.info('AdminDashboard', 'Cache hit: returning cached recent pesagens');
             return cached;
@@ -82,7 +82,7 @@ export class AdminDashboardService {
         }));
 
         // Cache for next requests
-        setRecentPesagens(result);
+        await setRecentPesagens(result);
 
         return result;
     }

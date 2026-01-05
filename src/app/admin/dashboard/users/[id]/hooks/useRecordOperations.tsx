@@ -3,27 +3,30 @@ import { useAdminMutations } from "@/lib/react-query/hooks";
 
 interface UseRecordOperationsProps {
     userId: string;
-    fetchUser: () => Promise<void>; // Kept for interface compatibility but largely unused now
-    onLocalUpdate?: (endpoint: string, record: any, isDelete?: boolean) => void;
+    fetchUser: () => Promise<void>;
     setSuccess: (message: React.ReactNode | null) => void;
     setError: (message: string | null) => void;
     setSaving: (saving: boolean) => void;
 }
 
-export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setError, setSaving }: UseRecordOperationsProps) {
+export function useRecordOperations({ userId, fetchUser, setSuccess, setError, setSaving }: UseRecordOperationsProps) {
     const { saveRecord, bulkSave, deleteRecord } = useAdminMutations(userId, { showToasts: false });
 
     const handleSaveRecord = useCallback(async (
         endpoint: 'pesagens' | 'perimetros' | 'avaliacoes',
         e: React.FormEvent<HTMLFormElement>,
         editingId?: number,
-        originalData?: any
+        originalData?: any,
+        overrides?: string[]
     ) => {
         const formData = new FormData(e.currentTarget);
         const data = Object.fromEntries(formData.entries());
 
         // Simple numeric conversion
-        const payload: any = { ...data };
+        const payload: any = {
+            ...data,
+            manualOverrides: overrides || []
+        };
         Object.keys(payload).forEach(key => {
             if (key !== 'date' && key !== 'notas' && key !== 'notes' && key !== 'mile' && key !== 'mileResult' && payload[key]) {
                 if (key === 'resultadoIMC' || key === 'resultadoPercentMG') return;
@@ -37,17 +40,15 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
         setError(null);
 
         try {
-            const savedRecord = await saveRecord.mutateAsync({
+            await saveRecord.mutateAsync({
                 userId,
                 endpoint,
                 payload,
                 editingId
             });
 
-            // Local callback for non-React Query updates (if any parent still needs it)
-            if (onLocalUpdate) {
-                onLocalUpdate(endpoint, savedRecord);
-            }
+            // Single source of truth: refetch fresh data from server
+            await fetchUser();
 
             // Generate Diff Message
             const endpointNames: Record<string, string> = {
@@ -63,7 +64,7 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
                 const changes: { key: string; icon: string; old: any; new: any }[] = [];
 
                 // Fields to ignore in diff
-                const ignoredFields = ['id', 'userId', 'uuid', 'createdAt', 'updatedAt', 'notes', 'notas'];
+                const ignoredFields = ['id', 'userId', 'uuid', 'createdAt', 'updatedAt', 'notes', 'notas', 'manualOverrides'];
 
                 // Labels & Icons mapping
                 const fieldConfig: Record<string, { label: string; icon: string }> = {
@@ -162,7 +163,7 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
         } finally {
             setSaving(false);
         }
-    }, [saveRecord, userId, onLocalUpdate, setSuccess, setError, setSaving]);
+    }, [saveRecord, userId, fetchUser, setSuccess, setError, setSaving]);
 
     const handleBulkSave = useCallback(async (endpoint: 'pesagens' | 'perimetros' | 'avaliacoes', data: any[]) => {
         setSaving(true);
@@ -175,6 +176,7 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
                 if (typeof payload.id === 'string' && payload.id.startsWith('temp_')) {
                     delete payload.id;
                 }
+                // manualOverrides is already in the record from BulkAddModal, so it's preserved by the spread
                 return payload;
             });
 
@@ -184,6 +186,9 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
                 records
             });
 
+            // Single source of truth: refetch fresh data from server
+            await fetchUser();
+
             setSuccess(`${(result as any).count || records.length} registos adicionados com sucesso!`);
             setTimeout(() => setSuccess(null), 3000);
         } catch (err: any) {
@@ -191,22 +196,21 @@ export function useRecordOperations({ userId, onLocalUpdate, setSuccess, setErro
         } finally {
             setSaving(false);
         }
-    }, [bulkSave, userId, setSuccess, setError, setSaving]);
+    }, [bulkSave, userId, fetchUser, setSuccess, setError, setSaving]);
 
     const executeDelete = useCallback(async (endpoint: 'pesagens' | 'perimetros' | 'avaliacoes', id: number) => {
         try {
             await deleteRecord.mutateAsync({ userId, endpoint, id });
 
-            if (onLocalUpdate) {
-                onLocalUpdate(endpoint, { id }, true);
-            }
+            // Single source of truth: refetch fresh data from server
+            await fetchUser();
 
             setSuccess("Registo eliminado com sucesso");
             setTimeout(() => setSuccess(null), 3000);
         } catch (err: any) {
             setError("Erro: " + err.message);
         }
-    }, [deleteRecord, userId, onLocalUpdate, setSuccess, setError]);
+    }, [deleteRecord, userId, fetchUser, setSuccess, setError]);
 
     return {
         isDeleting: deleteRecord.isPending,

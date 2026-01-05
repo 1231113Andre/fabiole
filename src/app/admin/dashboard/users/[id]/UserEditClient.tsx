@@ -8,11 +8,8 @@ import { DeleteConfirmationModal } from "./components/DeleteConfirmationModal";
 import NewButton from "@/app/components/newButton";
 import { useUserEdit } from "./hooks/useUserEdit";
 import { useRecordOperations } from "./hooks/useRecordOperations";
-
-// Lazy load sections for better performance
-const PesagensSection = lazy(() =>
-    import("./components/PesagensSection").then(module => ({ default: module.PesagensSection }))
-);
+// Direct import for PesagensSection to ensure proper re-renders
+import { PesagensSection } from "./components/PesagensSection";
 const PerimetrosSection = lazy(() =>
     import("./components/PerimetrosSection").then(module => ({ default: module.PerimetrosSection }))
 );
@@ -51,37 +48,6 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
         handleSaveUser
     } = useUserEdit(userId, initialUser);
 
-    // Removed duplicate state declaration
-
-    const handleLocalUpdate = (endpoint: string, record: any, isDelete: boolean = false) => {
-        setUser(prev => {
-            const listKey = endpoint as keyof Pick<UserData, 'pesagens' | 'perimetros' | 'avaliacoes'>;
-            if (!prev[listKey]) return prev;
-
-            let newList: any[] = [...(prev[listKey] as any[])];
-
-            if (isDelete) {
-                newList = newList.filter(item => item.id !== record.id);
-            } else {
-                const index = newList.findIndex(item => item.id === record.id);
-                if (index >= 0) {
-                    newList[index] = record;
-                } else {
-                    // Add new record at the beginning (assuming desc order) or end?
-                    // Usually pesagens are sorted by date desc. 
-                    // Let's just prepend for visibility, or append?
-                    // PesagensTable sorts by date, so order in array doesn't matter strictly but prepending is safer for "recently added" feel if no sort.
-                    newList = [record, ...newList];
-                }
-            }
-
-            return {
-                ...prev,
-                [listKey]: newList
-            };
-        });
-    };
-
     const {
         isDeleting,
         handleSaveRecord,
@@ -89,8 +55,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
         executeDelete
     } = useRecordOperations({
         userId,
-        fetchUser, // Keeping fetchUser for backup/background sync
-        onLocalUpdate: handleLocalUpdate,
+        fetchUser,
         setSuccess,
         setError,
         setSaving
@@ -127,7 +92,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
         { id: 'pesagens', label: 'Pesagens', icon: 'fa-weight-scale', count: user.pesagens.length },
         { id: 'perimetros', label: 'Perímetros', icon: 'fa-ruler-combined', count: user.perimetros.length },
         { id: 'avaliacoes', label: 'Avaliações', icon: 'fa-dumbbell', count: user.avaliacoes.length },
-        { id: 'definicoes', label: 'Definições', icon: 'fa-gear' }
+        { id: 'definicoes', label: 'Definições', icon: 'fa-gear', count: 4 }
     ];
 
     return (
@@ -180,16 +145,14 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                 )}
 
                 {activeTab === 'pesagens' && (
-                    <Suspense fallback={<LoadingSection />}>
-                        <PesagensSection
-                            pesagens={user.pesagens}
-                            onSave={(e, id, originalRecord) => handleSaveRecord('pesagens', e, id, originalRecord)}
-                            onBulkSave={(data) => handleBulkSave('pesagens', data)}
-                            onDelete={(id) => handleDeleteRecord('pesagens', id, "Tem a certeza que deseja eliminar esta pesagem?")}
-                            gender={user.gender}
-                            userBirth={user.birth}
-                        />
-                    </Suspense>
+                    <PesagensSection
+                        pesagens={user.pesagens}
+                        onSave={(e, id, originalRecord) => handleSaveRecord('pesagens', e, id, originalRecord)}
+                        onBulkSave={(data) => handleBulkSave('pesagens', data)}
+                        onDelete={(id) => handleDeleteRecord('pesagens', id, "Tem a certeza que deseja eliminar esta pesagem?")}
+                        gender={user.gender}
+                        userBirth={user.birth}
+                    />
                 )}
 
                 {activeTab === 'perimetros' && (
@@ -210,6 +173,8 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                             onSave={(e, id, originalRecord) => handleSaveRecord('avaliacoes', e, id, originalRecord)}
                             onBulkSave={(data) => handleBulkSave('avaliacoes', data)}
                             onDelete={(id) => handleDeleteRecord('avaliacoes', id, "Tem a certeza que deseja eliminar esta avaliação?")}
+                            gender={user.gender}
+                            userBirth={user.birth}
                         />
                     </Suspense>
                 )}
@@ -219,8 +184,21 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                         <DefinicoeSection
                             userId={user.id}
                             userEmail={user.email}
-                            userName={`${user.name} ${user.surname}`}
-                            onEmailChanged={(newEmail) => setUser(prev => ({ ...prev, email: newEmail }))}
+                            userName={user.name || ''}
+                            userSurname={user.surname || ''}
+                            status={user.status || 'ACTIVE'}
+                            statusChangedBy={user.statusChangedBy}
+                            statusChangedAt={user.statusChangedAt}
+                            statusReason={user.statusReason}
+                            userRole={user.role}
+                            userCreatedAt={user.createdAt}
+                            userGender={user.gender}
+                            userDebt={user.debtValue}
+                            userCredits={user.trainingCredit}
+                            userScheduled={user.trainingsScheduled}
+                            userPaid={typeof user.paid === 'boolean' ? (user.paid ? 'PAGO' : 'PENDENTE') : (!user.paid || user.paid === '-' ? 'EM ANÁLISE' : user.paid)}
+                            onEmailChanged={(newEmail) => setUser({ ...user, email: newEmail })}
+                            onStatusChanged={(newStatus) => setUser({ ...user, status: newStatus, statusChangedAt: new Date().toISOString() })}
                         />
                     </Suspense>
                 )}

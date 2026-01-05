@@ -1,10 +1,18 @@
 /**
  * @fileoverview Pesagem (weight tracking) repository
- * @description Handles weight measurement CRUD operations
+ * @description Handles weight measurement CRUD operations with Redis caching
  */
 
 import { Pesagem, Prisma } from '@prisma/client';
 import { BaseRepository, Result, PaginationParams, PaginatedResult } from './BaseRepository';
+import { redisCache } from '@/lib/cache/redisCache';
+import {
+    getPesagemCacheKey,
+    invalidatePesagemUserCache,
+    REPOSITORY_CACHE_TTL
+} from '@/lib/cache/repositoryCache';
+import { invalidateAdminUserDetail } from '@/lib/cache/adminCache';
+import { clearUserData } from '@/lib/cache/userCache';
 
 /**
  * Pesagem creation DTO
@@ -53,7 +61,7 @@ export class PesagemRepository extends BaseRepository {
      */
     async create(data: CreatePesagemDTO): Promise<Result<Pesagem>> {
         return this.execute(async () => {
-            return this.db.pesagem.create({
+            const result = await this.db.pesagem.create({
                 data: {
                     user_uuid: data.userId,
                     date: data.date,
@@ -71,6 +79,21 @@ export class PesagemRepository extends BaseRepository {
                     notas: data.notas,
                 },
             });
+
+            // Invalidate cache for this user
+            await invalidatePesagemUserCache(data.userId);
+            await invalidateAdminUserDetail(data.userId);
+
+            // Also invalidate User Dashboard cache (requires email)
+            const user = await this.db.user.findUnique({
+                where: { id: data.userId },
+                select: { email: true }
+            });
+            if (user?.email) {
+                await clearUserData(user.email);
+            }
+
+            return result;
         });
     }
 
@@ -98,6 +121,30 @@ export class PesagemRepository extends BaseRepository {
                 })),
                 skipDuplicates: true,
             });
+
+            // Invalidate cache for all affected users
+            const uniqueUserIds = [...new Set(records.map(r => r.userId))];
+
+            // Fetch emails for these users to invalidate User Dashboard cache
+            const users = await this.db.user.findMany({
+                where: { id: { in: uniqueUserIds } },
+                select: { id: true, email: true }
+            });
+
+            await Promise.all(uniqueUserIds.map(async (userId) => {
+                const user = users.find(u => u.id === userId);
+                const promises: Promise<void>[] = [
+                    invalidatePesagemUserCache(userId),
+                    invalidateAdminUserDetail(userId)
+                ];
+
+                if (user?.email) {
+                    promises.push(clearUserData(user.email));
+                }
+
+                await Promise.all(promises);
+            }));
+
             return result.count;
         });
     }
@@ -110,12 +157,20 @@ export class PesagemRepository extends BaseRepository {
     }
 
     /**
-     * Find all pesagens for a user
+     * Find all pesagens for a user (with Redis cache)
      */
     async findByUser(
         userId: string,
         params: PaginationParams = {}
     ): Promise<PaginatedResult<Pesagem>> {
+        const cacheKey = getPesagemCacheKey(userId, 'list', params);
+
+        // Check Redis cache
+        const cached = await redisCache.get<PaginatedResult<Pesagem>>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
         const { skip, take } = this.buildPagination(params);
 
         const [items, total] = await Promise.all([
@@ -128,17 +183,35 @@ export class PesagemRepository extends BaseRepository {
             this.db.pesagem.count({ where: { user_uuid: userId } }),
         ]);
 
-        return this.buildPaginatedResult(items, total, params);
+        const result = this.buildPaginatedResult(items, total, params);
+
+        // Cache with TTL
+        await redisCache.set(cacheKey, result, REPOSITORY_CACHE_TTL.PESAGEM_LIST);
+
+        return result;
     }
 
     /**
-     * Find latest pesagem for user
+     * Find latest pesagem for user (with Redis cache)
      */
     async findLatest(userId: string): Promise<Pesagem | null> {
-        return this.db.pesagem.findFirst({
+        const cacheKey = getPesagemCacheKey(userId, 'latest');
+
+        // Check Redis cache
+        const cached = await redisCache.get<Pesagem | null>(cacheKey);
+        if (cached !== null) {
+            return cached;
+        }
+
+        const result = await this.db.pesagem.findFirst({
             where: { user_uuid: userId },
             orderBy: { date: 'desc' },
         });
+
+        // Cache with TTL (even null results are cached briefly to avoid DB hits)
+        await redisCache.set(cacheKey, result, REPOSITORY_CACHE_TTL.PESAGEM_LATEST);
+
+        return result;
     }
 
     /**
@@ -166,10 +239,33 @@ export class PesagemRepository extends BaseRepository {
      */
     async update(id: number, data: UpdatePesagemDTO): Promise<Result<Pesagem>> {
         return this.execute(async () => {
-            return this.db.pesagem.update({
+            // Get existing record to find userId for cache invalidation
+            const existing = await this.db.pesagem.findUnique({
+                where: { id },
+                select: { user_uuid: true }
+            });
+
+            const result = await this.db.pesagem.update({
                 where: { id },
                 data,
             });
+
+            // Invalidate cache for this user
+            if (existing) {
+                await invalidatePesagemUserCache(existing.user_uuid);
+                await invalidateAdminUserDetail(existing.user_uuid);
+
+                // Also invalidate User Dashboard cache (requires email)
+                const user = await this.db.user.findUnique({
+                    where: { id: existing.user_uuid },
+                    select: { email: true }
+                });
+                if (user?.email) {
+                    await clearUserData(user.email);
+                }
+            }
+
+            return result;
         });
     }
 
@@ -178,7 +274,28 @@ export class PesagemRepository extends BaseRepository {
      */
     async delete(id: number): Promise<Result<void>> {
         return this.execute(async () => {
+            // Get existing record to find userId for cache invalidation
+            const existing = await this.db.pesagem.findUnique({
+                where: { id },
+                select: { user_uuid: true }
+            });
+
             await this.db.pesagem.delete({ where: { id } });
+
+            // Invalidate cache for this user
+            if (existing) {
+                await invalidatePesagemUserCache(existing.user_uuid);
+                await invalidateAdminUserDetail(existing.user_uuid);
+
+                // Also invalidate User Dashboard cache (requires email)
+                const user = await this.db.user.findUnique({
+                    where: { id: existing.user_uuid },
+                    select: { email: true }
+                });
+                if (user?.email) {
+                    await clearUserData(user.email);
+                }
+            }
         });
     }
 
@@ -190,17 +307,39 @@ export class PesagemRepository extends BaseRepository {
             const result = await this.db.pesagem.deleteMany({
                 where: { user_uuid: userId },
             });
+
+            // Invalidate cache for this user
+            await invalidatePesagemUserCache(userId);
+            await invalidateAdminUserDetail(userId);
+
+            // Also invalidate User Dashboard cache (requires email)
+            const user = await this.db.user.findUnique({
+                where: { id: userId },
+                select: { email: true }
+            });
+            if (user?.email) {
+                await clearUserData(user.email);
+            }
+
             return result.count;
         });
     }
 
     /**
-     * Get weight progress (for charts)
+     * Get weight progress (for charts) (with Redis cache)
      */
     async getWeightProgress(
         userId: string,
         limit: number = 30
     ): Promise<{ date: Date; peso: number | null }[]> {
+        const cacheKey = getPesagemCacheKey(userId, 'progress', { limit });
+
+        // Check Redis cache
+        const cached = await redisCache.get<{ date: Date; peso: number | null }[]>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
         const records = await this.db.pesagem.findMany({
             where: { user_uuid: userId, peso: { not: null } },
             select: { date: true, peso: true },
@@ -208,10 +347,15 @@ export class PesagemRepository extends BaseRepository {
             take: limit,
         });
 
-        return records.map((r: typeof records[number]) => ({
+        const result = records.map((r: typeof records[number]) => ({
             date: r.date,
             peso: r.peso ? Number(r.peso) : null,
         }));
+
+        // Cache with TTL
+        await redisCache.set(cacheKey, result, REPOSITORY_CACHE_TTL.PESAGEM_PROGRESS);
+
+        return result;
     }
 }
 

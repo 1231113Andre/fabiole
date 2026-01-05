@@ -8,9 +8,14 @@ import { ChangeEmailSection } from "./components/ChangeEmailSection";
 import { DeleteAccountSection } from "./components/DeleteAccountSection";
 import { LoginHistorySection } from "./components/LoginHistorySection";
 import { ProfileAvatarSection } from "./components/ProfileAvatarSection";
+import { UserSheetData } from "@/lib/types/dashboard";
 
-export function SettingsClient() {
-    const { user } = useDashboardData();
+interface SettingsClientProps {
+    initialData?: UserSheetData;
+}
+
+export function SettingsClient({ initialData }: SettingsClientProps) {
+    const { user } = useDashboardData(initialData);
     const [activeSection, setActiveSection] = useState<string | null>("avatar");
 
     return (

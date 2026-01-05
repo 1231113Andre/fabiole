@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeValueForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
-import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
+import { perimetroRepository } from "@/lib/db/repositories/PerimetroRepository";
+import type { UpdatePerimetroDTO } from "@/lib/db/repositories/PerimetroRepository";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -29,18 +29,16 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
             return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
         }
 
-        const perimetro = await db.perimetroCorporal.update({
-            where: { id: Number(id) },
-            data: updateData,
-            include: { user: { select: { id: true, email: true } } }
-        });
+        // Use repository - automatically invalidates cache and returns fresh data
+        const result = await perimetroRepository.update(Number(id), updateData as UpdatePerimetroDTO);
 
-        // Invalidate caches
-        if (perimetro.user) {
-            await invalidateUserCaches(perimetro.user.id, { perimetros: true });
+        if (!result.success) {
+            Logger.error('Admin', `Failed to update perimetro ${id}`, result.error);
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
         }
 
-        return NextResponse.json(perimetro);
+        // Return fresh data (not from cache - repository already invalidated cache)
+        return NextResponse.json(result.data);
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to update perimetro ${id}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
@@ -51,23 +49,17 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
     const { id } = await params;
 
     try {
-        // Get user info before deleting
-        const perimetro = await db.perimetroCorporal.findUnique({
-            where: { id: Number(id) },
-            include: { user: { select: { id: true, email: true } } }
-        });
+        // Use repository - automatically invalidates cache
+        const result = await perimetroRepository.delete(Number(id));
 
-        if (!perimetro) {
-            return NextResponse.json({ error: 'Perimetro not found' }, { status: 404 });
-        }
-
-        await db.perimetroCorporal.delete({
-            where: { id: Number(id) }
-        });
-
-        // Invalidate caches
-        if (perimetro.user) {
-            await invalidateUserCaches(perimetro.user.id, { perimetros: true });
+        if (!result.success) {
+            // Check if it's a "not found" error
+            if (result.error.message?.includes('Record to delete does not exist') || 
+                result.error.message?.includes('not found')) {
+                return NextResponse.json({ error: 'Perimetro not found' }, { status: 404 });
+            }
+            Logger.error('Admin', `Failed to delete perimetro ${id}`, result.error);
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });

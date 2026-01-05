@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeValue, getErrorMessage } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
-import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
+import { perimetroRepository } from "@/lib/db/repositories/PerimetroRepository";
+import type { CreatePerimetroDTO } from "@/lib/db/repositories/PerimetroRepository";
 
 interface PerimetroRecord {
     date: string;
@@ -38,33 +38,34 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
     }
 
     try {
-        const records = body.map((record: PerimetroRecord) => ({
-            user_uuid,
+        // Prepare all records for batch insert using repository DTO format
+        const records: CreatePerimetroDTO[] = body.map((record: PerimetroRecord) => ({
+            userId: user_uuid,
             date: new Date(record.date),
-            msRight: sanitizeValue(record.msRight),
-            msRightFlex: sanitizeValue(record.msRightFlex),
-            msLeft: sanitizeValue(record.msLeft),
-            msLeftFlex: sanitizeValue(record.msLeftFlex),
-            chest: sanitizeValue(record.chest),
-            waist: sanitizeValue(record.waist),
-            abdomen: sanitizeValue(record.abdomen),
-            hips: sanitizeValue(record.hips),
-            thighR: sanitizeValue(record.thighR),
-            thighL: sanitizeValue(record.thighL),
+            msRight: sanitizeValue(record.msRight) ?? undefined,
+            msRightFlex: sanitizeValue(record.msRightFlex) ?? undefined,
+            msLeft: sanitizeValue(record.msLeft) ?? undefined,
+            msLeftFlex: sanitizeValue(record.msLeftFlex) ?? undefined,
+            chest: sanitizeValue(record.chest) ?? undefined,
+            waist: sanitizeValue(record.waist) ?? undefined,
+            abdomen: sanitizeValue(record.abdomen) ?? undefined,
+            hips: sanitizeValue(record.hips) ?? undefined,
+            thighR: sanitizeValue(record.thighR) ?? undefined,
+            thighL: sanitizeValue(record.thighL) ?? undefined,
         }));
 
-        const result = await db.perimetroCorporal.createMany({
-            data: records,
-            skipDuplicates: false
-        });
+        // Use repository - automatically invalidates cache for all affected users
+        const result = await perimetroRepository.createMany(records);
 
-        // Invalidate caches
-        await invalidateUserCaches(user_uuid, { perimetros: true });
+        if (!result.success) {
+            Logger.error('Admin', `Failed to bulk create perimetros for user ${user_uuid}`, result.error);
+            return NextResponse.json({ error: 'Internal error', details: getErrorMessage(result.error) }, { status: 500 });
+        }
 
         return NextResponse.json({
             success: true,
-            count: result.count,
-            message: `${result.count} perimetros created successfully`
+            count: result.data,
+            message: `${result.data} perimetros created successfully`
         });
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to bulk create perimetros for user ${user_uuid}`, error);

@@ -9,6 +9,7 @@ interface User {
     name?: string;
     surname?: string;
     email?: string;
+    avatarUrl?: string;
 }
 
 interface ClientAuthButtonsProps {
@@ -96,7 +97,7 @@ export default function ClientAuthButtons({ initialUser, mobile = false }: Clien
                 variant="new_primary_rounded"
                 iconPosition="left"
                 className="min-w-fit px-4 text-base font-bold"
-                icon={<i className="fa-duotone fa-user-tie text-lg"></i>}
+                icon={<i className="fa-duotone fa-chart-user text-lg ml-2"></i>}
             >
                 {displayName}
             </NewButton>

@@ -6,6 +6,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { db } from '../client';
+import { Logger } from '@/lib/utils/logger';
 
 /**
  * Generic result type for repository operations
@@ -54,8 +55,66 @@ export abstract class BaseRepository {
             const data = await operation();
             return { success: true, data };
         } catch (error) {
-            const { Logger } = require('@/lib/utils/logger');
             Logger.error('Database', `Operation failed in [${this.constructor.name}].`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error))
+            };
+        }
+    }
+
+    /**
+     * Execute operations within a database transaction
+     * All operations must succeed or all will be rolled back
+     * @param operations - Array of operations to execute in transaction
+     * @returns Result with array of operation results
+     */
+    protected async executeInTransaction<T extends readonly unknown[]>(
+        operations: ((tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0]) => Promise<T[number]>)[]
+    ): Promise<Result<T>> {
+        try {
+            const results = await this.db.$transaction(
+                async (tx) => {
+                    const results = await Promise.all(
+                        operations.map(op => op(tx))
+                    );
+                    return results as unknown as T;
+                },
+                {
+                    maxWait: 10000, // Maximum time to wait for a transaction slot
+                    timeout: 20000, // Maximum time the transaction can run
+                }
+            );
+            return { success: true, data: results };
+        } catch (error) {
+            Logger.error('Database', `Transaction failed in [${this.constructor.name}].`, error);
+            return {
+                success: false,
+                error: error instanceof Error ? error : new Error(String(error))
+            };
+        }
+    }
+
+    /**
+     * Execute a single operation within a database transaction
+     * Useful for operations that need atomicity
+     * @param operation - Operation to execute in transaction
+     * @returns Result with operation result
+     */
+    protected async executeTransaction<T>(
+        operation: (tx: Parameters<Parameters<PrismaClient['$transaction']>[0]>[0]) => Promise<T>
+    ): Promise<Result<T>> {
+        try {
+            const result = await this.db.$transaction(
+                operation,
+                {
+                    maxWait: 10000,
+                    timeout: 20000,
+                }
+            );
+            return { success: true, data: result };
+        } catch (error) {
+            Logger.error('Database', `Transaction failed in [${this.constructor.name}].`, error);
             return {
                 success: false,
                 error: error instanceof Error ? error : new Error(String(error))

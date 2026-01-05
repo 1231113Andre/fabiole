@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeValue, getErrorMessage } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
-import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
+import { perimetroRepository } from "@/lib/db/repositories/PerimetroRepository";
+import type { CreatePerimetroDTO } from "@/lib/db/repositories/PerimetroRepository";
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: user_uuid } = await params;
@@ -15,27 +15,31 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
     }
 
     try {
-        const perimetro = await db.perimetroCorporal.create({
-            data: {
-                user_uuid,
-                date: new Date(body.date),
-                msRight: sanitizeValue(body.msRight),
-                msRightFlex: sanitizeValue(body.msRightFlex),
-                msLeft: sanitizeValue(body.msLeft),
-                msLeftFlex: sanitizeValue(body.msLeftFlex),
-                chest: sanitizeValue(body.chest),
-                waist: sanitizeValue(body.waist),
-                abdomen: sanitizeValue(body.abdomen),
-                hips: sanitizeValue(body.hips),
-                thighR: sanitizeValue(body.thighR),
-                thighL: sanitizeValue(body.thighL),
-            }
-        });
+        // Use repository - automatically invalidates cache and returns fresh data
+        const createData: CreatePerimetroDTO = {
+            userId: user_uuid,
+            date: new Date(body.date),
+            msRight: sanitizeValue(body.msRight) ?? undefined,
+            msRightFlex: sanitizeValue(body.msRightFlex) ?? undefined,
+            msLeft: sanitizeValue(body.msLeft) ?? undefined,
+            msLeftFlex: sanitizeValue(body.msLeftFlex) ?? undefined,
+            chest: sanitizeValue(body.chest) ?? undefined,
+            waist: sanitizeValue(body.waist) ?? undefined,
+            abdomen: sanitizeValue(body.abdomen) ?? undefined,
+            hips: sanitizeValue(body.hips) ?? undefined,
+            thighR: sanitizeValue(body.thighR) ?? undefined,
+            thighL: sanitizeValue(body.thighL) ?? undefined,
+        };
 
-        // Invalidate caches
-        await invalidateUserCaches(user_uuid, { perimetros: true });
+        const result = await perimetroRepository.create(createData);
 
-        return NextResponse.json(perimetro);
+        if (!result.success) {
+            Logger.error('Admin', `Failed to create perimetro for user ${user_uuid}`, result.error);
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
+        }
+
+        // Return fresh data (not from cache - repository already invalidated cache)
+        return NextResponse.json(result.data);
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to create perimetro for user ${user_uuid}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });

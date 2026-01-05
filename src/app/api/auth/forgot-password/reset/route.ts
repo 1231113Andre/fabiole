@@ -5,11 +5,12 @@ import { hashPassword, validatePasswordStrength } from '@/lib/security/password'
 import { Logger } from '@/lib/utils/logger';
 import { checkRateLimit } from '@/lib/security/rateLimit';
 import { normalizeEmail } from '@/lib/auth/helpers';
+import { clearCachedAuthUser } from '@/lib/cache/userCache';
 
 export async function POST(request: NextRequest) {
     try {
         // Rate limiting: prevent brute-force password reset attempts
-        const rateLimitResult = checkRateLimit(request, {
+        const rateLimitResult = await checkRateLimit(request, {
             maxRequests: 3, // Max 3 password reset attempts per window
             windowMs: 30 * 60 * 1000, // 30 minutes
             message: 'Muitas tentativas de reset de password. Por favor, aguarda antes de tentar novamente.',
@@ -17,11 +18,11 @@ export async function POST(request: NextRequest) {
 
         if (!rateLimitResult.allowed) {
             return NextResponse.json(
-                { 
+                {
                     error: rateLimitResult.message || 'Muitas tentativas de reset de password. Por favor, aguarda antes de tentar novamente.',
-                    retryAfter: rateLimitResult.retryAfter 
+                    retryAfter: rateLimitResult.retryAfter
                 },
-                { 
+                {
                     status: 429,
                     headers: {
                         'Retry-After': String(rateLimitResult.retryAfter || 1800),
@@ -60,8 +61,8 @@ export async function POST(request: NextRequest) {
         }
 
         // Verify the code one final time and consume it
-        const verificationResult = VerificationCodeService.verifyCode(normalizedEmail, code);
-        
+        const verificationResult = await VerificationCodeService.verifyCode(normalizedEmail, code);
+
         if (!verificationResult.valid) {
             let errorMessage = 'Código inválido ou expirado';
             switch (verificationResult.error) {
@@ -103,6 +104,9 @@ export async function POST(request: NextRequest) {
             }
         });
 
+        // Invalidate auth cache
+        await clearCachedAuthUser(normalizedEmail);
+
         Logger.success('Auth', `Password reset successful for ${normalizedEmail}`);
 
         return NextResponse.json({
@@ -118,4 +122,3 @@ export async function POST(request: NextRequest) {
         );
     }
 }
-

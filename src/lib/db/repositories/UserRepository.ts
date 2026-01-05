@@ -6,6 +6,8 @@
 
 import { User, Prisma } from '@prisma/client';
 import { BaseRepository, Result, PaginationParams, PaginatedResult } from './BaseRepository';
+import { Logger } from '@/lib/utils/logger';
+import { clearUserData } from '@/lib/cache/userCache';
 
 /**
  * User creation data transfer object
@@ -145,12 +147,9 @@ export class UserRepository extends BaseRepository {
                 select: this.safeUserSelect(),
             });
 
-            // Clear cache for this user (by email)
-            import('@/lib/cache/userCache').then(({ clearUserData }) => {
-                const { Logger } = require('@/lib/utils/logger');
-                clearUserData(user.email);
-                Logger.info('Cache', `Stale data purge: Memory cache evicted for user ${user.email} following database update.`);
-            });
+            // Clear cache for this user (by email) - await to prevent race conditions
+            await clearUserData(user.email);
+            Logger.info('Cache', `Stale data purge: Memory cache evicted for user ${user.email} following database update.`);
 
             return user;
         });

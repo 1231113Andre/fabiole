@@ -44,7 +44,7 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
 
     try {
       // Check cache first (JWT verification is expensive)
-      const cachedPayload = getCachedSession<SessionPayload>(session.value);
+      const cachedPayload = await getCachedSession<SessionPayload>(session.value);
 
       if (cachedPayload) {
         // Check if session is expired
@@ -79,7 +79,7 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
 
       if (payload) {
         // Cache the result for future requests
-        setCachedSession(session.value, payload);
+        await setCachedSession(session.value, payload);
 
         // Check if session is expired
         if (isSessionExpired(payload)) {

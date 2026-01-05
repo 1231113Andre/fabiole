@@ -1,26 +1,57 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { UserData } from "../types";
-import { useAdminUser, useAdminMutations } from "@/lib/react-query/hooks";
+import { useAdminUser, useAdminMutations, queryKeys } from "@/lib/react-query/hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function useUserEdit(userId: string, initialUser: UserData) {
-    // 1. Fetch data with React Query (automatic caching & background updates)
-    const { data, refetch, error: queryError } = useAdminUser(userId, initialUser as any);
+    const queryClient = useQueryClient();
 
-    // 2. Local state for form editing
-    const [user, setUser] = useState<UserData>(initialUser);
+    // React Query - fetch fresh data, NO initialData to avoid stale cache issues
+    const { data, refetch, error: queryError, dataUpdatedAt } = useAdminUser(userId);
+
+    // Local state synced with React Query data
+    const [user, setLocalUser] = useState<UserData>(initialUser);
+
+    // Sync local state when React Query data updates
+    useEffect(() => {
+        if (data) {
+            console.log('[useUserEdit] Syncing from React Query data, dataUpdatedAt:', dataUpdatedAt);
+            setLocalUser(data as UserData);
+        }
+    }, [data, dataUpdatedAt]);
+
+    // UI state only
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<React.ReactNode | null>(null);
 
-    // 3. Sync local state when server data updates (e.g. background refetch)
-    // Only if we are not "dirty"? For admin dash, usually we want fresh data.
-    // Ideally we'd separate View vs Edit modes, but for now strict sync is safer.
-    useEffect(() => {
-        if (data) {
-            setUser(data as UserData);
-        }
-    }, [data]);
+    // Set user data for form editing
+    const setUser = useCallback((newUser: UserData) => {
+        setLocalUser(newUser);
+        // Also update cache for consistency
+        queryClient.setQueryData(queryKeys.adminUser(userId), newUser);
+    }, [queryClient, userId]);
 
-    // 4. Mutations
+    // Force refresh: invalidate cache + wait for DB + refetch
+    const forceRefresh = useCallback(async () => {
+        console.log('[useUserEdit] forceRefresh called');
+
+        // 1. Invalidate the query to mark it stale
+        await queryClient.invalidateQueries({ queryKey: queryKeys.adminUser(userId) });
+
+        // 2. Small delay to ensure DB write is committed
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+        // 3. Refetch fresh data - this should trigger useEffect
+        const result = await refetch();
+        console.log('[useUserEdit] refetch completed, data:', result.data);
+
+        // 4. Manually update local state with new data
+        if (result.data) {
+            setLocalUser(result.data as UserData);
+        }
+    }, [queryClient, userId, refetch]);
+
+    // Mutations
     const { updateUser } = useAdminMutations(userId, { showToasts: false });
 
     const handleSaveUser = useCallback(async () => {
@@ -30,14 +61,15 @@ export function useUserEdit(userId: string, initialUser: UserData) {
 
         try {
             await updateUser.mutateAsync({ userId, userData: user as any });
+            await forceRefresh();
             setSuccess("Utilizador guardado com sucesso!");
         } catch (err: any) {
             setError(err.message);
         }
-    }, [user, updateUser, userId]);
+    }, [user, updateUser, userId, forceRefresh]);
 
     return {
-        user: user || data || initialUser, // Fallback chain
+        user,
         setUser,
         saving: updateUser.isPending,
         setSaving: () => { }, // No-op, managed by mutation isPending
@@ -45,8 +77,7 @@ export function useUserEdit(userId: string, initialUser: UserData) {
         success,
         setError,
         setSuccess,
-        fetchUser: async () => { await refetch(); },
+        fetchUser: forceRefresh,
         handleSaveUser
     };
 }
-

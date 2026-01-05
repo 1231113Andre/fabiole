@@ -49,16 +49,16 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
     const [verificationCode, setVerificationCode] = useState('');
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isConfirmVisible, setIsConfirmVisible] = useState(false);
-    
+
     // Email step message (shown after sending code)
     const [emailStepMessage, setEmailStepMessage] = useState<{ type: 'info' | 'success' | 'error'; text: string } | null>(null);
-    
+
     // Resend cooldown state
     const [resendCooldown, setResendCooldown] = useState(0);
     const [resendMessage, setResendMessage] = useState<{ type: 'info' | 'success'; text: string } | null>(null);
     const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
     const resendMessageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-    
+
     // Verification error state (for code step)
     const [verifyError, setVerifyError] = useState<string | null>(null);
 
@@ -147,7 +147,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
         onSuccess: (data) => {
             // Always start/reset cooldown when code is successfully sent
             setResendCooldown(RESEND_COOLDOWN_SECONDS);
-            
+
             // Check current step to determine behavior
             setStep(currentStep => {
                 if (currentStep === 'email') {
@@ -166,7 +166,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                         clearTimeout(resendMessageTimeoutRef.current);
                         resendMessageTimeoutRef.current = null;
                     }
-                    
+
                     setResendMessage({
                         type: 'success',
                         text: 'Código reenviado com sucesso! Verifica o teu email.'
@@ -234,13 +234,13 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
     const onEmailSubmit: SubmitHandler<EmailSchema> = (data) => {
         // If cooldown is active, don't call API - just show message
         if (resendCooldown > 0) {
-            setEmailStepMessage({ 
-                type: 'info', 
-                text: `Aguarda <strong>${resendCooldown}</strong> segundo${resendCooldown !== 1 ? 's' : ''} antes de solicitar outro código.` 
+            setEmailStepMessage({
+                type: 'info',
+                text: `Aguarda <strong>${resendCooldown}</strong> segundo${resendCooldown !== 1 ? 's' : ''} antes de solicitar outro código.`
             });
             return;
         }
-        
+
         setEmailStepMessage(null); // Clear previous messages
         setEmail(data.email);
         sendCodeMutation.mutate(data.email);
@@ -262,7 +262,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
 
     const resendCode = () => {
         if (resendCooldown > 0) return; // Guard - don't call API during cooldown
-        
+
         // Use the same mutation - onSuccess handles both email step and code step
         sendCodeMutation.mutate(email);
     };
@@ -283,7 +283,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
     // Step 1: Email Input
     if (step === 'email') {
         const isSendDisabled = resendCooldown > 0 || sendCodeMutation.isPending;
-        
+
         return (
             <div className="space-y-4">
                 <div className="text-center mb-4">
@@ -309,7 +309,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
 
                     {/* Error message */}
                     {emailStepMessage && emailStepMessage.type === 'error' && (
-                        <div className="text-sm text-center font-medium p-3 rounded-lg border bg-red-500/10 text-red-400 border-red-500/30">
+                        <div className="text-sm text-center font-medium p-3 rounded-lg border bg-red-500/10 text-red-400 border-red-500/30 whitespace-pre-line">
                             <i className="fa-duotone fa-circle-exclamation mr-2"></i>
                             {emailStepMessage.text}
                         </div>
@@ -384,7 +384,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
     // Step 2: Verification Code
     if (step === 'code') {
         const isResendDisabled = resendCooldown > 0 || sendCodeMutation.isPending;
-        
+
         return (
             <div className="space-y-4">
                 {/* Success message from sending code */}
@@ -420,8 +420,8 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                 {resendMessage && (
                     <div className={cn(
                         "text-sm text-center p-3 rounded-lg border font-semibold",
-                        resendMessage.type === 'success' 
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
+                        resendMessage.type === 'success'
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                             : "bg-boxdark text-bodydark2 border-strokedark"
                     )}>
                         {resendMessage.type === 'success' && (
@@ -441,8 +441,8 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                         disabled={isResendDisabled}
                         className={cn(
                             "text-sm font-bold cursor-pointer transition-all",
-                            isResendDisabled 
-                                ? "text-[var(--muted-foreground)] cursor-not-allowed" 
+                            isResendDisabled
+                                ? "text-[var(--muted-foreground)] cursor-not-allowed"
                                 : "text-primary hover:text-primary/80"
                         )}
                     >
@@ -553,7 +553,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                     </div>
 
                     {passwordForm.formState.errors.root?.serverError && (
-                        <div className="text-sm text-center font-medium p-3 rounded-lg text-destructive">
+                        <div className="text-sm text-center font-medium p-3 rounded-lg text-destructive whitespace-pre-line">
                             {passwordForm.formState.errors.root.serverError.message}
                         </div>
                     )}

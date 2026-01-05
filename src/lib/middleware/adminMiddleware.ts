@@ -1,21 +1,16 @@
-import { db } from '@/lib/db/client';
+/**
+ * @fileoverview Admin middleware for page-level protection
+ * @description Uses consolidated adminAuth for admin checks
+ */
+
 import { verifySession } from '@/lib/security/session';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-/**
- * Check if email belongs to an admin (User with role = ADMINISTRATOR)
- */
-export async function isAdminEmail(email: string): Promise<boolean> {
-    const user = await db.user.findUnique({
-        where: { email },
-        select: { role: true }
-    });
-    return user?.role === 'ADMINISTRATOR';
-}
+import { isAdmin } from '@/lib/cache/roleCache';
 
 /**
  * Check if current user is an administrator
+ * Uses cached role lookup for performance
  * @returns User info if admin, redirects to dashboard if not
  */
 export async function requireAdmin() {
@@ -27,16 +22,18 @@ export async function requireAdmin() {
     }
 
     const session = await verifySession(sessionCookie.value);
-    if (!session || !session.email) {
+    if (!session || !session.email || !session.uuid) {
         redirect('/');
     }
 
-    const isAdmin = await isAdminEmail(session.email);
-    if (!isAdmin) {
+    // Use cached role check
+    const isAdminUser = await isAdmin(session.uuid);
+    if (!isAdminUser) {
         redirect('/dashboard');
     }
 
     return { email: session.email, name: session.name };
 }
 
-
+// Re-export from consolidated module for backwards compatibility
+export { isAdminEmail, checkAdmin, checkAdminFast } from '@/lib/api/utils/adminAuth';

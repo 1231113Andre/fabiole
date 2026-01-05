@@ -15,6 +15,8 @@ export interface PersonalInfo {
     goals: string;
     notes: string;
     age: string;
+    gender: string;
+    birth: string;
     // Legacy fields
     notas?: string;
     inicio?: string;
@@ -54,6 +56,7 @@ export interface PerimetroCorporal {
 export interface AvaliacaoFisica {
     date: string;
     pushUps: string;
+    pushUpsResult: string;
     sitUps: string;
     mile: string;
     mileResult: string;

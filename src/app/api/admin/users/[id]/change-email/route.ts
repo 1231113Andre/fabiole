@@ -3,6 +3,8 @@ import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils/sanitizers";
+import { clearUserData, clearCachedAuthUser } from "@/lib/cache/userCache";
+import { invalidateAdminUsers, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -37,6 +39,21 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
             where: { id },
             data: { email: newEmail }
         });
+
+        // Clear caches for OLD and NEW email
+        // Critical: Must remove old email key so login with old email fails (hits DB, finds nothing)
+        await clearUserData(user.email);
+        await clearCachedAuthUser(user.email);
+
+        // Clear new email just in case garbage exists
+        await clearUserData(newEmail);
+        await clearCachedAuthUser(newEmail);
+
+        // Invalidate admin caches
+        await Promise.all([
+            invalidateAdminUserDetail(id),
+            invalidateAdminUsers()
+        ]);
 
         Logger.success('Security', `Administrative Identity Maintenance: Email address for User ID [${user.id}] has been updated by Admin [${session.email}]. Change mapping: ${user.email} -> ${newEmail}.`);
 

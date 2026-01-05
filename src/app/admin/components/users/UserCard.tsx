@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AdminUser } from "@/app/admin/types";
 import { Avatar } from "@/components/Avatar";
 import { getRoleInlineStyles } from "@/app/admin/constants/roleConfig";
+import { getStatusConfig } from "@/app/admin/constants/statusConfig";
 import { StatBadge } from "./StatBadge";
 import { calculateAge } from "@/lib/utils/bodyMetrics";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -40,6 +41,7 @@ export const UserCard = memo<UserCardProps>(({ user }) => {
             ? new Date(user.createdAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })
             : null
         , [user.createdAt]);
+    const statusConfig = useMemo(() => getStatusConfig(user.status), [user.status]);
 
     return (
         <Link
@@ -77,6 +79,15 @@ export const UserCard = memo<UserCardProps>(({ user }) => {
                                 <span className="font-bold text-primary">{formattedCreatedAt}</span>
                             </p>
                         )}
+                        {/* Account Status Badge */}
+                        <p className="text-xs font-semibold flex items-center gap-1.5 mt-0.5">
+                            <i className="fa-duotone fa-user-tag text-gray-400 text-xs" />
+                            <span className="text-gray-500">Status da conta:</span>
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${statusConfig.badgeBg} ${statusConfig.badgeText}`}>
+                                <i className={`fa-duotone ${statusConfig.icon}`} />
+                                {statusConfig.badgeLabel}
+                            </span>
+                        </p>
                     </div>
                 </div>
 

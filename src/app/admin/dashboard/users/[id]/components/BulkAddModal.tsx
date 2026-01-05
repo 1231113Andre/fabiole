@@ -171,9 +171,16 @@ export function BulkAddModal({ isOpen, onClose, type, onSave, isSubmitting }: Bu
 
         if (validRows.length === 0) return;
 
-        await onSave(validRows);
+        // Attach manual overrides to each row
+        const rowsWithOverrides = validRows.map(row => {
+            const overrides = rowOverrides[row.id] ? Array.from(rowOverrides[row.id]) : [];
+            return { ...row, manualOverrides: overrides };
+        });
+
+        await onSave(rowsWithOverrides);
         setPages({ 0: [{ id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0] }] });
         setCurrentPage(0);
+        setRowOverrides({});
     };
 
     const inputClass = "w-full px-2 py-2 text-xs border border-gray-200 rounded focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all";

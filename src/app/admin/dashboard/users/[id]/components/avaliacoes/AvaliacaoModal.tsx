@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Avaliacao } from "../../types";
 import { formatDateForInput } from "../../utils";
 import NewButton from "@/app/components/newButton";
+import { classifyMileResult, classifyPushUps, calculateAge, getMileResultStyle } from "@/lib/utils/bodyMetrics";
 
 // Inline spinner component
 const InlineSpinner = () => (
@@ -18,6 +19,8 @@ interface AvaliacaoModalProps {
     isSubmitting?: boolean;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     onClose: () => void;
+    gender?: string;
+    userBirth?: string;
 }
 
 function FormInput({
@@ -28,6 +31,9 @@ function FormInput({
     defaultValue,
     placeholder,
     required,
+    onChange,
+    readOnly,
+    extra
 }: {
     label: string;
     icon: string;
@@ -36,6 +42,9 @@ function FormInput({
     defaultValue: any;
     placeholder?: string;
     required?: boolean;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    readOnly?: boolean;
+    extra?: React.ReactNode;
 }) {
     return (
         <div>
@@ -43,14 +52,19 @@ function FormInput({
                 <i className={`fa-duotone ${icon} text-primary/70 text-[10px]`}></i>
                 {label} {required && <span className="text-red-500">*</span>}
             </label>
-            <input
-                type={type}
-                name={name}
-                defaultValue={defaultValue || ''}
-                placeholder={placeholder}
-                required={required}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-            />
+            <div className="relative">
+                <input
+                    type={type}
+                    name={name}
+                    defaultValue={defaultValue || ''}
+                    placeholder={placeholder}
+                    required={required}
+                    onChange={onChange}
+                    readOnly={readOnly}
+                    className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all ${readOnly ? 'bg-gray-50 text-gray-500' : ''}`}
+                />
+                {extra}
+            </div>
         </div>
     );
 }
@@ -61,8 +75,74 @@ export const AvaliacaoModal: React.FC<AvaliacaoModalProps> = ({
     error,
     isSubmitting = false,
     onSubmit,
-    onClose
+    onClose,
+    gender,
+    userBirth
 }) => {
+    const [mileTime, setMileTime] = useState(editingRecord?.mile || "");
+    const [mileResult, setMileResult] = useState(editingRecord?.mileResult || "");
+    const [pushUpsCount, setPushUpsCount] = useState<string>(editingRecord?.pushUps?.toString() || "");
+    const [pushUpsResult, setPushUpsResult] = useState(editingRecord?.pushUpsResult || "");
+
+    useEffect(() => {
+        if (isOpen) {
+            setMileTime(editingRecord?.mile || "");
+            const currentMileResult = editingRecord?.mileResult || "";
+            setMileResult(currentMileResult);
+
+            // Push-ups
+            setPushUpsCount(editingRecord?.pushUps?.toString() || "");
+            const currentPushUpsResult = editingRecord?.pushUpsResult || "";
+            setPushUpsResult(currentPushUpsResult);
+
+            // Auto-calc missing results on legacy records
+            if (userBirth) {
+                const age = calculateAge(userBirth);
+
+                // Mile legacy calc
+                if (editingRecord?.mile && !currentMileResult) {
+                    const calcResult = classifyMileResult(editingRecord.mile, age, gender);
+                    if (calcResult) setMileResult(calcResult);
+                }
+
+                // Push-ups legacy calc
+                if (editingRecord?.pushUps && !currentPushUpsResult) {
+                    const calcResult = classifyPushUps(editingRecord.pushUps, age, gender);
+                    if (calcResult) setPushUpsResult(calcResult);
+                }
+            }
+        }
+    }, [isOpen, editingRecord, userBirth, gender]);
+
+    // Auto-calculate MILE result
+    const handleMileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const time = e.target.value;
+        setMileTime(time);
+
+        if (time && time.includes(':') && userBirth) {
+            const age = calculateAge(userBirth);
+            const result = classifyMileResult(time, age, gender);
+            setMileResult(result);
+        } else {
+            setMileResult("");
+        }
+    };
+
+    // Auto-calculate PUSH-UPS result
+    const handlePushUpsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        setPushUpsCount(val);
+        const count = parseInt(val);
+
+        if (!isNaN(count) && userBirth) {
+            const age = calculateAge(userBirth);
+            const result = classifyPushUps(count, age, gender);
+            setPushUpsResult(result);
+        } else {
+            setPushUpsResult("");
+        }
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -120,16 +200,61 @@ export const AvaliacaoModal: React.FC<AvaliacaoModalProps> = ({
                                 defaultValue={formatDateForInput(editingRecord?.date || new Date().toISOString())}
                                 required
                             />
-                            <FormInput label="Flexões" icon="fa-hand-fist" name="pushUps" defaultValue={editingRecord?.pushUps} />
+
+                            {/* Push Ups Group - Input + Auto Result */}
+                            <div className="space-y-2">
+                                <FormInput
+                                    label="Flexões"
+                                    icon="fa-hand-fist"
+                                    name="pushUps"
+                                    defaultValue={pushUpsCount}
+                                    onChange={handlePushUpsChange}
+                                />
+                                {pushUpsResult && (
+                                    <div className="relative">
+                                        <input type="hidden" name="pushUpsResult" value={pushUpsResult} />
+                                        <div className={`w-full px-3 py-1.5 text-xs text-center border border-transparent rounded-md font-bold uppercase tracking-wider ${getMileResultStyle(pushUpsResult)} opacity-90`}>
+                                            {pushUpsResult}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                             <FormInput label="Abdominais" icon="fa-dumbbell" name="sitUps" defaultValue={editingRecord?.sitUps} />
+
                             <FormInput
                                 label="Tempo Milha (mm:ss)"
                                 icon="fa-stopwatch"
                                 name="mile"
                                 type="text"
-                                defaultValue={editingRecord?.mile}
+                                defaultValue={mileTime}
+                                onChange={handleMileChange}
                                 placeholder="00:00"
                             />
+
+                            {/* Auto-calculated Result Field */}
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                                    <i className="fa-duotone fa-chart-simple text-primary/70 text-[10px]"></i>
+                                    Resultado Milha (Auto)
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        name="mileResult"
+                                        value={mileResult}
+                                        readOnly
+                                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none bg-gray-50 text-gray-600 font-medium cursor-not-allowed"
+                                        placeholder="Calculado automaticamente"
+                                    />
+                                    {mileResult && (
+                                        <div className={`absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${getMileResultStyle(mileResult)}`}>
+                                            {mileResult}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <div className="md:col-span-2 lg:col-span-3">
                                 <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
                                     <i className="fa-duotone fa-note-sticky text-primary/70 text-[10px]"></i>

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { sanitizeIntForUpdate, sanitizeStringForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
-import { invalidateUserCaches } from "@/lib/api/utils/cacheHelpers";
+import { avaliacaoRepository } from "@/lib/db/repositories/AvaliacaoRepository";
+import type { UpdateAvaliacaoDTO } from "@/lib/db/repositories/AvaliacaoRepository";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
@@ -24,18 +24,16 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
             return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
         }
 
-        const avaliacao = await db.avaliacaoFisica.update({
-            where: { id: Number(id) },
-            data: updateData,
-            include: { user: { select: { id: true, email: true } } }
-        });
+        // Use repository - automatically invalidates cache and returns fresh data
+        const result = await avaliacaoRepository.update(Number(id), updateData as UpdateAvaliacaoDTO);
 
-        // Invalidate caches
-        if (avaliacao.user) {
-            await invalidateUserCaches(avaliacao.user.id, { avaliacoes: true });
+        if (!result.success) {
+            Logger.error('Admin', `Failed to update avaliacao ${id}`, result.error);
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
         }
 
-        return NextResponse.json(avaliacao);
+        // Return fresh data (not from cache - repository already invalidated cache)
+        return NextResponse.json(result.data);
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to update avaliacao ${id}`, error);
         return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
@@ -46,23 +44,17 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
     const { id } = await params;
 
     try {
-        // Get user info before deleting
-        const avaliacao = await db.avaliacaoFisica.findUnique({
-            where: { id: Number(id) },
-            include: { user: { select: { id: true, email: true } } }
-        });
+        // Use repository - automatically invalidates cache
+        const result = await avaliacaoRepository.delete(Number(id));
 
-        if (!avaliacao) {
-            return NextResponse.json({ error: 'Avaliacao not found' }, { status: 404 });
-        }
-
-        await db.avaliacaoFisica.delete({
-            where: { id: Number(id) }
-        });
-
-        // Invalidate caches
-        if (avaliacao.user) {
-            await invalidateUserCaches(avaliacao.user.id, { avaliacoes: true });
+        if (!result.success) {
+            // Check if it's a "not found" error
+            if (result.error.message?.includes('Record to delete does not exist') || 
+                result.error.message?.includes('not found')) {
+                return NextResponse.json({ error: 'Avaliacao not found' }, { status: 404 });
+            }
+            Logger.error('Admin', `Failed to delete avaliacao ${id}`, result.error);
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });

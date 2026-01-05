@@ -12,13 +12,17 @@ interface AvaliacoesSectionProps {
     onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Avaliacao) => Promise<void>;
     onBulkSave?: (data: any[]) => Promise<void>;
     onDelete: (id: number) => Promise<void>;
+    gender: string;
+    userBirth: string;
 }
 
 export const AvaliacoesSection: React.FC<AvaliacoesSectionProps> = ({
     avaliacoes,
     onSave,
     onBulkSave,
-    onDelete
+    onDelete,
+    gender,
+    userBirth
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState<Avaliacao | null>(null);
@@ -87,6 +91,8 @@ export const AvaliacoesSection: React.FC<AvaliacoesSectionProps> = ({
                 avaliacoes={avaliacoes}
                 onEdit={handleOpenModal}
                 onDelete={onDelete}
+                gender={gender}
+                userBirth={userBirth}
             />
 
             <AvaliacaoModal
@@ -96,6 +102,8 @@ export const AvaliacoesSection: React.FC<AvaliacoesSectionProps> = ({
                 isSubmitting={isSubmitting}
                 onSubmit={handleSubmit}
                 onClose={handleCloseModal}
+                gender={gender}
+                userBirth={userBirth}
             />
 
 

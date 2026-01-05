@@ -10,10 +10,7 @@ import { ButtonSpinner } from "@/app/admin/components/LoadingStates";
 
 const changePasswordSchema = z.object({
     newPassword: z.string()
-        .min(8, "Nova password deve ter pelo menos 8 caracteres")
-        .refine((p) => /[A-Z]/.test(p), "Deve conter pelo menos uma letra maiúscula")
-        .refine((p) => /[a-z]/.test(p), "Deve conter pelo menos uma letra minúscula")
-        .refine((p) => /[0-9]/.test(p), "Deve conter pelo menos um número"),
+        .min(8, "Nova password deve ter pelo menos 8 caracteres"),
     confirmPassword: z.string().min(1, "Confirma a nova password"),
 }).refine((data) => data.newPassword === data.confirmPassword, {
     message: "As passwords não coincidem",

@@ -4,9 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, useCallback, useRef } from "react";
 import type { UserSheetData } from "@/lib/types/dashboard";
 import { useSession } from "./useAuth";
+import { queryKeys } from "../queryKeys";
 
 // Polling intervals (in milliseconds)
-const ACTIVE_INTERVAL = 30 * 1000;    // 30 seconds when tab is active
+const ACTIVE_INTERVAL = 15 * 1000;    // 15 seconds when tab is active
 const BACKGROUND_INTERVAL = 5 * 60 * 1000; // 5 minutes when tab is in background
 const VISIBILITY_DEBOUNCE = 1000;      // Debounce visibility changes
 
@@ -72,6 +73,7 @@ export function useUserData(forceRefresh: boolean = false, initialData?: UserShe
 
       // Only refetch if it's been more than debounce time since last refetch
       if (timeSinceLastRefetch > VISIBILITY_DEBOUNCE) {
+        // Invalidate all userData queries (prefix matching)
         queryClient.invalidateQueries({ queryKey: ["userData"] });
         lastRefetchTimeRef.current = Date.now();
       }
@@ -85,7 +87,7 @@ export function useUserData(forceRefresh: boolean = false, initialData?: UserShe
     : (isVisible ? ACTIVE_INTERVAL : BACKGROUND_INTERVAL);
 
   return useQuery<UserSheetData, Error>({
-    queryKey: ["userData", userId, forceRefresh ? Date.now() : "default"],
+    queryKey: queryKeys.userData(userId, forceRefresh ? Date.now().toString() : "default"),
     queryFn: async () => {
       // Update last refetch time
       lastRefetchTimeRef.current = Date.now();
@@ -110,7 +112,7 @@ export function useUserData(forceRefresh: boolean = false, initialData?: UserShe
       return response.json();
     },
     initialData: initialData, // Hydrate with server data
-    staleTime: forceRefresh ? 0 : 5 * 60 * 1000, // 5 minutes (matches server cache)
+    staleTime: 0, // Always consider stale to allow refetch on window focus
     gcTime: 10 * 60 * 1000, // 10 minutes cache retention
     refetchOnMount: false, // Don't refetch immediately if we have initialData
     refetchOnWindowFocus: true,
@@ -195,9 +197,10 @@ export function useRefreshData() {
 
       // Update the cache directly with the new data
       const userId = sessionData?.user?.email || 'guest';
-      queryClient.setQueryData(["userData", userId, "default"], newData);
+      queryClient.setQueryData(queryKeys.userData(userId, "default"), newData);
 
       // Also invalidate to ensure related queries like "userData", <timestamp> are also refreshed if needed
+      // Using prefix matching to invalidate all userData queries
       await queryClient.invalidateQueries({ queryKey: ["userData"] });
 
       // Start cooldown and save to localStorage

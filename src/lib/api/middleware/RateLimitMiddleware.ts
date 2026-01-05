@@ -23,10 +23,10 @@ export function rateLimitMiddleware(staticConfig?: any): Middleware {
       };
     }
 
-    const result = checkRateLimit(context.request, config);
+    const result = await checkRateLimit(context.request, config);
 
     if (!result.allowed) {
-      return ApiResponseBuilder.rateLimit(result.retryAfter);
+      return ApiResponseBuilder.rateLimit(result.retryAfter, result.message);
     }
 
     return context;

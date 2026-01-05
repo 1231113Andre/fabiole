@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import React from "react";
 import Link from "next/link";
 import { UserData } from "../types";
@@ -7,6 +7,7 @@ import { Avatar } from "@/components/Avatar";
 import { useNotification } from "@/components/NotificationContext";
 import { ButtonSpinner } from "@/app/admin/components/LoadingStates";
 import { useInvalidateAdminUsers } from "@/lib/react-query/hooks/useAdminUsers";
+import { getStatusConfig } from "@/app/admin/constants/statusConfig";
 
 import NewButton from "@/app/components/newButton";
 
@@ -36,6 +37,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     const { notify } = useNotification();
     const [updating, setUpdating] = useState<string | null>(null);
     const { invalidate: invalidateAdminUsers } = useInvalidateAdminUsers();
+    const statusConfig = useMemo(() => getStatusConfig(user.status), [user.status]);
 
     const handleStatusUpdate = async (status: string) => {
         setUpdating(status);
@@ -244,6 +246,72 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                {/* Account Status Section */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-semibold text-gray-700">Estado atual da conta:</span>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${statusConfig.badgeBg} ${statusConfig.badgeText}`}>
+                            <i className={`fa-duotone ${statusConfig.icon}`} />
+                            {statusConfig.badgeLabel}
+                        </span>
+                    </div>
+                    <div className="space-y-2">
+                        {user.status === 'ACTIVE' || !user.status ? (
+                            <>
+                                <p className="text-xs text-gray-600 flex items-start gap-2">
+                                    <i className="fa-duotone fa-circle-info text-emerald-500 mt-0.5" />
+                                    <span>A conta tem acesso ao dashboard, incluindo dados pessoais, gráficos, definições e outras funcionalidades.</span>
+                                </p>
+                                <p className="text-xs text-gray-500 flex items-center gap-1.5 flex-wrap">
+                                    <i className="fa-duotone fa-lightbulb text-amber-500" />
+                                    <span>Para suspender ou banir a conta, aceda à secção</span>
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded text-gray-700 font-semibold">
+                                        <i className="fa-duotone fa-gear text-xs" />
+                                        Definições
+                                    </span>
+                                </p>
+                            </>
+                        ) : user.status === 'SUSPENDED' ? (
+                            <>
+                                <p className="text-xs text-amber-600 flex items-start gap-2">
+                                    <i className="fa-duotone fa-circle-exclamation mt-0.5" />
+                                    <span>A conta está atualmente suspensa. O utilizador não consegue iniciar sessão.</span>
+                                </p>
+                                <p className="text-xs text-gray-500 flex items-center gap-1.5 flex-wrap">
+                                    <i className="fa-duotone fa-lightbulb text-emerald-500" />
+                                    <span>Para ativar a conta, aceda à secção</span>
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded text-gray-700 font-semibold">
+                                        <i className="fa-duotone fa-gear text-xs" />
+                                        Definições
+                                    </span>
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex flex-col gap-1">
+                                    <p className="text-xs text-red-600 flex items-start gap-2">
+                                        <i className="fa-duotone fa-ban mt-0.5" />
+                                        <span>A conta está permanentemente banida. O utilizador não consegue iniciar sessão.</span>
+                                    </p>
+                                    {user.statusReason && (
+                                        <p className="text-xs text-red-600/80 flex items-start gap-2 pl-6">
+                                            <span><strong>Motivo do bloqueio:</strong> {user.statusReason}</span>
+                                        </p>
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-500 flex items-center gap-1.5 flex-wrap mt-1">
+                                    <i className="fa-duotone fa-lightbulb text-emerald-500" />
+                                    <span>Para restaurar o acesso, aceda à secção</span>
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded text-gray-700 font-semibold">
+                                        <i className="fa-duotone fa-gear text-xs" />
+                                        Definições
+                                    </span>
+                                </p>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

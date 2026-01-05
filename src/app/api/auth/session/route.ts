@@ -29,7 +29,7 @@ const getSessionHandler = new BaseRouteHandler()
 
     try {
       // Check cache first for faster response
-      const cached = getCachedSession<SessionPayload>(session.value);
+      const cached = await getCachedSession<SessionPayload>(session.value);
       if (cached && !isSessionExpired(cached)) {
         return ApiResponse.custom(
           200,
@@ -68,7 +68,7 @@ const getSessionHandler = new BaseRouteHandler()
       }
 
       // Cache the verified session
-      setCachedSession(session.value, payload);
+      await setCachedSession(session.value, payload);
 
       return ApiResponse.custom(
         200,
@@ -105,7 +105,7 @@ const deleteSessionHandler = new BaseRouteHandler()
     if (session?.value) {
       // Clear the session from cache
       const { clearCachedSession } = await import('@/lib/security/sessionCache');
-      clearCachedSession(session.value);
+      await clearCachedSession(session.value);
     }
 
     // Delete the session cookie

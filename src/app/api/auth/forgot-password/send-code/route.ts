@@ -8,7 +8,7 @@ import { normalizeEmail } from '@/lib/auth/helpers';
 export async function POST(request: NextRequest) {
     try {
         // Rate limiting: strict for password reset (prevent abuse)
-        const rateLimitResult = checkRateLimit(request, {
+        const rateLimitResult = await checkRateLimit(request, {
             maxRequests: 5, // Max 5 requests per window
             windowMs: 15 * 60 * 1000, // 15 minutes
             message: 'Muitas tentativas. Por favor, aguarda antes de solicitar outro código.',
@@ -16,11 +16,11 @@ export async function POST(request: NextRequest) {
 
         if (!rateLimitResult.allowed) {
             return NextResponse.json(
-                { 
+                {
                     error: rateLimitResult.message || 'Muitas tentativas. Por favor, aguarda antes de solicitar outro código.',
-                    retryAfter: rateLimitResult.retryAfter 
+                    retryAfter: rateLimitResult.retryAfter
                 },
-                { 
+                {
                     status: 429,
                     headers: {
                         'Retry-After': String(rateLimitResult.retryAfter || 900),
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         // Always return success immediately to prevent email enumeration attacks
         // Send email asynchronously (non-blocking) for better performance
         const responseMessage = 'Se este email existir na nossa base de dados, enviámos um código para redefinir a password.';
-        
+
         // Don't await email sending - send it in background for better performance
         if (user) {
             // Send email asynchronously (non-blocking)

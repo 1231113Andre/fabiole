@@ -1,8 +1,11 @@
+export type AccountStatus = 'ACTIVE' | 'SUSPENDED' | 'BANNED';
+
 export interface AdminStats {
     totalUsers: number;
     totalPesagens: number;
     totalPerimetros: number;
     totalAvaliacoes: number;
+    totalDebt: number;
 }
 
 export interface AdminUser {
@@ -21,6 +24,9 @@ export interface AdminUser {
     trainingCredit: number;
     trainingsScheduled: number;
     debtValue: number;
+    status: AccountStatus;
+    statusChangedBy?: string | null;
+    statusChangedAt?: string | null;
 }
 
 export interface RecentUser {

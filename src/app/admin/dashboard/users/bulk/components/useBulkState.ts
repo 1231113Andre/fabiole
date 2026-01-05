@@ -7,7 +7,9 @@ import {
     classifyBodyFat,
     calculateMM,
     calculateH2O,
-    calculateAge
+    calculateAge,
+    classifyMileResult,
+    classifyPushUps
 } from "@/lib/utils/bodyMetrics";
 
 export function useBulkState(type: BulkType, userGender: string, userBirthDate?: Date | string | null) {
@@ -73,6 +75,25 @@ export function useBulkState(type: BulkType, userGender: string, userBirthDate?:
             if (field === 'percentualMG' && !isPerOverride) {
                 const mg = parseFloat(newRow.percentualMG) || null;
                 newRow.resultadoPercentMG = classifyBodyFat(mg, userGender);
+            }
+        }
+
+        if (type === 'avaliacoes') {
+            if (field === 'mile') {
+                if (value.includes(':') && userAge && userGender) {
+                    newRow.mileResult = classifyMileResult(value, userAge, userGender);
+                } else {
+                    newRow.mileResult = '';
+                }
+            }
+
+            if (field === 'pushUps') {
+                const count = parseInt(value);
+                if (!isNaN(count) && userAge && userGender) {
+                    newRow.pushUpsResult = classifyPushUps(count, userAge, userGender);
+                } else {
+                    newRow.pushUpsResult = '';
+                }
             }
         }
 

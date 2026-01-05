@@ -75,8 +75,10 @@ export const POST = withAdminAuth(async (req, session) => {
         }
 
         // Invalidate admin caches
-        invalidateAdminUsers();
-        invalidateAdminStats();
+        await Promise.all([
+            invalidateAdminUsers(),
+            invalidateAdminStats()
+        ]);
 
         return NextResponse.json({
             success: true,

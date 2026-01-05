@@ -28,7 +28,7 @@ export function PersonalInfoTab({ personalInfo }: PersonalInfoTabProps) {
                             Nome Completo
                         </span>
                         <span className="text-lg font-semibold text-black pl-6">
-                            {personalInfo.name}
+                            {personalInfo.name} {personalInfo.surname}
                         </span>
                     </div>
 

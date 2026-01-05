@@ -37,7 +37,7 @@ const verifyCodeHandler = new BaseRouteHandler()
             code: string;
         };
 
-        const result = VerificationCodeService.verifyCode(email, code);
+        const result = await VerificationCodeService.verifyCode(email, code);
 
         if (!result.valid) {
             const errorMessage = result.error
@@ -57,6 +57,6 @@ const verifyCodeHandler = new BaseRouteHandler()
 export const POST = verifyCodeHandler.toNextHandler();
 
 export const OPTIONS = createOptionsHandler({
-  methods: ['POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+    methods: ['POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
 });

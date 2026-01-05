@@ -2,7 +2,12 @@ import { getSession } from '@/lib/security/session';
 import { BaseRouteHandler } from '@/lib/api/core/BaseRouteHandler';
 import { ApiResponse } from '@/lib/api/core/ApiResponse';
 import { z } from 'zod';
+import { requestIdMiddleware } from '@/lib/api/middleware/RequestIdMiddleware';
+import { timeoutMiddleware } from '@/lib/api/middleware/TimeoutMiddleware';
+import { rateLimitMiddleware } from '@/lib/api/middleware/RateLimitMiddleware';
 import { validationMiddleware } from '@/lib/api/middleware/ValidationMiddleware';
+import { sanitizationMiddleware } from '@/lib/api/middleware/SanitizationMiddleware';
+import { RATE_LIMITS } from '@/lib/security/rateLimit';
 import { VerificationCodeService } from '@/lib/email/VerificationCodeService';
 import { db } from '@/lib/db/client';
 import { Logger } from '@/lib/utils/logger';
@@ -15,7 +20,11 @@ const requestChangeEmailSchema = z.object({
 });
 
 const handler = new BaseRouteHandler()
+    .use(requestIdMiddleware)
+    .use(timeoutMiddleware(15000))
+    .use(rateLimitMiddleware(RATE_LIMITS.AUTH)) // Strict rate limiting for security
     .use(validationMiddleware(requestChangeEmailSchema))
+    .use(sanitizationMiddleware)
     .handle(async (context) => {
         try {
             // 1. Get current session

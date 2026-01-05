@@ -1,0 +1,4 @@
+﻿src/app/admin/dashboard/users/[id]/components/avaliacoes/AvaliacoesTable.tsx(100,75): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+src/app/admin/dashboard/users/[id]/components/avaliacoes/AvaliacoesTable.tsx(104,75): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.

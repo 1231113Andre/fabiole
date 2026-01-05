@@ -8,7 +8,7 @@
  * Key: request identifier (e.g., "user:email@example.com")
  * Value: Promise that resolves to the result
  */
-const inFlightRequests = new Map<string, Promise<any>>();
+const inFlightRequests = new Map<string, Promise<unknown>>();
 
 /**
  * Deduplicate a request

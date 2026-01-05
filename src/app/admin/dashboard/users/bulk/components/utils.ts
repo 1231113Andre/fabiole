@@ -3,7 +3,8 @@ export {
     getBmiClassColor,
     getFatClassColor,
     getDeltaPesoColor,
-    formatDeltaPeso as formatDelta
+    formatDeltaPeso as formatDelta,
+    getMileResultStyle
 } from "@/lib/utils/bodyMetrics";
 
 // Base box style for inputs

@@ -11,7 +11,7 @@ import { useParams } from "next/navigation";
 
 interface PesagensSectionProps {
     pesagens: Pesagem[];
-    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Pesagem) => Promise<void>;
+    onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Pesagem, overrides?: string[]) => Promise<void>;
     onBulkSave?: (data: any[]) => Promise<void>;
     onDelete: (id: number) => Promise<void>;
     gender: string;

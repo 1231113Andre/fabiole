@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/client';
-import { VerificationCodeService, MAX_VERIFICATION_ATTEMPTS } from '@/lib/email';
+import { VerificationCodeService } from '@/lib/email';
 import { Logger } from '@/lib/utils/logger';
 import { checkRateLimit } from '@/lib/security/rateLimit';
 import { normalizeEmail } from '@/lib/auth/helpers';
@@ -8,7 +8,7 @@ import { normalizeEmail } from '@/lib/auth/helpers';
 export async function POST(request: NextRequest) {
     try {
         // Rate limiting: prevent brute-force attempts
-        const rateLimitResult = checkRateLimit(request, {
+        const rateLimitResult = await checkRateLimit(request, {
             maxRequests: 10, // Max 10 verification attempts per window
             windowMs: 15 * 60 * 1000, // 15 minutes
             message: 'Muitas tentativas. Por favor, aguarda antes de tentar novamente.',
@@ -16,11 +16,11 @@ export async function POST(request: NextRequest) {
 
         if (!rateLimitResult.allowed) {
             return NextResponse.json(
-                { 
+                {
                     error: rateLimitResult.message || 'Muitas tentativas. Por favor, aguarda antes de tentar novamente.',
-                    retryAfter: rateLimitResult.retryAfter 
+                    retryAfter: rateLimitResult.retryAfter
                 },
-                { 
+                {
                     status: 429,
                     headers: {
                         'Retry-After': String(rateLimitResult.retryAfter || 900),
@@ -49,51 +49,39 @@ export async function POST(request: NextRequest) {
 
         const normalizedEmail = normalizeEmail(email);
 
-        // Timing attack protection: always perform similar operations
-        // Get stored code first (before DB query) - if code doesn't exist, return same error as invalid code
-        const stored = VerificationCodeService.getCode(normalizedEmail);
-        
-        // Check if user exists (parallel with code check for performance)
+        // Check if user exists (parallel with verification for performance)
         const userPromise = db.user.findUnique({
             where: { email: normalizedEmail },
             select: { id: true }
         });
 
-        // Always perform code validation checks (constant-time operations)
+        // Verify code using VerificationCodeService (now async with Redis)
+        // Note: We don't consume the code here, only verify it
+        // The code will be consumed in the reset step
+        const stored = await VerificationCodeService.getCode(normalizedEmail);
+
         let isValid = false;
         let errorMessage = 'Código inválido ou expirado';
 
         if (!stored) {
             errorMessage = 'Código não encontrado. Por favor, solicita um novo código.';
+        } else if (new Date() > stored.expiresAt) {
+            await VerificationCodeService.deleteCode(normalizedEmail);
+            errorMessage = 'Código expirado. Por favor, solicita um novo código.';
+        } else if (stored.code === code) {
+            isValid = true;
+            // Update attempts count (verification passed but not consumed yet)
         } else {
-            // Check if expired
-            if (new Date() > stored.expiresAt) {
-                VerificationCodeService.deleteCode(normalizedEmail);
-                errorMessage = 'Código expirado. Por favor, solicita um novo código.';
-            }
-            // Check attempts limit
-            else if (stored.attempts >= MAX_VERIFICATION_ATTEMPTS) {
-                VerificationCodeService.deleteCode(normalizedEmail);
-                Logger.warn('Security', `Too many verification attempts for ${normalizedEmail}`);
-                errorMessage = 'Demasiadas tentativas. Por favor, solicita um novo código.';
-            }
-            // Increment attempts BEFORE checking code (security: count failed attempts)
-            else {
-                stored.attempts++;
-                
-                // Constant-time comparison (prevents timing attacks)
-                // Note: For 6-digit codes, simple comparison is acceptable, but we ensure consistent timing
-                if (stored.code === code) {
-                    isValid = true;
-                } else {
-                    const remainingAttempts = MAX_VERIFICATION_ATTEMPTS - stored.attempts;
-                    Logger.warn('Security', `Invalid code for ${normalizedEmail}. ${remainingAttempts} attempts remaining.`);
-                    errorMessage = `Código inválido. ${remainingAttempts > 0 ? `Tens ${remainingAttempts} tentativa(s) restante(s).` : 'Por favor, solicita um novo código.'}`;
-                }
-            }
+            // Increment attempts on invalid code
+            await VerificationCodeService.updateAttempts(normalizedEmail, stored.attempts + 1);
+            const remainingAttempts = 3 - (stored.attempts + 1);
+            Logger.warn('Security', `Invalid code for ${normalizedEmail}. ${remainingAttempts} attempts remaining.`);
+            errorMessage = remainingAttempts > 0
+                ? `Código inválido. Tens ${remainingAttempts} tentativa(s) restante(s).`
+                : 'Por favor, solicita um novo código.';
         }
 
-        // Wait for user check (timing protection: always perform DB query)
+        // Wait for user check (timing protection)
         const user = await userPromise;
 
         // Only return success if both code is valid AND user exists
@@ -105,8 +93,7 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Always return same error format (timing protection)
-        // Don't reveal if user doesn't exist (use same error as invalid code)
+        // Return error (don't reveal if user doesn't exist)
         return NextResponse.json(
             { error: errorMessage },
             { status: 400 }
@@ -120,4 +107,3 @@ export async function POST(request: NextRequest) {
         );
     }
 }
-

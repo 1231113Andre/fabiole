@@ -1,6 +1,6 @@
 import React from "react";
 import { Avaliacao } from "../../types";
-import { BADGE_STYLES } from "@/lib/utils/bodyMetrics";
+import { BADGE_STYLES, classifyMileResult, classifyPushUps, calculateAge } from "@/lib/utils/bodyMetrics";
 import { TooltipHeader } from "@/components/ui/TooltipHeader";
 
 const getMileResultStyle = (result: string | null): string => {
@@ -16,12 +16,16 @@ interface AvaliacoesTableProps {
     avaliacoes: Avaliacao[];
     onEdit: (a: Avaliacao) => void;
     onDelete: (id: number) => void;
+    gender?: string | null;
+    userBirth?: string | null;
 }
 
 export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
     avaliacoes,
     onEdit,
-    onDelete
+    onDelete,
+    gender,
+    userBirth
 }) => {
     if (avaliacoes.length === 0) {
         return (
@@ -47,6 +51,13 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
                             <TooltipHeader
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-star-half-stroke"></i> Class. Flexões</span>}
+                                description={`Classificação baseada em:\nGénero: ${gender === 'M' ? 'Masculino' : 'Feminino'}\nIdade: ${calculateAge(userBirth) ?? 'N/A'} anos`}
+                                isAuto={false}
+                            />
+                        </th>
+                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
+                            <TooltipHeader
                                 label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> Abdominais</span>}
                                 description="Número de abdominais realizados."
                                 isAuto={false}
@@ -61,8 +72,8 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-clipboard-check"></i> Resultado</span>}
-                                description="Classificação do resultado."
+                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-trophy"></i> Class. Milha</span>}
+                                description={`Classificação baseada em:\nGénero: ${gender === 'M' ? 'Masculino' : 'Feminino'}\nIdade: ${calculateAge(userBirth) ?? 'N/A'} anos`}
                                 isAuto={false}
                             />
                         </th>
@@ -77,58 +88,101 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                     </tr>
                 </thead>
                 <tbody>
-                    {avaliacoes.map((a) => (
-                        <tr key={a.id} className="border-b border-gray-300 hover:bg-gray-50 transition-colors">
-                            <td className="py-3 px-2 whitespace-nowrap font-bold">{new Date(a.date).toLocaleDateString('pt-PT')}</td>
-                            <td className="py-3 px-2 text-center hidden md:table-cell">
-                                <span className={BADGE_STYLES.PURPLE}>
-                                    {a.pushUps || '-'}
-                                </span>
-                            </td>
-                            <td className="py-3 px-2 text-center hidden md:table-cell">
-                                <span className={BADGE_STYLES.PURPLE}>
-                                    {a.sitUps || '-'}
-                                </span>
-                            </td>
-                            <td className="py-3 px-2 text-center hidden md:table-cell">
-                                <span className={BADGE_STYLES.INDIGO}>
-                                    {a.mile || '-'}
-                                </span>
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={getMileResultStyle(a.mileResult)}>
-                                    {a.mileResult || '-'}
-                                </span>
-                            </td>
-                            <td className="py-3 px-2 text-center">
-                                {a.notes ? (
-                                    <span className="inline-block px-2.5 py-1 bg-slate-50 border border-slate-200/60 rounded-lg text-gray-900 text-[11px] font-semibold leading-relaxed max-w-[200px] truncate" title={a.notes}>
-                                        {a.notes}
+                    {avaliacoes.map((a) => {
+                        // On-the-fly calculation fallback
+                        let mileRes = a.mileResult;
+                        let pushRes = a.pushUpsResult;
+
+                        if (userBirth) {
+                            const age = calculateAge(userBirth);
+
+                            if (a.mile && typeof a.mile === 'string' && a.mile.includes(':')) {
+                                mileRes = classifyMileResult(a.mile, age, gender as any);
+                            } else {
+                                mileRes = classifyMileResult(undefined, age, gender as any);
+                            }
+
+                            if (!pushRes) {
+                                pushRes = classifyPushUps(a.pushUps as any, age, gender as any);
+                            }
+                        }
+
+                        return (
+                            <tr key={a.id} className="border-b border-gray-300 hover:bg-gray-50 transition-colors">
+                                <td className="py-3 px-2 whitespace-nowrap font-bold">{new Date(a.date).toLocaleDateString('pt-PT')}</td>
+
+                                {/* Push Ups Count */}
+                                <td className="py-3 px-2 text-center hidden md:table-cell">
+                                    <span className={BADGE_STYLES.PURPLE}>
+                                        {a.pushUps || '-'}
                                     </span>
-                                ) : (
-                                    <span className="text-gray-400">-</span>
-                                )}
-                            </td>
-                            <td className="py-3 px-2 text-right">
-                                <div className="flex justify-end gap-1">
-                                    <button
-                                        onClick={() => onEdit(a)}
-                                        className="p-1.5 text-gray-400 hover:text-primary transition-colors cursor-pointer"
-                                        title="Editar"
-                                    >
-                                        <i className="fa-duotone fa-pen-to-square"></i>
-                                    </button>
-                                    <button
-                                        onClick={() => onDelete(a.id)}
-                                        className="p-1.5 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
-                                        title="Eliminar"
-                                    >
-                                        <i className="fa-duotone fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
+                                </td>
+
+                                {/* Push Ups Result */}
+                                <td className="py-3 px-2 text-center hidden md:table-cell">
+                                    {pushRes ? (
+                                        <span className={getMileResultStyle(pushRes)}>
+                                            {pushRes}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-400">-</span>
+                                    )}
+                                </td>
+
+                                <td className="py-3 px-2 text-center hidden md:table-cell">
+                                    <span className={BADGE_STYLES.PURPLE}>
+                                        {a.sitUps || '-'}
+                                    </span>
+                                </td>
+
+                                {/* Mile Time */}
+                                <td className="py-3 px-2 text-center hidden md:table-cell">
+                                    <span className={BADGE_STYLES.INDIGO}>
+                                        {a.mile || '-'}
+                                    </span>
+                                </td>
+
+                                {/* Mile Result */}
+                                <td className="py-3 px-2 text-center">
+                                    {mileRes ? (
+                                        <span className={getMileResultStyle(mileRes)}>
+                                            {mileRes}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-400">-</span>
+                                    )}
+                                </td>
+
+                                <td className="py-3 px-2 text-center">
+                                    {a.notes ? (
+                                        <span className="inline-block px-2.5 py-1 bg-slate-50 border border-slate-200/60 rounded-lg text-gray-900 text-[10px] font-semibold leading-tight max-w-[280px] line-clamp-2 text-left" title={a.notes}>
+                                            {a.notes}
+                                        </span>
+                                    ) : (
+                                        <span className="text-gray-400">-</span>
+                                    )}
+                                </td>
+                                <td className="py-3 px-2 text-right">
+                                    <div className="flex justify-end gap-1">
+                                        <button
+                                            onClick={() => onEdit(a)}
+                                            className="p-1.5 text-gray-400 hover:text-primary transition-colors cursor-pointer"
+                                            title="Editar"
+                                        >
+                                            <i className="fa-duotone fa-pen-to-square"></i>
+                                        </button>
+                                        <button
+                                            onClick={() => onDelete(a.id)}
+                                            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+                                            title="Eliminar"
+                                        >
+                                            <i className="fa-duotone fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

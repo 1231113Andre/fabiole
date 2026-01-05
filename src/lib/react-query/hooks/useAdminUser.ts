@@ -30,6 +30,10 @@ export interface AdminUserData {
     q4: string;
     goals: string;
     avatarUrl: string | null;
+    status: string;
+    statusChangedBy: string | null;
+    statusChangedAt: string | null;
+    statusReason: string | null;
     pesagens: Array<{
         id: number;
         date: string;
@@ -67,6 +71,7 @@ export interface AdminUserData {
         sitUps: number | null;
         mile: string | null;
         mileResult: string | null;
+        pushUpsResult: string | null;
         notes: string | null;
     }>;
 }
@@ -86,10 +91,11 @@ export interface AdminUserData {
 export function useAdminUser(userId: string, initialData?: AdminUserData) {
     return useQuery<AdminUserData, ApiError>({
         queryKey: queryKeys.adminUser(userId),
-        queryFn: () => apiGet<AdminUserData>(`/api/admin/users/${userId}`),
+        queryFn: () => apiGet<AdminUserData>(`/api/admin/users/${userId}?_t=${Date.now()}`, { cache: 'no-store' }),
         initialData,
-        staleTime: 60 * 1000, // 1 minute
+        staleTime: 30 * 1000, // 30 seconds - reduced for faster updates
         gcTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnMount: true, // Always refetch when component mounts
         retry: (failureCount, error) => {
             // Don't retry on 403 (access denied) or 404 (not found)
             if (error.status === 403 || error.status === 404) {

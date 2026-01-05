@@ -57,14 +57,17 @@ export function useDashboardData(initialData?: UserSheetData): UseDashboardDataR
     const user = useMemo(() => {
         if (!sessionData?.user) return undefined;
 
-        // Prefer the avatar from the database (refreshed via refetch) over the session avatar (which might be stale)
-        const dbAvatar = transformedData?.personalInfo?.avatarUrl;
+        // Prefer data from the database (refreshed via refetch) over the session (which might be stale)
+        const dbInfo = transformedData?.personalInfo;
 
         return {
             ...sessionData.user,
-            avatarUrl: dbAvatar || sessionData.user.avatarUrl
+            name: dbInfo?.name || sessionData.user.name,
+            surname: dbInfo?.surname || sessionData.user.surname,
+            email: dbInfo?.email || sessionData.user.email,
+            avatarUrl: dbInfo?.avatarUrl || sessionData.user.avatarUrl
         };
-    }, [sessionData?.user, transformedData?.personalInfo?.avatarUrl]);
+    }, [sessionData?.user, transformedData?.personalInfo]);
 
     const isAuthenticated = Boolean(sessionData?.authenticated && user);
 

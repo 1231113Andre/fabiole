@@ -1,10 +1,18 @@
 /**
  * @fileoverview PerimetroCorporal (body measurements) repository
- * @description Handles body measurement CRUD operations
+ * @description Handles body measurement CRUD operations with Redis caching
  */
 
 import { PerimetroCorporal } from '@prisma/client';
 import { BaseRepository, Result, PaginationParams, PaginatedResult } from './BaseRepository';
+import { redisCache } from '@/lib/cache/redisCache';
+import {
+    getPerimetroCacheKey,
+    invalidatePerimetroUserCache,
+    REPOSITORY_CACHE_TTL
+} from '@/lib/cache/repositoryCache';
+import { invalidateAdminUserDetail } from '@/lib/cache/adminCache';
+import { clearUserData } from '@/lib/cache/userCache';
 
 /**
  * Perimetro creation DTO
@@ -51,7 +59,7 @@ export class PerimetroRepository extends BaseRepository {
      */
     async create(data: CreatePerimetroDTO): Promise<Result<PerimetroCorporal>> {
         return this.execute(async () => {
-            return this.db.perimetroCorporal.create({
+            const result = await this.db.perimetroCorporal.create({
                 data: {
                     user_uuid: data.userId,
                     date: data.date,
@@ -67,6 +75,21 @@ export class PerimetroRepository extends BaseRepository {
                     thighL: data.thighL,
                 },
             });
+
+            // Invalidate cache for this user
+            await invalidatePerimetroUserCache(data.userId);
+            await invalidateAdminUserDetail(data.userId);
+
+            // Also invalidate User Dashboard cache (requires email)
+            const user = await this.db.user.findUnique({
+                where: { id: data.userId },
+                select: { email: true }
+            });
+            if (user?.email) {
+                await clearUserData(user.email);
+            }
+
+            return result;
         });
     }
 
@@ -92,6 +115,30 @@ export class PerimetroRepository extends BaseRepository {
                 })),
                 skipDuplicates: true,
             });
+
+            // Invalidate cache for all affected users
+            const uniqueUserIds = [...new Set(records.map(r => r.userId))];
+
+            // Fetch emails for these users to invalidate User Dashboard cache
+            const users = await this.db.user.findMany({
+                where: { id: { in: uniqueUserIds } },
+                select: { id: true, email: true }
+            });
+
+            await Promise.all(uniqueUserIds.map(async (userId) => {
+                const user = users.find(u => u.id === userId);
+                const promises: Promise<void>[] = [
+                    invalidatePerimetroUserCache(userId),
+                    invalidateAdminUserDetail(userId)
+                ];
+
+                if (user?.email) {
+                    promises.push(clearUserData(user.email));
+                }
+
+                await Promise.all(promises);
+            }));
+
             return result.count;
         });
     }
@@ -104,12 +151,20 @@ export class PerimetroRepository extends BaseRepository {
     }
 
     /**
-     * Find all for user
+     * Find all for user (with Redis cache)
      */
     async findByUser(
         userId: string,
         params: PaginationParams = {}
     ): Promise<PaginatedResult<PerimetroCorporal>> {
+        const cacheKey = getPerimetroCacheKey(userId, 'list', params);
+
+        // Check Redis cache
+        const cached = await redisCache.get<PaginatedResult<PerimetroCorporal>>(cacheKey);
+        if (cached) {
+            return cached;
+        }
+
         const { skip, take } = this.buildPagination(params);
 
         const [items, total] = await Promise.all([
@@ -122,17 +177,35 @@ export class PerimetroRepository extends BaseRepository {
             this.db.perimetroCorporal.count({ where: { user_uuid: userId } }),
         ]);
 
-        return this.buildPaginatedResult(items, total, params);
+        const result = this.buildPaginatedResult(items, total, params);
+
+        // Cache with TTL
+        await redisCache.set(cacheKey, result, REPOSITORY_CACHE_TTL.PERIMETRO_LIST);
+
+        return result;
     }
 
     /**
-     * Find latest for user
+     * Find latest for user (with Redis cache)
      */
     async findLatest(userId: string): Promise<PerimetroCorporal | null> {
-        return this.db.perimetroCorporal.findFirst({
+        const cacheKey = getPerimetroCacheKey(userId, 'latest');
+
+        // Check Redis cache
+        const cached = await redisCache.get<PerimetroCorporal | null>(cacheKey);
+        if (cached !== null) {
+            return cached;
+        }
+
+        const result = await this.db.perimetroCorporal.findFirst({
             where: { user_uuid: userId },
             orderBy: { date: 'desc' },
         });
+
+        // Cache with TTL (even null results are cached briefly to avoid DB hits)
+        await redisCache.set(cacheKey, result, REPOSITORY_CACHE_TTL.PERIMETRO_LATEST);
+
+        return result;
     }
 
     /**
@@ -140,10 +213,33 @@ export class PerimetroRepository extends BaseRepository {
      */
     async update(id: number, data: UpdatePerimetroDTO): Promise<Result<PerimetroCorporal>> {
         return this.execute(async () => {
-            return this.db.perimetroCorporal.update({
+            // Get existing record to find userId for cache invalidation
+            const existing = await this.db.perimetroCorporal.findUnique({
+                where: { id },
+                select: { user_uuid: true }
+            });
+
+            const result = await this.db.perimetroCorporal.update({
                 where: { id },
                 data,
             });
+
+            // Invalidate cache for this user
+            if (existing) {
+                await invalidatePerimetroUserCache(existing.user_uuid);
+                await invalidateAdminUserDetail(existing.user_uuid);
+
+                // Also invalidate User Dashboard cache (requires email)
+                const user = await this.db.user.findUnique({
+                    where: { id: existing.user_uuid },
+                    select: { email: true }
+                });
+                if (user?.email) {
+                    await clearUserData(user.email);
+                }
+            }
+
+            return result;
         });
     }
 
@@ -152,7 +248,28 @@ export class PerimetroRepository extends BaseRepository {
      */
     async delete(id: number): Promise<Result<void>> {
         return this.execute(async () => {
+            // Get existing record to find userId for cache invalidation
+            const existing = await this.db.perimetroCorporal.findUnique({
+                where: { id },
+                select: { user_uuid: true }
+            });
+
             await this.db.perimetroCorporal.delete({ where: { id } });
+
+            // Invalidate cache for this user
+            if (existing) {
+                await invalidatePerimetroUserCache(existing.user_uuid);
+                await invalidateAdminUserDetail(existing.user_uuid);
+
+                // Also invalidate User Dashboard cache (requires email)
+                const user = await this.db.user.findUnique({
+                    where: { id: existing.user_uuid },
+                    select: { email: true }
+                });
+                if (user?.email) {
+                    await clearUserData(user.email);
+                }
+            }
         });
     }
 
@@ -164,6 +281,20 @@ export class PerimetroRepository extends BaseRepository {
             const result = await this.db.perimetroCorporal.deleteMany({
                 where: { user_uuid: userId },
             });
+
+            // Invalidate cache for this user
+            await invalidatePerimetroUserCache(userId);
+            await invalidateAdminUserDetail(userId);
+
+            // Also invalidate User Dashboard cache (requires email)
+            const user = await this.db.user.findUnique({
+                where: { id: userId },
+                select: { email: true }
+            });
+            if (user?.email) {
+                await clearUserData(user.email);
+            }
+
             return result.count;
         });
     }

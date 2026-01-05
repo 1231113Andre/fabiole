@@ -35,14 +35,22 @@ interface UpdateUserParams {
     userData: Partial<AdminUserData>;
 }
 
+interface UpdateStatusParams {
+    userId: string;
+    status: string;
+    sendNotification: boolean;
+    reason?: string;
+}
+
 interface SaveRecordResponse {
     id: number;
     [key: string]: unknown;
 }
 
 interface BulkSaveResponse {
-    created: number;
-    updated: number;
+    success: boolean;
+    count: number;
+    message?: string;
 }
 
 interface MutationContext {
@@ -134,7 +142,7 @@ export function useAdminMutations(userId: string, options?: {
     // ========================================================================
     // Save Single Record
     // ========================================================================
-    const saveRecord = useMutation<SaveRecordResponse, ApiError, SaveRecordParams, MutationContext>({
+    const saveRecord = useMutation<SaveRecordResponse, ApiError, SaveRecordParams>({
         mutationFn: async ({ userId: uid, endpoint, payload, editingId }) => {
             const url = editingId
                 ? `/api/admin/${endpoint}/${editingId}`
@@ -144,33 +152,12 @@ export function useAdminMutations(userId: string, options?: {
                 ? apiPut<SaveRecordResponse>(url, payload)
                 : apiPost<SaveRecordResponse>(url, payload);
         },
-        onMutate: async ({ endpoint, payload, editingId }) => {
-            // Cancel outgoing refetches
-            await queryClient.cancelQueries({ queryKey });
-
-            // Snapshot previous value
-            const previousUser = queryClient.getQueryData<AdminUserData>(queryKey);
-
-            // Optimistic update for edits only (new records need server ID)
-            if (previousUser && editingId) {
-                queryClient.setQueryData<AdminUserData>(queryKey, (old) =>
-                    updateListInCache(old, endpoint, { ...payload, id: editingId } as { id: number }) as AdminUserData
-                );
-            }
-
-            return { previousUser };
-        },
-        onError: (err, _vars, context) => {
-            // Rollback on error
-            if (context?.previousUser) {
-                queryClient.setQueryData(queryKey, context.previousUser);
-            }
+        // NOTE: No cache manipulation here!
+        // The caller handles refetch after save to avoid race conditions.
+        onError: (err) => {
             if (showToasts) {
                 notify(err.message || "Erro ao guardar registo.", 'error');
             }
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey });
         }
     });
 
@@ -188,8 +175,9 @@ export function useAdminMutations(userId: string, options?: {
             if (showToasts) {
                 notify("Registos guardados com sucesso!", 'success');
             }
-            // Invalidate user query to refetch fresh data
+            // Invalidate both user and users list to ensure all views are updated
             queryClient.invalidateQueries({ queryKey: queryKeys.adminUser(uid) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
 
             if (navigateOnBulkSave) {
                 router.push(`/admin/dashboard/users/${uid}`);
@@ -234,6 +222,8 @@ export function useAdminMutations(userId: string, options?: {
             }
         },
         onSettled: () => {
+            // Invalidate both to ensure consistency (same as saveRecord)
+            queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
             queryClient.invalidateQueries({ queryKey });
         }
     });
@@ -259,6 +249,13 @@ export function useAdminMutations(userId: string, options?: {
 
             return { previousUser };
         },
+        onSuccess: (_, { userData }) => {
+            // Immediately update cache with new user data
+            queryClient.setQueryData<AdminUserData>(queryKey, (old) => {
+                if (!old) return old;
+                return { ...old, ...userData } as AdminUserData;
+            });
+        },
         onError: (err, _vars, context) => {
             // Rollback on error
             if (context?.previousUser) {
@@ -269,7 +266,50 @@ export function useAdminMutations(userId: string, options?: {
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey });
+            // Invalidate adminUsers list to update user info in list view
+            queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
+        }
+    });
+
+    // ========================================================================
+    // Update User Status
+    // ========================================================================
+    const updateStatus = useMutation<void, ApiError, UpdateStatusParams, MutationContext>({
+        mutationFn: async ({ userId: uid, status, sendNotification, reason }) => {
+            await apiPut(`/api/admin/users/${uid}/status`, { status, sendNotification, reason });
+        },
+        onMutate: async ({ userId: uid, status, reason }) => {
+            const userKey = queryKeys.adminUser(uid);
+            await queryClient.cancelQueries({ queryKey: userKey });
+            const previousUser = queryClient.getQueryData<AdminUserData>(userKey);
+
+            // Optimistic update
+            if (previousUser) {
+                queryClient.setQueryData<AdminUserData>(userKey, {
+                    ...previousUser,
+                    status: status,
+                    statusChangedAt: new Date().toISOString(),
+                    statusReason: reason || null
+                } as AdminUserData);
+            }
+
+            return { previousUser };
+        },
+        onError: (err, _vars, context) => {
+            // Rollback on error
+            if (context?.previousUser) {
+                queryClient.setQueryData(queryKeys.adminUser(_vars.userId), context.previousUser);
+            }
+            if (showToasts) {
+                notify(err.message || "Erro ao atualizar status.", 'error');
+            }
+        },
+        onSettled: async (_, __, { userId: uid }) => {
+            // Wait a bit for DB/Cache propagation
+            await new Promise(resolve => setTimeout(resolve, 150));
+            // Invalidate adminUsers list and user detail
+            queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
+            queryClient.invalidateQueries({ queryKey: queryKeys.adminUser(uid) });
         }
     });
 
@@ -278,5 +318,6 @@ export function useAdminMutations(userId: string, options?: {
         bulkSave,
         deleteRecord,
         updateUser,
+        updateStatus,
     };
 }

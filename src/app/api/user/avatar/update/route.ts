@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/security/session";
 import { db } from "@/lib/db/client";
 import { clearCachedSession } from "@/lib/security/sessionCache";
+import { clearCachedAuthUser } from "@/lib/cache/userCache";
 import { cookies } from "next/headers";
 import { AuthService } from "@/lib/api/services/AuthService";
 import { Logger } from "@/lib/utils/logger";
@@ -44,13 +45,21 @@ export async function POST(req: NextRequest) {
 
         // If updating own avatar, regenerate session JWT with new avatarUrl
         if (targetUserId === session.uuid) {
+            // Clear auth cache so re-login gets new avatar
+            await clearCachedAuthUser(session.email);
+
             const cookieStore = await cookies();
             const authCookie = cookieStore.get('auth_session');
 
             // Clear the cached session so next request fetches fresh data
             if (authCookie?.value) {
-                clearCachedSession(authCookie.value);
+                await clearCachedSession(authCookie.value);
             }
+
+            // Get client info for session tracking
+            const userAgent = req.headers.get('user-agent') || undefined;
+            const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+                req.headers.get('x-real-ip') || undefined;
 
             // Regenerate session with updated avatarUrl
             const sessionCookies = await AuthService.createSessionCookie({
@@ -60,7 +69,7 @@ export async function POST(req: NextRequest) {
                 surname: session.surname,
                 birth: session.birth,
                 avatarUrl: cacheBustedUrl,
-            });
+            }, userAgent, ip);
 
             // Set the new session cookies
             for (const cookie of sessionCookies) {

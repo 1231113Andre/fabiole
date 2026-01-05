@@ -31,11 +31,19 @@ const requireSSL = connectionString.includes('sslmode=require') ||
 
 function getPool(): Pool {
     if (!globalStore[POOL_KEY]) {
+        // Optimize pool size based on environment
+        // Production: 20-25 connections for better concurrency
+        // Development: 10 connections to save resources
+        const maxConnections = isProduction ? 25 : 10;
+        
         const poolConfig: PoolConfig = {
             connectionString,
-            max: 10, // Connection pool size
+            max: maxConnections,
+            min: 2, // Keep minimum connections alive
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 10000,
+            // Retry connection on error
+            allowExitOnIdle: false, // Keep pool alive
         };
 
         // Add SSL configuration for production/cloud databases
@@ -47,10 +55,18 @@ function getPool(): Pool {
 
         globalStore[POOL_KEY] = new Pool(poolConfig);
 
-        // Handle pool errors gracefully
+        // Handle pool errors gracefully with better logging
         globalStore[POOL_KEY].on('error', (err) => {
             console.error('[DB Pool] Unexpected error on idle client:', err);
+            // In production, you might want to send this to monitoring service
         });
+
+        // Log pool connection events (only in development)
+        if (!isProduction) {
+            globalStore[POOL_KEY].on('connect', () => {
+                console.log('[DB Pool] New client connected');
+            });
+        }
     }
     return globalStore[POOL_KEY];
 }

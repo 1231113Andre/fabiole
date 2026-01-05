@@ -6,13 +6,21 @@ import {
   getUserData as getCachedUserData,
   setUserData as setCachedUserData,
   clearUserData as clearCachedUserData,
+  CacheKeys as UserCacheKeys,
 } from '@/lib/cache/userCache';
+import { redisCache } from '@/lib/cache/redisCache';
 import { deduplicateRequest } from '@/lib/cache/requestDeduplication';
 import { Logger } from '@/lib/utils/logger';
 
 export interface GetUserDataOptions {
   /** Force refresh (bypass cache) */
   forceRefresh?: boolean;
+  /** Limit for pesagens (default: 100, use null for all) */
+  pesagensLimit?: number | null;
+  /** Limit for perimetros (default: 100, use null for all) */
+  perimetrosLimit?: number | null;
+  /** Limit for avaliacoes (default: 100, use null for all) */
+  avaliacoesLimit?: number | null;
 }
 
 /**
@@ -25,34 +33,60 @@ export class UserService {
    */
   static async getUserData(email: string, options: GetUserDataOptions = {}): Promise<UserSheetData> {
     const forceRefresh = options.forceRefresh ?? false;
+    const pesagensLimit = options.pesagensLimit ?? 100; // Default limit: 100 records
+    const perimetrosLimit = options.perimetrosLimit ?? 100;
+    const avaliacoesLimit = options.avaliacoesLimit ?? 100;
+
+    // Build cache key that includes limits (using consistent cache key helper)
+    const limitsKey = `p${pesagensLimit ?? 'all'}:pe${perimetrosLimit ?? 'all'}:a${avaliacoesLimit ?? 'all'}`;
+    const cacheKey = UserCacheKeys.userDataWithLimits(email, limitsKey);
 
     // If force refresh, clear cache
     if (forceRefresh) {
-      clearCachedUserData(email);
+      await clearCachedUserData(email);
       Logger.info('UserService', `Manual cache invalidation triggered for user: ${email}.`);
     }
 
     // Check cache first (unless force refresh)
+    // Use redisCache directly since cache key includes limits
     if (!forceRefresh) {
-      const cached = getCachedUserData<UserSheetData>(email);
+      const cached = await redisCache.get<UserSheetData>(cacheKey);
       if (cached) {
-        Logger.info('UserData API', `Memory cache hit: Successfully retrieved data for ${email}.`);
+        Logger.info('UserData API', `Cache hit: Successfully retrieved data for ${email} with limits ${limitsKey}.`);
         return cached;
       }
     }
 
     // Use request deduplication to prevent duplicate API calls
-    const cacheKey = `user:data:${email.toLowerCase()}`;
     return deduplicateRequest<UserSheetData>(cacheKey, async () => {
-      // 1. Fetch User from Prisma
+      // 1. Fetch User from Prisma with optional limits
       Logger.info('Database', `Executing PostgreSQL lookup for user profile: ${email}.`);
-      let userDB = await db.user.findUnique({
+
+      // Build include with optional limits
+      const includeConfig: {
+        pesagens: { orderBy: { date: 'desc' }; take?: number };
+        perimetros: { orderBy: { date: 'desc' }; take?: number };
+        avaliacoes: { orderBy: { date: 'desc' }; take?: number };
+      } = {
+        pesagens: { orderBy: { date: 'desc' } },
+        perimetros: { orderBy: { date: 'desc' } },
+        avaliacoes: { orderBy: { date: 'desc' } }
+      };
+
+      // Add limits if specified
+      if (pesagensLimit !== null) {
+        includeConfig.pesagens.take = pesagensLimit;
+      }
+      if (perimetrosLimit !== null) {
+        includeConfig.perimetros.take = perimetrosLimit;
+      }
+      if (avaliacoesLimit !== null) {
+        includeConfig.avaliacoes.take = avaliacoesLimit;
+      }
+
+      const userDB = await db.user.findUnique({
         where: { email },
-        include: {
-          pesagens: { orderBy: { date: 'desc' } }, // Changed to desc for latest first, similar to Sheet logic typically
-          perimetros: { orderBy: { date: 'desc' } },
-          avaliacoes: { orderBy: { date: 'desc' } }
-        }
+        include: includeConfig
       });
 
       if (!userDB) {
@@ -61,6 +95,15 @@ export class UserService {
       }
 
       Logger.success('Database', `Identity confirmed: ${userDB.name} ${userDB.surname} (${userDB.email}).`);
+
+      // Check account status - block access if suspended or banned
+      if (userDB.status === 'SUSPENDED' || userDB.status === 'BANNED') {
+        Logger.warn('Security', `Access denied for ${userDB.status} user: ${email}`);
+        const error = new Error(`A sua conta encontra-se ${userDB.status === 'SUSPENDED' ? 'suspensa' : 'banida'}. Contacte o administrador.`);
+        (error as any).code = 'ACCOUNT_LOCKED';
+        throw error;
+      }
+
       Logger.info('UserService', `Profile metrics synchronized: ${userDB.pesagens.length} weigh-ins, ${userDB.perimetros.length} circumferences, ${userDB.avaliacoes.length} physical assessments.`);
 
       // 2. Reference Tables - skipping external fetch to remove GS dependency
@@ -87,13 +130,15 @@ export class UserService {
         // Legacy
         notas: userDB.notes || '',
         inicio: userDB.gender || '',
-        avatarUrl: userDB.avatarUrl || undefined
+        avatarUrl: userDB.avatarUrl || undefined,
+        gender: userDB.gender || 'male',
+        birth: userDB.birth ? format(userDB.birth, 'yyyy-MM-dd') : ''
       };
 
       // User gender for %MG classification
       const userGender = userDB.gender || 'M';
 
-      const pesagens: Pesagem[] = userDB.pesagens.map((p: typeof userDB.pesagens[number]) => {
+      const pesagens: Pesagem[] = userDB.pesagens.map((p) => {
         // Auto-calculate BMI if not present but we have weight and height
         let imcValue: number | null = p.imc ? Number(p.imc) : null;
         if (imcValue === null && p.peso && p.height) {
@@ -123,7 +168,7 @@ export class UserService {
         };
       });
 
-      const perimetros: PerimetroCorporal[] = userDB.perimetros.map((p: typeof userDB.perimetros[number]) => ({
+      const perimetros: PerimetroCorporal[] = userDB.perimetros.map((p) => ({
         date: p.date ? format(p.date, 'dd/MM/yyyy') : '',
         msRight: p.msRight?.toString().replace('.', ',') || '',
         msRightFlex: p.msRightFlex?.toString().replace('.', ',') || '',
@@ -137,12 +182,13 @@ export class UserService {
         thighL: p.thighL?.toString().replace('.', ',') || ''
       }));
 
-      const avaliacoes: AvaliacaoFisica[] = userDB.avaliacoes.map((a: typeof userDB.avaliacoes[number]) => ({
+      const avaliacoes: AvaliacaoFisica[] = userDB.avaliacoes.map((a) => ({
         date: a.date ? format(a.date, 'dd/MM/yyyy') : '',
         pushUps: a.pushUps?.toString() || '',
         sitUps: a.sitUps?.toString() || '',
         mile: a.mile || '',
         mileResult: a.mileResult || '',
+        pushUpsResult: a.pushUpsResult || '',
         notes: a.notes || ''
       }));
 
@@ -154,8 +200,12 @@ export class UserService {
         referenceTables,
       };
 
-      // Cache the result
-      setCachedUserData(email, result);
+      // Cache the result with the limits-aware cache key
+      // Use redisCache directly and also cache in userCache with default key (for backward compatibility)
+      await Promise.all([
+        redisCache.set(cacheKey, result, 60), // 60 seconds TTL for Redis
+        setCachedUserData(email, result) // Also cache with default key for backward compatibility
+      ]);
 
       return result;
     });
@@ -168,7 +218,7 @@ export class UserService {
     try {
       // In background refresh, we just invalidate cache or re-fetch
       // For now, simpler to just invalidate so next request fetches fresh
-      clearCachedUserData(email);
+      await clearCachedUserData(email);
     } catch (error) {
       // Ignore
     }

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { getCsrfToken, waitForCsrfToken } from "./useCsrfToken";
 import { useNotification } from "@/components/NotificationContext";
+import { queryKeys } from "../queryKeys";
 
 interface User {
   name: string;
@@ -26,6 +27,7 @@ interface LoginResponse {
 interface LoginData {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 interface RegisterData {
@@ -56,7 +58,7 @@ export function useSession(options: UseSessionOptions = {}) {
   const { initialData, enabled = true } = options;
 
   return useQuery<SessionResponse>({
-    queryKey: ["session"],
+    queryKey: queryKeys.session,
     queryFn: async () => {
       // Quick check - if no session indicator cookie exists, skip the API call
       // This optimization prevents 401 requests on F5 for non-logged users
@@ -145,7 +147,7 @@ export function useLogin() {
     },
     onSuccess: (data) => {
       // Update cache
-      queryClient.setQueryData(["session"], { authenticated: true, user: data.user });
+      queryClient.setQueryData(queryKeys.session, { authenticated: true, user: data.user });
       // Emit event for instant navbar update
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('session-updated', {
@@ -210,7 +212,7 @@ export function useRegister() {
     },
     onSuccess: (data) => {
       // Update cache
-      queryClient.setQueryData(["session"], { authenticated: true, user: data.user });
+      queryClient.setQueryData(queryKeys.session, { authenticated: true, user: data.user });
       // Emit event for instant navbar update
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('session-updated', {
@@ -262,17 +264,17 @@ export function useLogout() {
     },
     onSuccess: () => {
       // Immediately clear session state for instant navbar refresh
-      queryClient.setQueryData(["session"], { authenticated: false, user: undefined });
+      queryClient.setQueryData(queryKeys.session, { authenticated: false, user: undefined });
       // Clear all other queries
-      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "session" });
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== queryKeys.session[0] });
       notify("A sua sessão foi terminada. Até breve!", "info");
       // Redirect to home page
       router.push("/");
     },
     onError: () => {
       // Even on error, clear session state and redirect to home
-      queryClient.setQueryData(["session"], { authenticated: false, user: undefined });
-      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "session" });
+      queryClient.setQueryData(queryKeys.session, { authenticated: false, user: undefined });
+      queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== queryKeys.session[0] });
       notify("Sessão terminada.", "info");
       router.push("/");
     },

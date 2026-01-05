@@ -32,7 +32,13 @@ const registerHandler = new BaseRouteHandler()
       };
 
       const user = await AuthService.register(userData);
-      const sessionCookies = await AuthService.createSessionCookie(user);
+
+      // Get client info for session tracking
+      const userAgent = context.request.headers.get('user-agent') || undefined;
+      const ip = context.request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+        context.request.headers.get('x-real-ip') || undefined;
+
+      const sessionCookies = await AuthService.createSessionCookie(user, userAgent, ip);
 
       const response = ApiResponse.success(
         {

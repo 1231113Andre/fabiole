@@ -3,6 +3,7 @@ import { getResendClient } from "@/lib/email/ResendClient";
 import { r2Client, R2_BUCKET_NAME } from "@/lib/r2";
 import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { Logger } from "@/lib/utils/logger";
+import { redisCache } from "@/lib/cache/redisCache";
 
 // Default configuration values
 export const DEFAULT_CONFIG = {
@@ -16,9 +17,19 @@ export class SettingsService {
 
     /**
      * Get all dynamic system settings
+     * Uses Redis cache with 60 second TTL for performance
      */
     static async getSettings() {
+        const CACHE_KEY = 'settings:system';
+        const CACHE_TTL_SECONDS = 60; // 1 minute cache
+
         try {
+            // Check Redis cache first
+            const cached = await redisCache.get<Record<string, string | number>>(CACHE_KEY);
+            if (cached) {
+                return { ...DEFAULT_CONFIG, ...cached };
+            }
+
             // Fetch from DB
             const settings = await db.systemSetting.findMany({
                 select: { key: true, value: true }
@@ -31,6 +42,9 @@ export class SettingsService {
                 const num = Number(s.value);
                 config[s.key] = isNaN(num) || s.value.trim() === '' ? s.value : num;
             });
+
+            // Cache in Redis
+            await redisCache.set(CACHE_KEY, config, CACHE_TTL_SECONDS);
 
             // Merge with defaults
             return { ...DEFAULT_CONFIG, ...config };
@@ -141,22 +155,26 @@ export class SettingsService {
             await db.$queryRaw`SELECT 1`;
             status.database.online = true;
             status.database.message = 'Serviço de Base de Dados está Ativo';
-        } catch (e) {
+        } catch (e: unknown) {
+            Logger.error('System', 'Database connection check failed.', e);
             status.database.message = 'Erro de Ligação à Base de Dados';
         }
 
         // 2. Check Redis
         try {
             if (process.env.REDIS_URL) {
-                // Try to connect to Redis (simple ping)
-                // Note: You may need to install and configure a Redis client library
-                // For now, we'll just check if the URL is configured
-                status.redis.online = true;
-                status.redis.message = 'Serviço Redis está Configurado';
+                const pong = await redisCache.ping();
+                if (pong === 'PONG') {
+                    status.redis.online = true;
+                    status.redis.message = 'Serviço Redis está Operacional (Latência < 1ms)';
+                } else {
+                    status.redis.message = 'Redis Configurado mas Inacessível';
+                }
             } else {
-                status.redis.message = 'Redis não configurado';
+                status.redis.message = 'Redis não configurado (Modo Memória)';
             }
-        } catch (e) {
+        } catch (e: unknown) {
+            Logger.error('System', 'Redis connection check failed.', e);
             status.redis.message = 'Erro de Ligação ao Redis';
         }
 
@@ -172,7 +190,8 @@ export class SettingsService {
                     status.email.message = `Erro Resend: ${error?.message || 'Chave API Inválida'}`;
                 }
             }
-        } catch (e) {
+        } catch (e: unknown) {
+            Logger.error('System', 'Email service (Resend) connection check failed.', e);
             status.email.message = 'Falha crítica na ligação ao Resend';
         }
 
@@ -187,8 +206,9 @@ export class SettingsService {
                 status.storage.online = true;
                 status.storage.message = 'Armazenamento de Avatares (R2) está Ativo';
             }
-        } catch (e: any) {
-            status.storage.message = `Erro Armazenamento: ${e.message || 'Erro de Ligação'}`;
+        } catch (e: unknown) {
+            const errorMessage = e instanceof Error ? e.message : 'Erro de Ligação';
+            status.storage.message = `Erro Armazenamento: ${errorMessage}`;
         }
 
         return status;
@@ -208,7 +228,12 @@ export class SettingsService {
             }
         });
 
-        // Invalidate cache if important keys change (not applicable to env vars usually, but good practice)
+        // Invalidate Redis cache so next request gets fresh data
+        await redisCache.delete('settings:system');
+
+        // Invalidate env cache
         this.cachedEnv = null;
+
+        Logger.info('Settings', `Setting '${key}' updated to '${value}'. Cache invalidated.`);
     }
 }

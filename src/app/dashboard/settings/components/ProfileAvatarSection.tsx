@@ -42,8 +42,9 @@ export const ProfileAvatarSection: React.FC<ProfileAvatarSectionProps> = ({
                         userName={user.name}
                         userSurname={user.surname}
                         onUploadSuccess={() => {
-                            // Re-fetch user data to update avatar across the app
-                            refetch();
+                            // No refetch needed - AvatarUpload already updates session cache via setQueryData
+                            // useDashboardData uses sessionData.user.avatarUrl as fallback, so UI updates immediately
+                            // Explicit refetch could cause race condition (stale dbAvatar overriding fresh sessionData.user.avatarUrl)
                         }}
                         size={140}
                     />

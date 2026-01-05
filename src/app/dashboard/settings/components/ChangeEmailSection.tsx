@@ -5,6 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNotification } from "@/components/NotificationContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/react-query/queryKeys";
+import { useRouter } from "next/navigation";
 import NewButton from "@/app/components/newButton";
 
 // Inline button spinner
@@ -31,6 +34,8 @@ interface Props {
 
 export function ChangeEmailSection({ currentEmail, isOpen, onToggle }: Props) {
     const { notify } = useNotification();
+    const queryClient = useQueryClient();
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [step, setStep] = useState(1); // 1 = Request, 2 = Verify
@@ -147,13 +152,32 @@ export function ChangeEmailSection({ currentEmail, isOpen, onToggle }: Props) {
                     throw new Error(result.error || "Erro ao verificar código");
                 }
 
-                notify("Email alterado com sucesso! A recarregar...", "success");
+                const newEmail = result.data?.newEmail || data.newEmail;
 
-                // Close section and reload to refresh session
+                // Update React Query cache for session with new email
+                // This ensures immediate UI update without race conditions
+                queryClient.setQueryData(queryKeys.session, (old: any) => {
+                    if (!old?.user) return old;
+                    return {
+                        ...old,
+                        user: {
+                            ...old.user,
+                            email: newEmail
+                        }
+                    };
+                });
+
+                // No invalidateQueries needed here - useUserData uses sessionData?.user?.email as part of query key,
+                // so when session cache updates, the query key changes automatically and new data will be fetched
+                // This avoids race conditions similar to what we fixed in pesagens/perimetros/avaliacoes
+
+                notify("Email alterado com sucesso!", "success");
+
+                // Close section and refresh router for SSR components (navbar, etc.)
                 setTimeout(() => {
                     onToggle();
-                    window.location.reload();
-                }, 1500);
+                    router.refresh();
+                }, 500);
             }
         } catch (error: any) {
             notify(error.message, "error");
@@ -187,13 +211,47 @@ export function ChangeEmailSection({ currentEmail, isOpen, onToggle }: Props) {
             <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
                 <div className="overflow-hidden">
                     <div className="px-6 pb-6 border-t border-stroke">
-                        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                            <p className="text-sm text-amber-800">
-                                <i className="fa-duotone fa-triangle-exclamation mr-2"></i>
-                                {step === 1
-                                    ? "Será enviado um código de verificação para o teu email ATUAL."
-                                    : "Introduz o código que enviámos para o teu email atual."}
-                            </p>
+                        <div className="mt-4 p-3.5 bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl shadow-md w-fit">
+                            <div className="flex items-center gap-2.5 flex-nowrap">
+                                <div className="flex-shrink-0">
+                                    <i className="fa-duotone fa-envelope-circle-check text-lg text-[#e6915b]"></i>
+                                </div>
+                                <p className="text-sm font-semibold text-gray-900 leading-snug whitespace-nowrap">
+                                    {step === 1
+                                        ? "Será enviado um código de verificação para o teu email ATUAL."
+                                        : "Introduz o código que enviámos para o teu email atual."}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Steps Explanation */}
+                        <div className="mt-4 p-4 bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl shadow-md">
+                            <h4 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2.5">
+                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-[#e6915b] to-[#d37d45] text-white shadow-sm">
+                                    <i className="fa-duotone fa-list-ol text-sm"></i>
+                                </div>
+                                <span>Como funciona</span>
+                            </h4>
+                            <div className="space-y-3.5">
+                                <div className="flex items-start gap-3.5 p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[#e6915b] to-[#d37d45] text-white font-bold text-sm flex items-center justify-center shadow-md">
+                                        1
+                                    </div>
+                                    <div className="flex-1 pt-0.5">
+                                        <p className="text-sm font-bold text-gray-900 mb-1.5">Step #1: Solicitar Código</p>
+                                        <p className="text-xs text-gray-600 leading-relaxed">Introduz o teu novo email e confirma com a password atual. Será enviado um código de verificação para o teu email atual.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3.5 p-3 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-[#e6915b] to-[#d37d45] text-white font-bold text-sm flex items-center justify-center shadow-md">
+                                        2
+                                    </div>
+                                    <div className="flex-1 pt-0.5">
+                                        <p className="text-sm font-bold text-gray-900 mb-1.5">Step #2: Verificar Código</p>
+                                        <p className="text-xs text-gray-600 leading-relaxed">Introduz o código de 6 dígitos que recebeste no teu email atual para confirmar e completar a alteração.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} data-email-form className="mt-6 space-y-4 max-w-md">

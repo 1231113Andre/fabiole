@@ -1,20 +1,22 @@
 /**
- * @fileoverview Shared admin authentication utility
- * @description Centralized admin check to reduce code duplication
+ * @fileoverview Consolidated admin authentication utility
+ * @description Centralized admin check with role caching
  */
 
 import { cookies } from "next/headers";
-import { db } from "@/lib/db/client";
 import { verifySession } from "@/lib/security/session";
+import { getUserRole, isAdmin as isAdminCached } from "@/lib/cache/roleCache";
+import { db } from "@/lib/db/client";
 
 export interface AdminSession {
     email: string;
-    userId?: string;
+    userId: string;
     role: string;
 }
 
 /**
  * Check if the current request is from an authenticated administrator
+ * Uses cached role lookup for performance
  * @returns AdminSession if admin, null otherwise
  */
 export async function checkAdmin(): Promise<AdminSession | null> {
@@ -24,25 +26,22 @@ export async function checkAdmin(): Promise<AdminSession | null> {
     if (!sessionCookie) return null;
 
     const session = await verifySession(sessionCookie.value);
-    if (!session?.email) return null;
+    if (!session?.email || !session?.uuid) return null;
 
-    const user = await db.user.findUnique({
-        where: { email: session.email },
-        select: { id: true, role: true }
-    });
-
-    if (user?.role !== 'ADMINISTRATOR') return null;
+    // Use cached role check
+    const role = await getUserRole(session.uuid);
+    if (role !== 'ADMINISTRATOR') return null;
 
     return {
         email: session.email,
-        userId: user.id,
-        role: user.role
+        userId: session.uuid,
+        role
     };
 }
 
 /**
- * Alternative: check admin with cached session (for high-frequency endpoints)
- * Uses SELECT with minimal fields for performance
+ * Fast admin check - returns boolean only
+ * Uses cached role lookup
  */
 export async function checkAdminFast(): Promise<boolean> {
     const cookieStore = await cookies();
@@ -51,13 +50,20 @@ export async function checkAdminFast(): Promise<boolean> {
     if (!sessionCookie) return false;
 
     const session = await verifySession(sessionCookie.value);
-    if (!session?.email) return false;
+    if (!session?.uuid) return false;
 
-    const user = await db.user.findUnique({
-        where: { email: session.email },
-        select: { role: true }
-    });
-
-    return user?.role === 'ADMINISTRATOR';
+    return await isAdminCached(session.uuid);
 }
 
+/**
+ * Check if email belongs to an admin
+ * Note: This still requires DB lookup as we don't have userId from email
+ * Consider using checkAdmin() instead when session is available
+ */
+export async function isAdminEmail(email: string): Promise<boolean> {
+    const user = await db.user.findUnique({
+        where: { email },
+        select: { id: true, role: true }
+    });
+    return user?.role === 'ADMINISTRATOR';
+}

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { AdminStatsService } from './admin/AdminStatsService';
 import { AdminUserService, AdminUserDetail as AdminUserDetailType } from './admin/AdminUserService';
 import { AdminDashboardService } from './admin/AdminDashboardService';
+import { isAdmin } from '@/lib/cache/roleCache';
 import {
     AdminStatsData as AdminStatsDataType,
     AdminStats as AdminStatsType,
@@ -27,6 +28,7 @@ export type AdminUserDetail = AdminUserDetailType;
 
 /**
  * Verify admin access on the server
+ * Uses cached role check for performance
  * Throws redirect to dashboard if not admin
  */
 export async function verifyAdminAccess(): Promise<{ email: string }> {
@@ -38,16 +40,13 @@ export async function verifyAdminAccess(): Promise<{ email: string }> {
     }
 
     const session = await verifySession(sessionCookie.value);
-    if (!session?.email) {
+    if (!session?.email || !session?.uuid) {
         redirect('/');
     }
 
-    const user = await db.user.findUnique({
-        where: { email: session.email },
-        select: { role: true }
-    });
-
-    if (user?.role !== 'ADMINISTRATOR') {
+    // Use cached role check
+    const isAdminUser = await isAdmin(session.uuid);
+    if (!isAdminUser) {
         redirect('/dashboard');
     }
 
