@@ -40,11 +40,20 @@ export function UsersPageClient({ initialData }: UsersPageClientProps) {
                     Utilizadores <span className="text-red-500">{count}</span> Bloqueados
                 </h3>
                 {(suspendedCount > 0 || bannedCount > 0) && (
-                    <p className="text-xs text-gray-500 font-medium ml-9 -mt-0.5">
-                        ({suspendedCount > 0 ? `${suspendedCount} Suspensos` : ''}
-                        {suspendedCount > 0 && bannedCount > 0 ? ', ' : ''}
-                        {bannedCount > 0 ? `${bannedCount} Banidos` : ''})
-                    </p>
+                    <div className="text-sm text-gray-600 font-semibold ml-9 -mt-1 flex items-center gap-2">
+                        <i className="fa-duotone fa-user-slash text-red-500" />
+                        <span>
+                            (
+                            {suspendedCount > 0 && (
+                                <span><span className="text-red-500">{suspendedCount}</span> {suspendedCount === 1 ? 'Suspenso' : 'Suspensos'}</span>
+                            )}
+                            {suspendedCount > 0 && bannedCount > 0 && ', '}
+                            {bannedCount > 0 && (
+                                <span><span className="text-red-500">{bannedCount}</span> {bannedCount === 1 ? 'Banido' : 'Banidos'}</span>
+                            )}
+                            )
+                        </span>
+                    </div>
                 )}
             </div>
         );

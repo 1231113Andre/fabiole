@@ -373,14 +373,16 @@ export function AccountStatusSection({
                                                         </p>
                                                         <p className={`text-sm font-bold ${userPaid === 'PAGO' ? 'text-emerald-600' :
                                                             userPaid === 'PENDENTE' ? 'text-red-500' :
-                                                                'text-amber-600'
+                                                                userPaid === 'EM ANÁLISE' ? 'text-amber-600' :
+                                                                    'text-gray-400'
                                                             }`}>
-                                                            {userPaid}
+                                                            {userPaid && userPaid !== '-' ? userPaid : '-'}
                                                         </p>
                                                         <p className="text-xs text-gray-600 mt-1 leading-snug">
                                                             {userPaid === 'PAGO' ? 'Pagamento confirmado. Acesso total ativo.' :
                                                                 userPaid === 'EM ANÁLISE' ? 'Em análise. Aguarda verificação manual.' :
-                                                                    'Pagamento pendente ou em atraso.'}
+                                                                    userPaid === 'PENDENTE' ? 'Pagamento pendente ou em atraso.' :
+                                                                        'Status não definido.'}
                                                         </p>
                                                     </div>
 

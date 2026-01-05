@@ -10,11 +10,17 @@ export default function SobrePage() {
   return (
     <main className="min-h-screen overflow-hidden bg-white">
       {/* Hero Section with Banner Image - Extends behind Navbar */}
-      {/* Hero Section with Gradient Background (No Image) */}
-      <section className="relative h-[40vh] w-full flex items-center justify-center overflow-hidden bg-gradient-to-b from-black via-gray-900 to-black">
-
-        {/* Background Gradient Elements - Optional extra texture/blobs could go here, keeping it clean for now */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-gray-800/30 via-transparent to-transparent z-0"></div>
+      <section className="relative h-[40vh] w-full flex items-center justify-center overflow-hidden">
+        <Image
+          key="sobre-banner"
+          src="/images/banners/banner-01.png"
+          alt="Fábio Lé Personal Trainer"
+          fill
+          className="absolute inset-0 h-full w-full object-cover brightness-[0.6]"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/50"></div>
 
         {/* Hero Content - Centered (pt-16 offsets navbar for visual centering) */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 pt-16">
