@@ -266,8 +266,10 @@ export function useAdminMutations(userId: string, options?: {
             }
         },
         onSettled: () => {
-            // Invalidate adminUsers list to update user info in list view
+            // Invalidate both adminUsers list AND this specific user's cache
+            // This ensures consistency between list view and detail view
             queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
+            queryClient.invalidateQueries({ queryKey });
         }
     });
 

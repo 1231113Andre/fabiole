@@ -26,15 +26,18 @@ export function ServiceModal({ serviceTitle, onClose }: ServiceModalProps) {
 
     const handleContinue = useCallback(() => {
         if (!serviceTitle) return;
-        
-        const params = new URLSearchParams({
+
+        const selectionData = {
             service: serviceTitle,
             frequency: trainingFrequency.toString(),
             duration: trainingDuration,
             type: trainingType
-        });
+        };
 
-        router.push(`/contacto?${params.toString()}`);
+        // Save to sessionStorage for persistence without URL params
+        sessionStorage.setItem('contact_selection', JSON.stringify(selectionData));
+
+        router.push('/contacto');
     }, [serviceTitle, trainingFrequency, trainingDuration, trainingType, router]);
 
     // Memoize price calculation to avoid recalculating on every render
@@ -70,17 +73,14 @@ export function ServiceModal({ serviceTitle, onClose }: ServiceModalProps) {
                         </label>
                         <div className="grid grid-cols-5 gap-2">
                             {FREQUENCIES.map((freq) => (
-                                <button
+                                <NewButton
                                     key={freq}
                                     onClick={() => setTrainingFrequency(freq)}
-                                    className={`py-3 px-4 rounded-xl font-bold transition-all duration-200 cursor-pointer ${
-                                        trainingFrequency === freq
-                                            ? 'bg-primary text-white shadow-lg'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
+                                    variant={trainingFrequency === freq ? "new_primary_rounded" : "ghost"}
+                                    className="!px-3 !py-3 !text-sm !bg-gray-100 !text-gray-700 hover:!bg-gray-200 !rounded-xl !font-bold"
                                 >
                                     {freq}x
-                                </button>
+                                </NewButton>
                             ))}
                         </div>
                     </div>
@@ -94,17 +94,14 @@ export function ServiceModal({ serviceTitle, onClose }: ServiceModalProps) {
                             </label>
                             <div className="space-y-2">
                                 {DURATIONS.map((duration) => (
-                                    <button
+                                    <NewButton
                                         key={duration}
                                         onClick={() => setTrainingDuration(duration)}
-                                        className={`w-full py-2.5 px-4 rounded-xl font-semibold transition-all duration-200 text-left text-sm cursor-pointer ${
-                                            trainingDuration === duration
-                                                ? 'bg-primary text-white shadow-lg'
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
+                                        variant={trainingDuration === duration ? "new_primary_rounded" : "ghost"}
+                                        className="w-full !justify-start !py-2.5 !text-sm !bg-gray-100 !text-gray-700 hover:!bg-gray-200 !rounded-xl !font-semibold"
                                     >
                                         {duration}
-                                    </button>
+                                    </NewButton>
                                 ))}
                             </div>
                         </div>
@@ -116,33 +113,45 @@ export function ServiceModal({ serviceTitle, onClose }: ServiceModalProps) {
                             </label>
                             <div className="space-y-2">
                                 {TRAINING_TYPES.map((type) => (
-                                    <button
+                                    <NewButton
                                         key={type.value}
                                         onClick={() => setTrainingType(type.value)}
-                                        className={`w-full text-left py-2.5 px-4 rounded-xl font-semibold transition-all duration-200 text-sm cursor-pointer ${
-                                            trainingType === type.value
-                                                ? 'bg-primary text-white shadow-lg'
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
+                                        variant={trainingType === type.value ? "new_primary_rounded" : "ghost"}
+                                        className="w-full !justify-between !py-2.5 !text-sm !bg-gray-100 !text-gray-700 hover:!bg-gray-200 !rounded-xl !font-semibold"
                                     >
-                                        <div className="flex justify-between items-center">
-                                            <span>{type.label}</span>
-                                            <small className="opacity-75 text-xs">{type.desc}</small>
-                                        </div>
-                                    </button>
+                                        <span>{type.label}</span>
+                                        <small className={`text-xs ${trainingType === type.value ? 'opacity-75' : 'text-gray-500'}`}>{type.desc}</small>
+                                    </NewButton>
                                 ))}
                             </div>
                         </div>
                     </div>
 
                     {/* Price Display */}
-                    <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-5 mt-2 border border-primary/20">
-                        <div className="text-center">
-                            <p className="text-sm text-gray-600 mb-2 font-montserrat font-medium">Preço/Semana</p>
-                            <p className="text-4xl font-bold text-primary mb-2 font-fugazone">€{price}</p>
-                            <p className="text-xs text-gray-500 font-montserrat">
-                                {trainingFrequency}x por semana • {trainingDuration} • {trainingType === "individual" ? "Individual" : trainingType === "dupla" ? "Dupla" : "Trio"}
+                    {/* Price Display */}
+                    <div className="bg-gray-50 rounded-2xl p-6 mt-4 border border-gray-100">
+                        <div className="flex flex-col items-center">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 font-montserrat">
+                                Preço/Semana
                             </p>
+                            <p className="text-5xl font-black text-gray-900 mb-6 tracking-tight font-montserrat">
+                                €{price}
+                            </p>
+
+                            <div className="flex flex-wrap justify-center gap-2 w-full">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-gray-700 shadow-sm">
+                                    <i className="fa-duotone fa-calendar-check text-emerald-500"></i>
+                                    {trainingFrequency}x por semana
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-gray-700 shadow-sm">
+                                    <i className="fa-duotone fa-timer text-amber-500"></i>
+                                    {trainingDuration}
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-gray-700 shadow-sm">
+                                    <i className="fa-duotone fa-user text-blue-500"></i>
+                                    {trainingType === "individual" ? "Individual" : trainingType === "dupla" ? "Dupla" : "Trio"}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
