@@ -10,7 +10,7 @@ import {
     calculateAge,
     classifyMileResult,
     classifyPushUps
-} from "@/lib/utils/bodyMetrics";
+} from "@/lib/body-metrics";
 
 export function useBulkState(type: BulkType, userGender: string, userBirthDate?: Date | string | null) {
     // Calculate user age from birth date for Watson H2O formula

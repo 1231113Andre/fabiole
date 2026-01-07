@@ -1,6 +1,6 @@
 import React from "react";
 import { Perimetro } from "../../types";
-import { BADGE_STYLES } from "@/lib/utils/bodyMetrics";
+import { BADGE_STYLES } from "@/lib/body-metrics";
 import { TooltipHeader } from "@/components/ui/TooltipHeader";
 
 interface PerimetrosTableProps {

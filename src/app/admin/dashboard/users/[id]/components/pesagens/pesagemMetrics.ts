@@ -1,6 +1,6 @@
 /**
  * Body metrics calculations helper for Pesagem records.
- * Uses centralized functions from @/lib/utils/bodyMetrics
+ * Uses centralized functions from @/lib/body-metrics
  */
 
 import {
@@ -15,7 +15,7 @@ import {
     getBmiIcon,
     getFatIcon,
     BADGE_STYLES
-} from "@/lib/utils/bodyMetrics";
+} from "@/lib/body-metrics";
 import { Pesagem } from "../../types";
 
 // Re-export color functions for backward compatibility

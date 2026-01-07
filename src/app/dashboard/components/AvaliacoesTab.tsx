@@ -1,7 +1,7 @@
 "use client";
 
 import { AvaliacaoFisica } from "../types";
-import { BADGE_STYLES, getMileResultStyle, classifyMileResult, classifyPushUps, calculateAge } from "../../../lib/utils/bodyMetrics";
+import { BADGE_STYLES, getMileResultStyle, classifyMileResult, classifyPushUps, calculateAge } from "@/lib/body-metrics";
 
 interface AvaliacoesTabProps {
     avaliacoes: AvaliacaoFisica[];

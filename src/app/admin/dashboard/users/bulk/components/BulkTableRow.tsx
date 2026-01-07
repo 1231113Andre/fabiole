@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from "react";
 import { BulkRow, BulkType } from "./types";
 import { INPUT_CLASS, BOX_CLASS, getBmiClassColor, getFatClassColor, getDeltaPesoColor, formatDelta, getMileResultStyle } from "./utils";
-import { parseNumber } from "@/lib/utils/bodyMetrics";
+import { parseNumber } from "@/lib/body-metrics";
 
 interface BulkTableRowProps {
     row: BulkRow;

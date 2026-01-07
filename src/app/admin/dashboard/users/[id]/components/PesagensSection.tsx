@@ -4,7 +4,7 @@ import { Pesagem } from "../types";
 import { usePesagemForm } from "./pesagens/usePesagemForm";
 import { PesagensTable } from "./pesagens/PesagensTable";
 import { PesagemModal } from "./pesagens/PesagemModal";
-import { calculateAge } from "@/lib/utils/bodyMetrics";
+import { calculateAge } from "@/lib/body-metrics";
 import NewButton from "@/app/components/newButton";
 import Link from "next/link";
 import { useParams } from "next/navigation";

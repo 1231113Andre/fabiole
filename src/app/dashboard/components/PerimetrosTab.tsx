@@ -1,7 +1,7 @@
 "use client";
 
 import { PerimetroCorporal } from "../types";
-import { BADGE_STYLES } from "../../../lib/utils/bodyMetrics";
+import { BADGE_STYLES } from "@/lib/body-metrics";
 
 interface PerimetrosTabProps {
     perimetros: PerimetroCorporal[];

@@ -17,7 +17,7 @@ import {
     getFatIcon,
     getDeltaPesoColor,
     BADGE_STYLES
-} from "../../../lib/utils/bodyMetrics";
+} from "@/lib/body-metrics";
 import { TooltipHeader } from "../../../components/ui/TooltipHeader";
 
 interface PesagensTabProps {

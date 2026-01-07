@@ -3,7 +3,7 @@
  */
 
 // Re-export BMI calculation from central location
-export { calculateBMI } from "@/lib/utils/bodyMetrics";
+export { calculateBMI } from "@/lib/body-metrics";
 
 /**
  * Parse date string in DD/MM/YYYY or DD.MM.YYYY format to timestamp

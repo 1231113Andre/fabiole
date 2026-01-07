@@ -1,6 +1,6 @@
 import { db } from '@/lib/db/client';
 import { UserSheetData, PersonalInfo, Pesagem, PerimetroCorporal, AvaliacaoFisica } from '@/lib/types/dashboard';
-import { classifyBMI, classifyBodyFat, calculateBMI, calculateAge } from '@/lib/utils/bodyMetrics';
+import { classifyBMI, classifyBodyFat, calculateBMI, calculateAge } from '@/lib/body-metrics';
 import { format } from 'date-fns';
 import {
   getUserData as getCachedUserData,

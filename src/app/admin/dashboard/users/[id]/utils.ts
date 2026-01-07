@@ -1,5 +1,5 @@
 // Re-export body metrics functions from central location
-export { calculateMM, calculateH2O } from "@/lib/utils/bodyMetrics";
+export { calculateMM, calculateH2O } from "@/lib/body-metrics";
 
 export const formatDateForInput = (dateString: string) => {
     if (!dateString) return "";

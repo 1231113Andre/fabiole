@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Avaliacao } from "../../types";
 import { formatDateForInput } from "../../utils";
 import NewButton from "@/app/components/newButton";
-import { classifyMileResult, classifyPushUps, calculateAge, getMileResultStyle } from "@/lib/utils/bodyMetrics";
+import { classifyMileResult, classifyPushUps, calculateAge, getMileResultStyle } from "@/lib/body-metrics";
 
 // Inline spinner component
 const InlineSpinner = () => (

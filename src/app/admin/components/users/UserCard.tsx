@@ -5,7 +5,7 @@ import { Avatar } from "@/components/Avatar";
 import { getRoleInlineStyles } from "@/app/admin/constants/roleConfig";
 import { getStatusConfig } from "@/app/admin/constants/statusConfig";
 import { StatBadge } from "./StatBadge";
-import { calculateAge } from "@/lib/utils/bodyMetrics";
+import { calculateAge } from "@/lib/body-metrics";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 // ============================================================================

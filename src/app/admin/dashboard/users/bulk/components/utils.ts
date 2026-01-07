@@ -5,7 +5,7 @@ export {
     getDeltaPesoColor,
     formatDeltaPeso as formatDelta,
     getMileResultStyle
-} from "@/lib/utils/bodyMetrics";
+} from "@/lib/body-metrics";
 
 // Base box style for inputs
 export const BOX_CLASS = "h-8 px-2 text-xs font-medium bg-white border border-gray-200 rounded-md shadow-sm outline-none transition-all text-center";

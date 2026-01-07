@@ -8,7 +8,7 @@ import {
     calculateH2O,
     calculateAge,
     parseNumber
-} from "@/lib/utils/bodyMetrics";
+} from "@/lib/body-metrics";
 
 interface UsePesagemFormProps {
     gender: string;
