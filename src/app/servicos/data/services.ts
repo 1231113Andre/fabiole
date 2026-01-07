@@ -5,7 +5,7 @@ export const services: Service[] = [
         title: "Treinos Presenciais",
         titleIcon: "fa-dumbbell",
         desc: "Sessões 1:1 com acompanhamento personalizado no ginásio ou ao ar livre. Correção técnica em tempo real e motivação constante.",
-        price: { amount: "€33", unit: "por hora", prefix: "Preço" },
+        price: { amount: "€35", unit: "por hora", prefix: "Preço" },
         features: [
             { text: "Acompanhamento 1:1", icon: "fa-user", important: true, highlightWords: ["Acompanhamento"] },
             { text: "Correção técnica", icon: "fa-chart-line", important: true, highlightWords: ["Correção", "técnica"] },
@@ -22,7 +22,7 @@ export const services: Service[] = [
         title: "Treinos Online",
         titleIcon: "fa-video",
         desc: "Planos remotos com acompanhamento semanal e ajustes personalizados. Ideal para quem prefere treinar em casa.",
-        price: { amount: "€28", unit: "por hora", prefix: "Preço" },
+        price: { amount: "€30", unit: "por hora", prefix: "Preço" },
         features: [
             { text: "Planos personalizados", icon: "fa-clipboard-list", important: true, highlightWords: ["Planos"] },
             { text: "Acompanhamento semanal", icon: "fa-calendar-week", important: true, highlightWords: ["Acompanhamento"] },
@@ -39,7 +39,7 @@ export const services: Service[] = [
         title: "Acompanhamento Online",
         titleIcon: "fa-chart-line",
         desc: "Através de uma app e contacto regular, recebe um plano de treino personalizado com exercícios detalhados (vídeo e imagem).",
-        price: { amount: "€33", unit: "/ mês", prefix: "Preço" },
+        price: { amount: "€35", unit: "/ mês", prefix: "Preço" },
         features: [
             { text: "Plano personalizado", icon: "fa-clipboard-list", important: true, highlightWords: ["Plano"] },
             { text: "App dedicada", icon: "fa-mobile-alt", important: true, highlightWords: ["App"] },

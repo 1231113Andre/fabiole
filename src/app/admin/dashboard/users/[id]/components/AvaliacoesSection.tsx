@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Avaliacao } from "../types";
+import { Avaliacao, Pesagem } from "../types";
 import { AvaliacoesTable } from "./avaliacoes/AvaliacoesTable";
 import { AvaliacaoModal } from "./avaliacoes/AvaliacaoModal";
 import NewButton from "@/app/components/newButton";
@@ -9,6 +9,7 @@ import { useParams } from "next/navigation";
 
 interface AvaliacoesSectionProps {
     avaliacoes: Avaliacao[];
+    pesagens?: Pesagem[];
     onSave: (e: React.FormEvent<HTMLFormElement>, editingId?: number, originalRecord?: Avaliacao) => Promise<void>;
     onBulkSave?: (data: any[]) => Promise<void>;
     onDelete: (id: number) => Promise<void>;
@@ -18,6 +19,7 @@ interface AvaliacoesSectionProps {
 
 export const AvaliacoesSection: React.FC<AvaliacoesSectionProps> = ({
     avaliacoes,
+    pesagens = [],
     onSave,
     onBulkSave,
     onDelete,
@@ -89,6 +91,7 @@ export const AvaliacoesSection: React.FC<AvaliacoesSectionProps> = ({
 
             <AvaliacoesTable
                 avaliacoes={avaliacoes}
+                pesagens={pesagens}
                 onEdit={handleOpenModal}
                 onDelete={onDelete}
                 gender={gender}

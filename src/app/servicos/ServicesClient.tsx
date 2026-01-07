@@ -8,7 +8,7 @@ import { ServiceCTA } from "./components/ServiceCTA";
 import { services } from "./data/services";
 
 // Lazy load modal - only loads when needed
-const ServiceModal = lazy(() => 
+const ServiceModal = lazy(() =>
     import("./components/ServiceModal").then(module => ({ default: module.ServiceModal }))
 );
 
@@ -17,10 +17,41 @@ const SERVICES_WITHOUT_MODAL = new Set([
     "Acompanhamento Online"
 ]);
 
-export function ServicesClient() {
+interface ServicesClientProps {
+    initialSettings?: Record<string, any>;
+}
+
+export function ServicesClient({ initialSettings = {} }: ServicesClientProps) {
     const [selectedService, setSelectedService] = useState<string | null>(null);
     const [showModal, setShowModal] = useState(false);
     const router = useRouter();
+
+    // Dynamically update service display prices based on settings
+    const dynamicServices = services.map(service => {
+        // Create a shallow copy to modify price
+        const updatedService = { ...service };
+
+        // Deep clone price if it exists
+        if (service.price && typeof service.price === 'object') {
+            updatedService.price = { ...service.price };
+
+            if (service.title === "Treinos Presenciais") {
+                const price = initialSettings['price_presencial_1hora'];
+                if (price) updatedService.price.amount = `€${price}`;
+            } else if (service.title === "Treinos Online") {
+                const price = initialSettings['price_online_1hora'];
+                if (price) updatedService.price.amount = `€${price}`;
+            } else if (service.title === "Acompanhamento Online") {
+                const price = initialSettings['price_acompanhamento_mensal'];
+                if (price) updatedService.price.amount = `€${price}`;
+            }
+        } else if (service.title === "Ginástica Laboral / Teambuilding para Empresas") {
+            const price = initialSettings['price_ginastica_laboral'];
+            if (price) updatedService.price = price;
+        }
+
+        return updatedService;
+    });
 
     const handleServiceClick = useCallback((serviceTitle: string) => {
         // For Ginástica Laboral and Acompanhamento Online, redirect directly to contact without showing pricing modal
@@ -49,7 +80,7 @@ export function ServicesClient() {
             {/* Main Content Grid */}
             <div className="py-24 container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid w-full gap-10 md:grid-cols-2 lg:grid-cols-3 lg:max-w-screen-2xl">
-                    {services.map((service, index) => (
+                    {dynamicServices.map((service, index) => (
                         <ServiceCard
                             key={service.title}
                             service={service}
@@ -66,6 +97,7 @@ export function ServicesClient() {
                     <ServiceModal
                         serviceTitle={selectedService}
                         onClose={handleCloseModal}
+                        pricingConfig={initialSettings}
                     />
                 </Suspense>
             )}

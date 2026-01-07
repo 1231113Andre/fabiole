@@ -170,6 +170,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                     <Suspense fallback={<LoadingSection />}>
                         <AvaliacoesSection
                             avaliacoes={user.avaliacoes}
+                            pesagens={user.pesagens}
                             onSave={(e, id, originalRecord) => handleSaveRecord('avaliacoes', e, id, originalRecord)}
                             onBulkSave={(data) => handleBulkSave('avaliacoes', data)}
                             onDelete={(id) => handleDeleteRecord('avaliacoes', id, "Tem a certeza que deseja eliminar esta avaliação?")}

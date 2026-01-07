@@ -19,6 +19,9 @@ export function UsersPageClient({ initialData }: UsersPageClientProps) {
 
     // Users from hydrated data (will always have correct values from SSR)
     const users = useMemo(() => data?.users ?? [], [data]);
+
+    // Filter active users for the main list
+    const activeUsers = useMemo(() => users.filter(u => u.status === 'ACTIVE'), [users]);
     const blockedUsers = useMemo(() => users.filter(u => u.status === 'SUSPENDED' || u.status === 'BANNED'), [users]);
 
     const handleSearchChange = useCallback((value: string) => {
@@ -28,6 +31,31 @@ export function UsersPageClient({ initialData }: UsersPageClientProps) {
     const handleBlockedSearchChange = useCallback((value: string) => {
         setBlockedSearchTerm(value);
     }, []);
+
+    const renderActiveTitle = (count: number, filtered: typeof users) => {
+        // count is the filtered active users (matching search)
+        // users.length is the total global count
+        // activeUsers.length is the total active count (without search)
+        const totalGlobal = users.length;
+        const totalActive = activeUsers.length;
+        const adminCount = users.filter(u => u.role === 'ADMINISTRATOR').length;
+
+        return (
+            <div>
+                <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
+                    <i className="fa-duotone fa-users text-primary" />
+                    Todos os <span className="text-primary">{totalGlobal}</span> Utilizadores
+                </h3>
+                <div className="text-sm text-gray-600 font-semibold ml-9 -mt-1 flex items-center gap-1">
+                    <span>
+                        (
+                        <span className="text-primary">{adminCount}</span> {adminCount === 1 ? 'Administrador' : 'Administradores'},{' '}
+                        <span className="text-primary">{count}</span> ativos)
+                    </span>
+                </div>
+            </div>
+        );
+    };
 
     const renderBlockedTitle = (count: number, filtered: typeof users) => {
         const suspendedCount = filtered.filter(u => u.status === 'SUSPENDED').length;
@@ -68,9 +96,10 @@ export function UsersPageClient({ initialData }: UsersPageClientProps) {
                     icon="fa-users"
                 />
                 <UserTable
-                    users={users}
+                    users={activeUsers}
                     searchTerm={searchTerm}
                     onSearchChange={handleSearchChange}
+                    renderTitle={renderActiveTitle}
                 />
             </div>
 

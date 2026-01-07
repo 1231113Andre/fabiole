@@ -16,7 +16,7 @@ interface ServiceCardProps {
 function ServiceCardComponent({ service, index, onSelect }: ServiceCardProps) {
     return (
         <div
-            className={`group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:shadow-xl ${index === 3 ? 'lg:col-start-2 lg:col-span-1' : ''}`}
+            className={`group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-xl sm:rounded-[2rem] border border-gray-100 bg-white p-4 sm:p-8 text-center shadow-lg transition-all duration-300 hover:shadow-xl ${index === 3 ? 'lg:col-start-2 lg:col-span-1' : ''}`}
         >
             {service.popular && (
                 <span className="absolute top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1.5 rounded-full shadow-lg text-xs font-bold uppercase tracking-wide z-10">
@@ -45,9 +45,9 @@ function ServiceCardComponent({ service, index, onSelect }: ServiceCardProps) {
             <div className="mb-2 -mt-2 h-[2px] w-full bg-gray-400"></div>
 
             {/* Title */}
-            <h3 className="mb-1 mt-1 font-fugazone text-2xl uppercase leading-tight text-gray-900 transition-colors duration-300 group-hover:text-primary animate-fade-in-up flex items-center justify-center gap-4" style={{ animationDelay: `${index * 0.1}s` }}>
+            <h3 className="mb-1 mt-1 font-fugazone text-lg sm:text-2xl uppercase leading-tight text-gray-900 transition-colors duration-300 group-hover:text-primary animate-fade-in-up flex items-center justify-center gap-2 sm:gap-4" style={{ animationDelay: `${index * 0.1}s` }}>
                 {service.titleIcon && (
-                    <i className={`fa-duotone ${service.titleIcon} text-blue-600 text-2xl`}></i>
+                    <i className={`fa-duotone ${service.titleIcon} text-blue-600 text-lg sm:text-2xl`}></i>
                 )}
                 <span>{service.title}</span>
             </h3>
@@ -72,8 +72,8 @@ function ServiceCardComponent({ service, index, onSelect }: ServiceCardProps) {
                     iconPosition="right"
                     onClick={() => onSelect(service.title)}
                 >
-                    {service.title === "Ginástica Laboral / Teambuilding para Empresas" || service.title === "Acompanhamento Online" 
-                        ? "Contactar Para Informações" 
+                    {service.title === "Ginástica Laboral / Teambuilding para Empresas" || service.title === "Acompanhamento Online"
+                        ? "Contactar Para Informações"
                         : "Escolher Plano"}
                 </NewButton>
             </div>
@@ -84,6 +84,6 @@ function ServiceCardComponent({ service, index, onSelect }: ServiceCardProps) {
 // Memoize to prevent unnecessary re-renders
 export const ServiceCard = memo(ServiceCardComponent, (prevProps, nextProps) => {
     return prevProps.service.title === nextProps.service.title &&
-           prevProps.index === nextProps.index;
+        prevProps.index === nextProps.index;
 });
 

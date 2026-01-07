@@ -225,9 +225,7 @@ body::-webkit-scrollbar-thumb:hover {
   display: none;
 }
 
-.modal-open {
-  /* Modal is open but scrollbar remains visible - no overflow changes needed */
-}
+
 
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out forwards;
@@ -242,6 +240,36 @@ body::-webkit-scrollbar-thumb:hover {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+.animate-modal-in {
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 
@@ -363,3 +391,112 @@ a:focus-visible {
 .custom-checkbox:checked::after {
   @apply opacity-100 scale-100;
 }
+
+/* ========================================================= */
+/* POSITIONING UTILITIES                                     */
+/* ========================================================= */
+
+/* Vertical offset utilities - responsive padding/margin helpers */
+.ui-offset-sm {
+  padding-top: 2rem;
+}
+
+.ui-offset-md {
+  padding-top: 4rem;
+}
+
+.ui-offset-lg {
+  padding-top: 6rem;
+}
+
+.ui-offset-xl {
+  padding-top: 8rem;
+}
+
+.ui-margin-sm {
+  margin-top: 4rem;
+}
+
+.ui-margin-md {
+  margin-top: 8rem;
+}
+
+.ui-margin-lg {
+  margin-top: 12rem;
+}
+
+.ui-margin-xl {
+  margin-top: 16rem;
+}
+
+@media (min-width: 768px) {
+  .ui-offset-sm {
+    padding-top: 3rem;
+  }
+
+  .ui-offset-md {
+    padding-top: 6rem;
+  }
+
+  .ui-offset-lg {
+    padding-top: 8rem;
+  }
+
+  .ui-offset-xl {
+    padding-top: 12rem;
+  }
+
+  .ui-margin-sm {
+    margin-top: 6rem;
+  }
+
+  .ui-margin-md {
+    margin-top: 10rem;
+  }
+
+  .ui-margin-lg {
+    margin-top: 16rem;
+  }
+
+  .ui-margin-xl {
+    margin-top: 20rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ui-offset-sm {
+    padding-top: 1.5rem;
+  }
+
+  .ui-offset-md {
+    padding-top: 3rem;
+  }
+
+  .ui-offset-lg {
+    padding-top: 4rem;
+  }
+
+  .ui-offset-xl {
+    padding-top: 6rem;
+  }
+
+  .ui-margin-sm {
+    margin-top: 3rem;
+  }
+
+  .ui-margin-md {
+    margin-top: 6rem;
+  }
+
+  .ui-margin-lg {
+    margin-top: 8rem;
+  }
+
+  .ui-margin-xl {
+    margin-top: 12rem;
+  }
+}
+
+/* ========================================================= */
+/* 404 PAGE STYLES                                           */
+/* ========================================================= */

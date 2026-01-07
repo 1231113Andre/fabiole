@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import { useNotification } from "@/components/NotificationContext";
 import { AdminHeader } from "@/app/admin/components/AdminHeader";
+import NewButton from "@/app/components/newButton";
+
+import { PricingCard } from "./components/PricingCard";
+import { RateLimitCard } from "./components/RateLimitCard";
+import { SystemStatusCard } from "./components/SystemStatusCard";
 import { EnvVarsCard } from "./components/EnvVarsCard";
-import { SystemConfigCard } from "./components/SystemConfigCard";
 
 interface SettingsPageClientProps {
     initialData?: {
@@ -14,14 +18,15 @@ interface SettingsPageClientProps {
     };
 }
 
+type TabType = 'status' | 'pricing' | 'api' | 'system';
+
 export function SettingsPageClient({ initialData }: SettingsPageClientProps) {
     const { notify } = useNotification();
     const [loading, setLoading] = useState(!initialData);
     const [settings, setSettings] = useState<any>(initialData || null);
+    const [activeTab, setActiveTab] = useState<TabType>('status');
 
     useEffect(() => {
-        // If we have initial data, we already rendered. 
-        // We still fetch once to ensure alignment if something changed in that tiny window
         if (initialData) {
             setLoading(false);
         } else {
@@ -41,6 +46,13 @@ export function SettingsPageClient({ initialData }: SettingsPageClientProps) {
         }
     };
 
+    const TABS = [
+        { id: 'status', label: 'Estado', icon: 'fa-heart-pulse' },
+        { id: 'pricing', label: 'Preços', icon: 'fa-euro-sign' },
+        { id: 'api', label: 'API / Segurança', icon: 'fa-shield-halved' },
+        { id: 'system', label: 'Sistema', icon: 'fa-server' },
+    ];
+
     return (
         <div className="space-y-6">
             <AdminHeader
@@ -49,46 +61,61 @@ export function SettingsPageClient({ initialData }: SettingsPageClientProps) {
                 icon="fa-gears"
             />
 
-            {/* Service Status Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                {settings?.status && Object.entries(settings.status).map(([key, info]: [string, any]) => (
-                    <div key={key} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-start gap-4 hover:border-primary/20 transition-colors">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm shrink-0 ${info.online ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
-                            <i className={`fa-duotone ${info.icon} text-xl`}></i>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                                <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider ">{key}</p>
-                                {info.online && (
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                )}
-                            </div>
-                            <p className={`text-sm font-bold mb-1 ${info.online ? 'text-emerald-700' : 'text-red-600'}`}>
-                                {info.message}
-                            </p>
-                            <p className="text-xs text-gray-500 leading-relaxed font-medium">
-                                {info.description}
-                            </p>
-                        </div>
-                    </div>
+            {/* Navigation Tabs */}
+            <div className="flex overflow-x-auto pb-4 gap-2 border-b border-gray-100 no-scrollbar sm:flex-wrap">
+                {TABS.map((tab) => (
+                    <NewButton
+                        key={tab.id}
+                        variant={activeTab === tab.id ? 'new_primary_rounded' : 'new_primary_no_bg_rounded'}
+                        onClick={() => setActiveTab(tab.id as TabType)}
+                        className="!justify-start"
+                    >
+                        <i className={`fa-duotone ${tab.icon} mr-2`}></i>
+                        {tab.label}
+                    </NewButton>
                 ))}
             </div>
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                {/* Left Column: Editable Settings */}
-                <div className="space-y-6">
-                    <SystemConfigCard
-                        settings={settings?.config || {}}
-                        onUpdate={() => fetchSettings()}
-                        loading={loading}
-                    />
-                </div>
+            {/* Content Area */}
+            <div className="min-h-[400px]">
+                {activeTab === 'status' && (
+                    <div className="animate-fade-in-up">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <i className="fa-duotone fa-heart-pulse text-emerald-500"></i>
+                            Estado dos Serviços
+                        </h3>
+                        <SystemStatusCard status={settings?.status} loading={loading} />
+                    </div>
+                )}
 
-                {/* Right Column: Read-Only Env Vars */}
-                <div className="space-y-6">
-                    <EnvVarsCard envVars={settings?.env || {}} loading={loading} />
-                </div>
+                {activeTab === 'pricing' && (
+                    <div className="animate-fade-in-up">
+                        <PricingCard
+                            settings={settings?.config || {}}
+                            onUpdate={fetchSettings}
+                            loading={loading}
+                        />
+                    </div>
+                )}
+
+                {activeTab === 'api' && (
+                    <div className="animate-fade-in-up">
+                        <RateLimitCard
+                            settings={settings?.config || {}}
+                            onUpdate={fetchSettings}
+                            loading={loading}
+                        />
+                    </div>
+                )}
+
+                {activeTab === 'system' && (
+                    <div className="animate-fade-in-up">
+                        <EnvVarsCard
+                            envVars={settings?.env || {}}
+                            loading={loading}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

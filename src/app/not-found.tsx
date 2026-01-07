@@ -10,7 +10,7 @@ const useParallax = (containerRef: React.RefObject<HTMLDivElement | null>, layer
   const rafId = useRef<number | undefined>(undefined);
   const mousePosition = useRef({ x: 0, y: 0 });
   const currentPosition = useRef({ x: 0, y: 0 });
-  
+
   const animate = useCallback(() => {
     // Slightly faster interpolation
     currentPosition.current.x += (mousePosition.current.x - currentPosition.current.x) * 0.05;
@@ -19,7 +19,7 @@ const useParallax = (containerRef: React.RefObject<HTMLDivElement | null>, layer
     if (layersRef.current) {
       const layers = layersRef.current.querySelectorAll('.parallax-layer');
       const speeds = [0.2, 0.4, 0.6]; // Slightly faster layered movement
-      
+
       layers.forEach((layer, index) => {
         const speed = speeds[index] || 0.3;
         const translateX = currentPosition.current.x * speed;
@@ -27,19 +27,19 @@ const useParallax = (containerRef: React.RefObject<HTMLDivElement | null>, layer
         (layer as HTMLElement).style.transform = `translate3d(${translateX}px, ${translateY}px, 0)`;
       });
     }
-    
+
     rafId.current = requestAnimationFrame(animate);
   }, [layersRef]);
-  
+
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!containerRef.current) return;
-    
+
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    
+
     // Calculate mouse position relative to center - slightly faster
     const maxRangeX = 10; // Slightly more horizontal movement
     const maxRangeY = 6; // Slightly more vertical movement
@@ -53,9 +53,9 @@ const useParallax = (containerRef: React.RefObject<HTMLDivElement | null>, layer
 
     // Start animation loop
     rafId.current = requestAnimationFrame(animate);
-    
+
     container.addEventListener('mousemove', handleMouseMove, { passive: true });
-    
+
     return () => {
       container.removeEventListener('mousemove', handleMouseMove);
       if (rafId.current) {
@@ -88,16 +88,16 @@ const NotFound = memo(() => {
   }, [router]);
 
   return (
-    <div 
+    <div
       ref={containerRef}
-      className="min-h-screen w-full relative overflow-hidden flex items-center justify-center bg-background not-found-container"
+      className="min-h-screen w-full relative overflow-hidden flex flex-col items-center justify-center bg-background not-found-container"
       data-404="true"
     >
-      <div 
+      <div
         ref={layersRef}
-        className="absolute inset-0 flex items-start justify-center pt-24 md:pt-48 z-0"
+        className="relative flex items-center justify-center z-0 mb-4 w-[500px] h-[200px] max-w-full"
       >
-        <div className="parallax-layer absolute flex items-center justify-center">
+        <div className="parallax-layer absolute inset-0 flex items-center justify-center">
           <Image
             src="/404/layer01.png"
             alt="404 Layer 1"
@@ -108,7 +108,7 @@ const NotFound = memo(() => {
             sizes="500px"
           />
         </div>
-        <div className="parallax-layer absolute flex items-center justify-center">
+        <div className="parallax-layer absolute inset-0 flex items-center justify-center">
           <Image
             src="/404/layer02.png"
             alt="404 Layer 2"
@@ -119,7 +119,7 @@ const NotFound = memo(() => {
             sizes="500px"
           />
         </div>
-        <div className="parallax-layer absolute flex items-center justify-center">
+        <div className="parallax-layer absolute inset-0 flex items-center justify-center">
           <Image
             src="/404/layer03.png"
             alt="404 Layer 3"
@@ -132,10 +132,10 @@ const NotFound = memo(() => {
         </div>
       </div>
 
-        <div className="relative z-20 text-center px-4 max-w-4xl mx-auto mt-32 md:mt-40">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-fugazone text-white mb-2 tracking-wider">
-            PAGE NOT FOUND
-          </h2>
+      <div className="relative z-20 text-center px-4 max-w-4xl mx-auto">
+        <h2 className="text-4xl md:text-5xl lg:text-6xl font-fugazone text-white mb-2 tracking-wider">
+          PAGE NOT FOUND
+        </h2>
 
         <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto text-base">
           The page you are looking for is not available.
@@ -154,14 +154,14 @@ const NotFound = memo(() => {
         </div>
       </div>
       <div className="absolute inset-0 pointer-events-none">
-        <div 
+        <div
           className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 blur-3xl"
           style={{
             background: 'radial-gradient(circle, rgba(147, 51, 234, 0.3) 0%, transparent 70%)',
             transform: 'translate(-50%, -50%)'
           }}
         />
-        <div 
+        <div
           className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-15 blur-3xl"
           style={{
             background: 'radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%)',

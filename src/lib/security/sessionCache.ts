@@ -19,10 +19,11 @@ const SESSION_CACHE_TTL_MS = 30 * 1000; // 30 seconds
 
 /**
  * Get session cache key (hash of token for security)
- * Uses first 20 chars of token as identifier
+ * Uses LAST 40 chars of token (JWT signature) which is unique per user
+ * NOTE: First 20 chars are the JWT header which is IDENTICAL for all tokens!
  */
 function getSessionCacheKey(token: string): string {
-  return token.substring(0, 20);
+  return token.slice(-40);
 }
 
 /**

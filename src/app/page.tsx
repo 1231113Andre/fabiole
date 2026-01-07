@@ -101,39 +101,48 @@ export default function Home() {
 
             {/* Subtitle */}
             <p className="mb-12 max-w-2xl text-center text-lg font-medium text-gray-700 md:text-xl">
-              Planos personalizados para diferentes objetivos e níveis de fitness
+              Planos de Treino Personalizados para Perda de Peso e Hipertrofia
             </p>
 
-            {/* Badges Grid (2 top, 1 bottom center) */}
-            <div className="mb-16 grid w-full max-w-4xl grid-cols-1 gap-4 md:grid-cols-2">
+            {/* Badges Grid (Clean & Flexible) */}
+            <div className="mb-16 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
 
               {/* Badge 1 */}
-              <div className="flex flex-row items-center justify-center text-center gap-2 rounded-2xl border-2 border-emerald-700 bg-white px-8 py-1 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-800/30 transition-transform">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-xl text-red-600">
-                  <i className="fa-duotone fa-heart-pulse"></i>
+              <div className="flex flex-col items-center text-center group p-4">
+                <div className="mb-6 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                  <i className="fa-duotone fa-heart-pulse text-6xl text-red-500 drop-shadow-sm"></i>
                 </div>
-                <p className="font-semibold text-gray-800 text-sm md:text-base whitespace-nowrap">
-                  Avaliação física inicial é gratuita!
+                <h3 className="mb-3 text-xl font-bold text-gray-900 font-fugazone uppercase tracking-wide">
+                  Avaliação Gratuita
+                </h3>
+                <p className="max-w-[280px] text-base font-medium text-gray-600 leading-relaxed">
+                  Analiso a tua condição física e objetivos sem compromisso.
                 </p>
               </div>
 
               {/* Badge 2 */}
-              <div className="flex flex-row items-center justify-center text-center gap-2 rounded-2xl border-2 border-emerald-700 bg-white px-8 py-1 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-800/30 transition-transform">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-xl text-orange-600">
-                  <i className="fa-duotone fa-clipboard-list"></i>
+              <div className="flex flex-col items-center text-center group p-4">
+                <div className="mb-6 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                  <i className="fa-duotone fa-clipboard-list text-6xl text-orange-500 drop-shadow-sm"></i>
                 </div>
-                <p className="font-semibold text-gray-800 text-sm md:text-base whitespace-nowrap">
-                  Planos 100% personalizados
+                <h3 className="mb-3 text-xl font-bold text-gray-900 font-fugazone uppercase tracking-wide">
+                  Treino Adaptado
+                </h3>
+                <p className="max-w-[280px] text-base font-medium text-gray-600 leading-relaxed">
+                  Exercícios 100% ajustados à tua biomecânica e estilo de vida.
                 </p>
               </div>
 
-              {/* Badge 3 (Centered) */}
-              <div className="col-span-1 flex flex-row items-center justify-center text-center gap-2 rounded-2xl border-2 border-emerald-700 bg-white px-8 py-1 shadow-lg shadow-emerald-500/20 ring-1 ring-emerald-800/30 transition-transform md:col-span-2 md:mx-auto md:w-3/5">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center text-xl text-blue-600">
-                  <i className="fa-duotone fa-calendar-check"></i>
+              {/* Badge 3 */}
+              <div className="flex flex-col items-center text-center group p-4">
+                <div className="mb-6 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                  <i className="fa-duotone fa-clock-rotate-left text-6xl text-blue-500 drop-shadow-sm"></i>
                 </div>
-                <p className="font-semibold text-gray-800 text-sm md:text-base whitespace-nowrap">
-                  Acompanhamento semanal
+                <h3 className="mb-3 text-xl font-bold text-gray-900 font-fugazone uppercase tracking-wide">
+                  Acompanhamento 24/7
+                </h3>
+                <p className="max-w-[280px] text-base font-medium text-gray-600 leading-relaxed">
+                  Suporte contínuo via WhatsApp e ajustes semanais.
                 </p>
               </div>
 
@@ -153,30 +162,24 @@ export default function Home() {
             </div>
 
             {/* Service Cards Grid */}
-            <div className="grid w-full gap-10 md:grid-cols-2 lg:grid-cols-3 lg:max-w-screen-2xl px-4">
+            <div className="grid w-full gap-10 md:grid-cols-2 lg:max-w-4xl px-4 mx-auto">
               {[
                 {
                   title: "Treinos Presenciais",
-                  desc: "Sessões 1:1 com acompanhamento personalizado no ginásio ou ao ar livre.",
+                  desc: "Acompanhamento técnico presencial em Lisboa. Correção postural e intensidade máxima para resultados rápidos.",
                   icon: "fa-dumbbell",
-                  href: "/servicos/presencial",
+                  href: "/servicos",
                 },
                 {
                   title: "Treinos Online",
-                  desc: "Planos remotos com acompanhamento semanal e ajustes personalizados.",
+                  desc: "Consultoria de fitness à distância. Planos de treino 100% personalizados para o teu equipamento e horários.",
                   icon: "fa-laptop-code",
-                  href: "/servicos/online",
-                },
-                {
-                  title: "Planos Alimentares",
-                  desc: "Nutrição alinhada ao teu objetivo de treino e estilo de vida.",
-                  icon: "fa-apple-whole",
-                  href: "/servicos/nutricao",
-                },
+                  href: "/servicos",
+                }
               ].map((service, index) => (
                 <div
                   key={index}
-                  className="group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-10 text-center shadow-lg transition-colors"
+                  className="group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-[2rem] border border-gray-100 bg-white p-10 text-center shadow-lg transition-all duration-300 hover:shadow-xl"
                 >
                   {/* Icon with hover effect */}
                   <div className="mb-6 flex justify-center">
@@ -208,60 +211,127 @@ export default function Home() {
             </div>
 
             {/* Bottom Divider matching the top one */}
-            <div className="mb-12 mt-20 h-px w-full bg-gray-900 opacity-20"></div>
+            <div className="mt-8 h-px w-full bg-gray-900 opacity-20"></div>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-50 to-white">
-        <div className="ui-container">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="fade-in-on-scroll">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 mb-6 font-montserrat">
-                Sobre <span className="text-primary">Mim</span>
-              </h2>
-              <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed font-montserrat">
-                Sou um personal trainer apaixonado por fitness e transformação.
-                Com anos de experiência, ajudo pessoas a alcançarem os seus objetivos
-                através de treinos personalizados e acompanhamento dedicado.
-              </p>
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className="text-center p-4 bg-white rounded-xl shadow-md">
-                  <div className="text-3xl font-bold text-blue-500 mb-2 font-montserrat">10+</div>
-                  <div className="text-gray-600 font-montserrat">Anos de Experiência</div>
+      {/* About Section - Same background as Services */}
+      <section className="relative z-10 w-full bg-slate-50 pt-4 pb-12 lg:pt-8 lg:pb-16" aria-label="Sobre o Treinador">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Section Header - Matching Transforme-se Connosco style */}
+          <div className="mb-14 flex flex-col items-center text-center">
+            <span className="inline-flex items-center gap-2 mb-6 px-5 py-2 rounded-full bg-white border border-primary/20 shadow-sm text-primary text-xs font-bold uppercase tracking-widest hover:border-primary/40 transition-colors">
+              <i className="fa-duotone fa-user-check text-sm"></i>
+              Conhece-me
+            </span>
+            <h2 className="mb-6 text-center font-fugazone text-4xl uppercase text-gray-900 md:text-5xl lg:text-6xl">
+              Fábio <span className="ui-text-accent">Lé</span>
+            </h2>
+            <p className="text-center text-xl font-medium text-gray-700 md:text-2xl">
+              Personal Trainer Certificado em Lisboa
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+
+            {/* Text Content */}
+            <div className="order-2 lg:order-1">
+
+              {/* Description - SEO Optimized */}
+              <div className="space-y-4 mb-8">
+                <p className="text-base sm:text-lg text-gray-700 leading-relaxed font-montserrat">
+                  Especializado em <strong className="text-gray-900">transformação corporal</strong>, ajudo-te a atingir os teus objetivos – seja <strong className="text-gray-900">perda de peso</strong>, <strong className="text-gray-900">hipertrofia muscular</strong> ou simplesmente melhorar a tua saúde e bem-estar.
+                </p>
+                <p className="text-base sm:text-lg text-gray-600 leading-relaxed font-montserrat">
+                  Com treinos presenciais em Lisboa e acompanhamento online para qualquer parte do mundo, ofereço planos 100% personalizados à tua rotina e objetivos.
+                </p>
+              </div>
+
+              {/* Stats Row */}
+              <div className="flex flex-wrap gap-6 sm:gap-8 mb-8">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600">
+                    <i className="fa-duotone fa-calendar-days text-xl"></i>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900 font-montserrat">10+</div>
+                    <div className="text-sm text-gray-500 font-medium">Anos Experiência</div>
+                  </div>
                 </div>
-                <div className="text-center p-4 bg-white rounded-xl shadow-md">
-                  <div className="text-3xl font-bold text-primary mb-2 font-montserrat">100+</div>
-                  <div className="text-gray-600 font-montserrat">Clientes Satisfeitos</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100 text-green-600">
+                    <i className="fa-duotone fa-users text-xl"></i>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900 font-montserrat">100+</div>
+                    <div className="text-sm text-gray-500 font-medium">Clientes Satisfeitos</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-100 text-yellow-600">
+                    <i className="fa-duotone fa-star text-xl"></i>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900 font-montserrat">5.0</div>
+                    <div className="text-sm text-gray-500 font-medium">Avaliação Média</div>
+                  </div>
                 </div>
               </div>
-              <div className="text-center mb-8">
-                <NewButton href="/sobre" variant="primary" icon={<i className="fa-duotone fa-user-graduate"></i>}>
-                  Saber Mais
+
+              {/* CTA Button */}
+              <div className="flex flex-wrap gap-4 mb-10">
+                <NewButton
+                  href="/sobre"
+                  variant="new_primary_rounded"
+                  icon={<i className="fa-duotone fa-arrow-right"></i>}
+                  className="uppercase font-bold shadow-md"
+                >
+                  Conhece a Minha História
                 </NewButton>
               </div>
-              <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-orange-50 rounded-xl border-l-4 border-primary">
-                <p className="text-lg text-gray-700 italic text-center font-montserrat">
-                  <i className="fa-duotone fa-quote-left text-primary mr-2"></i>
-                  Aquele que não tem tempo de cuidar da saúde, vai precisar de tempo para cuidar da doença
-                  <i className="fa-duotone fa-quote-right text-primary ml-2"></i>
+
+              {/* Quote */}
+              <div className="p-5 sm:p-6 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <p className="text-base sm:text-lg text-gray-700 italic text-center font-montserrat leading-relaxed">
+                  <i className="fa-duotone fa-quote-left text-primary/50 mr-2 text-xl"></i>
+                  Aquele que não tem tempo de cuidar da saúde, vai precisar de tempo para cuidar da doença.
+                  <i className="fa-duotone fa-quote-right text-primary/50 ml-2 text-xl"></i>
                 </p>
               </div>
             </div>
 
-            <div className="relative fade-in-on-scroll">
-              <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-md mx-auto">
+            {/* Image */}
+            <div className="relative order-1 lg:order-2">
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+
+              {/* Image Container */}
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-md mx-auto ring-1 ring-gray-200 group">
                 <Image
                   src="/images/bike.jpg"
-                  alt="Fábio Lé Personal Trainer"
+                  alt="Fábio Lé - Personal Trainer Certificado em Lisboa, Especialista em Treino Personalizado e Transformação Corporal"
                   width={400}
                   height={500}
-                  className="w-full h-auto"
+                  className="w-full h-auto transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                   sizes="(max-width: 768px) 100vw, 400px"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+
+                {/* Badge on image */}
+                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
+                    <i className="fa-duotone fa-award text-lg"></i>
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-900">Certificado IPDJ</div>
+                    <div className="text-xs text-gray-500">Título Profissional de Treinador</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

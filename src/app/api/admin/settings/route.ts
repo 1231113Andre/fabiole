@@ -21,15 +21,23 @@ export const POST = withAdminAuth(async (req) => {
     try {
         const body = await req.json();
 
-        // Update defined keys
-        if (body.rateLimitMax !== undefined)
-            await SettingsService.updateSetting('rateLimitMax', body.rateLimitMax);
+        // List of allowed system setting keys
+        const ALLOWED_KEYS = [
+            'rateLimitMax', 'rateLimitWindow', 'rateLimitMessage',
+            // Pricing keys
+            'price_presencial_30min', 'price_presencial_45min', 'price_presencial_1hora',
+            'price_online_30min', 'price_online_45min', 'price_online_1hora',
+            'price_acompanhamento_mensal',
+            'price_extra_dupla_30min', 'price_extra_dupla_45min', 'price_extra_dupla_1hora',
+            'price_extra_trio_30min', 'price_extra_trio_45min', 'price_extra_trio_1hora',
+        ];
 
-        if (body.rateLimitWindow !== undefined)
-            await SettingsService.updateSetting('rateLimitWindow', body.rateLimitWindow);
-
-        if (body.rateLimitMessage !== undefined)
-            await SettingsService.updateSetting('rateLimitMessage', body.rateLimitMessage);
+        // Update all provided keys
+        for (const key of ALLOWED_KEYS) {
+            if (body[key] !== undefined) {
+                await SettingsService.updateSetting(key, body[key]);
+            }
+        }
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {

@@ -208,15 +208,25 @@ export function ReferencesTab({
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
-                                        {currentData && Object.entries(currentData).map(([ageRange, values]: [string, any]) => (
-                                            <tr key={ageRange} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-4 py-3 font-medium text-gray-900">{ageRange}</td>
-                                                <td className="px-4 py-3 text-center font-medium text-green-700">{values.excelente || '-'}</td>
-                                                <td className="px-4 py-3 text-center font-medium text-blue-700">{values.bom || '-'}</td>
-                                                <td className="px-4 py-3 text-center font-medium text-yellow-700">{values.medio || '-'}</td>
-                                                <td className="px-4 py-3 text-center font-medium text-red-700">{values.mau || '-'}</td>
-                                            </tr>
-                                        ))}
+                                        {currentData && Object.entries(currentData)
+                                            .sort(([a], [b]) => {
+                                                // Sort age groups: 20-29, 30-39, 40-49, 50-59, 60+
+                                                const getStartAge = (key: string) => {
+                                                    if (key.includes('+')) return 60;
+                                                    const match = key.match(/^(\d+)/);
+                                                    return match ? parseInt(match[1]) : 0;
+                                                };
+                                                return getStartAge(a) - getStartAge(b);
+                                            })
+                                            .map(([ageRange, values]: [string, any]) => (
+                                                <tr key={ageRange} className="hover:bg-gray-50/50 transition-colors">
+                                                    <td className="px-4 py-3 font-medium text-gray-900">{ageRange}</td>
+                                                    <td className="px-4 py-3 text-center font-medium text-green-700">{values.excelente || '-'}</td>
+                                                    <td className="px-4 py-3 text-center font-medium text-blue-700">{values.bom || '-'}</td>
+                                                    <td className="px-4 py-3 text-center font-medium text-yellow-700">{values.medio || '-'}</td>
+                                                    <td className="px-4 py-3 text-center font-medium text-red-700">{values.mau || '-'}</td>
+                                                </tr>
+                                            ))}
                                         {(!currentData || Object.keys(currentData).length === 0) && (
                                             <tr>
                                                 <td colSpan={5} className="px-6 py-8 text-center text-gray-500">

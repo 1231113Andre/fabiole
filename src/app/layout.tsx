@@ -12,10 +12,32 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Fabio Le — Personal Trainer",
-    template: "%s | Fabio Le — Personal Trainer"
+    default: "Fábio Lé — Personal Trainer em Lisboa | Treino Online",
+    template: "%s | Fábio Lé PT"
   },
-  description: "Personal training presencial e online. Marca já a tua sessão.",
+  description: "Transforma o teu corpo com um Personal Trainer especialista. Treinos personalizados presenciais em Lisboa ou online para perda de peso e hipertrofia. Avaliação gratuita.",
+  openGraph: {
+    type: 'website',
+    locale: 'pt_PT',
+    url: 'https://fabio-le-pt.com', // Placeholder URL, should be replaced with actual
+    siteName: 'Fábio Lé Personal Trainer',
+    title: 'Fábio Lé — Personal Trainer em Lisboa | Treino Online',
+    description: 'Especialista em transformação física, perda de peso e hipertrofia. Marca já a tua avaliação gratuita.',
+    images: [
+      {
+        url: '/images/fabiobanner.png', // Using existing hero banner
+        width: 1200,
+        height: 630,
+        alt: 'Fábio Lé Personal Trainer',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Fábio Lé — Personal Trainer em Lisboa',
+    description: 'Treinos personalizados para resultados reais. Presencial e Online.',
+    images: ['/images/fabiobanner.png'],
+  },
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
