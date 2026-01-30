@@ -31,19 +31,19 @@ const requireSSL = connectionString.includes('sslmode=require') ||
 
 function getPool(): Pool {
     if (!globalStore[POOL_KEY]) {
-        // Optimize pool size based on environment
-        // Production: 20-25 connections for better concurrency
-        // Development: 10 connections to save resources
-        const maxConnections = isProduction ? 25 : 10;
-        
+        // Serverless (Vercel): 1 connection per instance to avoid exhausting DB connection limit.
+        // Each serverless isolate has its own pool; many instances × large pool = P2037.
+        const isServerless = typeof process.env.VERCEL !== 'undefined' || typeof process.env.AWS_LAMBDA_FUNCTION_NAME !== 'undefined';
+        const maxConnections = isServerless ? 1 : (isProduction ? 10 : 5);
+        const minConnections = isServerless ? 0 : (isProduction ? 2 : 1);
+
         const poolConfig: PoolConfig = {
             connectionString,
             max: maxConnections,
-            min: 2, // Keep minimum connections alive
-            idleTimeoutMillis: 30000,
+            min: minConnections,
+            idleTimeoutMillis: 20000,
             connectionTimeoutMillis: 10000,
-            // Retry connection on error
-            allowExitOnIdle: false, // Keep pool alive
+            allowExitOnIdle: isServerless,
         };
 
         // Add SSL configuration for production/cloud databases
