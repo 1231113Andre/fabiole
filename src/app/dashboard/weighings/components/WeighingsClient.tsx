@@ -11,7 +11,7 @@ interface WeighingsClientProps {
 }
 
 export function WeighingsClient({ initialData }: WeighingsClientProps) {
-    const { pesagens, chartData } = useDashboardData(initialData || undefined);
+    const { pesagens, chartData, personalInfo } = useDashboardData(initialData || undefined);
 
     return (
         <>
@@ -46,7 +46,7 @@ export function WeighingsClient({ initialData }: WeighingsClientProps) {
             </div>
 
             {/* Content */}
-            <PesagensTab pesagens={pesagens} chartData={chartData} />
+            <PesagensTab pesagens={pesagens} chartData={chartData} gender={personalInfo?.gender} />
         </>
     );
 }

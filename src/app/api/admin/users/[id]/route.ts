@@ -53,6 +53,7 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
                 idMetabolica: toNumber(p.idMetabolica),
                 massaOssea: toNumber(p.massaOssea),
                 height: toNumber(p.height),
+                smi: toNumber(p.smi),
                 resultadoIMC: p.resultadoIMC,
                 resultadoPercentMG: p.resultadoPercentMG,
                 notas: p.notas

@@ -22,6 +22,7 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         if (body.gordVisceral !== undefined) updateData.gordVisceral = sanitizeValueForUpdate(body.gordVisceral);
         if (body.idMetabolica !== undefined) updateData.idMetabolica = sanitizeValueForUpdate(body.idMetabolica);
         if (body.massaOssea !== undefined) updateData.massaOssea = sanitizeValueForUpdate(body.massaOssea);
+        if (body.smi !== undefined) updateData.smi = sanitizeValueForUpdate(body.smi);
         if (body.resultadoIMC !== undefined) updateData.resultadoIMC = sanitizeStringForUpdate(body.resultadoIMC);
         if (body.resultadoPercentMG !== undefined) updateData.resultadoPercentMG = sanitizeStringForUpdate(body.resultadoPercentMG);
         if (body.notas !== undefined) updateData.notas = sanitizeStringForUpdate(body.notas);

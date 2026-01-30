@@ -1,0 +1,32 @@
+{
+    "18-29": {
+        "excelente": "30+",
+        "acimaMedia": "22-29",
+        "media": "17-21",
+        "fraco": "< 11"
+    },
+    "30-39": {
+        "excelente": "22+",
+        "acimaMedia": "17-21",
+        "media": "11-16",
+        "fraco": "< 8"
+    },
+    "40-49": {
+        "excelente": "18+",
+        "acimaMedia": "11-17",
+        "media": "8-10",
+        "fraco": "< 5"
+    },
+    "50-59": {
+        "excelente": "13+",
+        "acimaMedia": "9-12",
+        "media": "7-8",
+        "fraco": "< 3"
+    },
+    "60-69": {
+        "excelente": "10+",
+        "acimaMedia": "6-9",
+        "media": "4-5",
+        "fraco": "< 2"
+    }
+}

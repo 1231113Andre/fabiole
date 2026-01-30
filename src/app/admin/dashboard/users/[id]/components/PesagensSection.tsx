@@ -47,7 +47,7 @@ export const PesagensSection: React.FC<PesagensSectionProps> = ({
     const userId = params.id;
 
     return (
-        <div className="space-y-6 w-full overflow-hidden">
+        <div className="space-y-6 w-full overflow-visible">
             <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-900">Pesagens ({pesagens.length})</h3>
                 <div className="flex gap-2">
@@ -90,6 +90,7 @@ export const PesagensSection: React.FC<PesagensSectionProps> = ({
                 error={error}
                 isSubmitting={isSubmitting}
                 manualOverrides={manualOverrides}
+                gender={gender}
                 onFieldChange={handleFieldChange}
                 onSubmit={handleSubmit}
                 onClose={handleCloseModal}

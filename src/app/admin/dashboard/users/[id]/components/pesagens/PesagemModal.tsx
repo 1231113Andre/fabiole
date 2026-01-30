@@ -2,6 +2,7 @@ import React from "react";
 import { Pesagem } from "../../types";
 import { formatDateForInput } from "../../utils";
 import NewButton from "@/app/components/newButton";
+import { classifySMI } from "@/lib/body-metrics";
 
 // Inline spinner component
 const InlineSpinner = () => (
@@ -18,6 +19,7 @@ interface PesagemModalProps {
     error: string | null;
     isSubmitting?: boolean;
     manualOverrides?: Set<keyof Pesagem>;
+    gender?: string | null;
     onFieldChange: (field: keyof Pesagem, value: any) => void;
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     onClose: () => void;
@@ -118,6 +120,7 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
     error,
     isSubmitting = false,
     manualOverrides = new Set(),
+    gender = null,
     onFieldChange,
     onSubmit,
     onClose,
@@ -314,6 +317,33 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                     canAutoCalculate={!!formData.percentualMG}
                                     onClearOverride={() => onClearOverride?.('resultadoPercentMG')}
                                 />
+                                <FormInput
+                                    label="SMI (kg/m²)"
+                                    icon="fa-dumbbell"
+                                    name="smi"
+                                    value={formData.smi}
+                                    onChange={(v) => onFieldChange('smi', v)}
+                                    step="0.01"
+                                    isAutoField
+                                    isManuallyOverridden={manualOverrides.has('smi')}
+                                    canAutoCalculate={!!(formData.mm != null && formData.height != null)}
+                                    onClearOverride={() => onClearOverride?.('smi')}
+                                />
+                                <div className="pt-1">
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+                                        <i className="fa-duotone fa-chart-line text-violet-500/70 text-[10px]"></i>
+                                        SMI Res.
+                                    </label>
+                                    <div
+                                        className="w-full px-3 py-2 text-sm border rounded-lg bg-violet-50 border-violet-200 font-bold text-violet-700"
+                                        aria-readonly
+                                    >
+                                        {formData.smi != null && gender
+                                            ? classifySMI(formData.smi as number, gender)
+                                            : '-'}
+                                    </div>
+                                    <p className="text-[10px] text-gray-500 mt-1">Calculado automaticamente a partir de SMI e género.</p>
+                                </div>
                                 <div className="pt-1">
                                     <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
                                         <i className="fa-duotone fa-note-sticky text-primary/70 text-[10px]"></i>

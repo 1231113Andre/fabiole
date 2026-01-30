@@ -74,7 +74,7 @@ export function useBulkState(type: BulkType, userGender: string, userBirthDate?:
 
             if (field === 'percentualMG' && !isPerOverride) {
                 const mg = parseFloat(newRow.percentualMG) || null;
-                newRow.resultadoPercentMG = classifyBodyFat(mg, userGender);
+                newRow.resultadoPercentMG = classifyBodyFat(mg, userGender, userAge ?? undefined);
             }
         }
 

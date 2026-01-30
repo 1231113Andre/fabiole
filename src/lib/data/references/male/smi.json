@@ -1,0 +1,22 @@
+{
+    "Excelente (Atleta)": {
+        "percent": "> 11.5",
+        "description": "Desenvolvimento muscular muito elevado."
+    },
+    "Bom (Saudável)": {
+        "percent": "10.76 - 11.5",
+        "description": "Nível ideal para saúde e metabolismo."
+    },
+    "Médio (Normal)": {
+        "percent": "9.76 - 10.75",
+        "description": "Nível normal de massa muscular."
+    },
+    "Baixo (Risco)": {
+        "percent": "8.51 - 9.75",
+        "description": "Sarcopenia moderada. Risco para a saúde."
+    },
+    "Crítico": {
+        "percent": "< 8.51",
+        "description": "Sarcopenia grave. Intervenção recomendada."
+    }
+}

@@ -44,19 +44,20 @@ export function formatDeltaPeso(delta: number | null): string {
 }
 
 /**
- * Get CSS class for Mile result badge
+ * Get CSS class for Mile / Push-ups / Abdominais result badge
+ * Handles: Excelente, Bom, Médio, Fraco (MILHA); Acima da Média, Média, Fraco (PUSH UPS); Abaixo da Média (ABDOMINAIS)
  */
 export function getMileResultStyle(result: string): string {
     if (!result) return BADGE_STYLES.GRAY;
     const r = result.toLowerCase();
 
-    if (r.includes('excelente') || r.includes('bom') || r.includes('apto')) {
+    if (r.includes('excelente') || r.includes('bom') || r.includes('apto') || r.includes('acima')) {
         return BADGE_STYLES.GREEN;
     }
-    if (r.includes('médio') || r.includes('atenção')) {
+    if (r.includes('médio') || r.includes('média') || r.includes('atenção') || r.includes('abaixo')) {
         return BADGE_STYLES.YELLOW;
     }
-    if (r.includes('fraco') || r.includes('risco')) {
+    if (r.includes('fraco') || r.includes('risco') || r.includes('mau') || r.includes('baixo') || r.includes('crítico')) {
         return BADGE_STYLES.RED;
     }
 

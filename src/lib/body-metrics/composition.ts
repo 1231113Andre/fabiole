@@ -97,39 +97,67 @@ export function calculateH2OFull(
 }
 
 /**
- * Classify Body Fat Percentage (%MG)
+ * Body fat thresholds by gender and age band (%)
+ * Aligned with Referências table: massa_gorda.json (Atleta/Excelente, Bom/Saudável, Médio, Risco/Obesidade = mau)
+ * Below Atleta min = Gordura Vital; above medioMax = Elevado (Risco).
+ */
+type AgeBand = 0 | 1 | 2 | 3 | 4; // 18-29, 30-39, 40-49, 50-59, 60+
+interface FatBand { atletaMin: number; atletaMax: number; bomMax: number; medioMax: number; }
+
+const BODY_FAT_MALE: Record<AgeBand, FatBand> = {
+    0: { atletaMin: 8, atletaMax: 11, bomMax: 15, medioMax: 24 },   // 18-29: medio 16-20%, mau >24%
+    1: { atletaMin: 11, atletaMax: 15, bomMax: 19, medioMax: 26 },   // 30-39: medio 20-23%, mau >26%
+    2: { atletaMin: 13, atletaMax: 17, bomMax: 21, medioMax: 28 },   // 40-49: medio 22-24%, mau >28%
+    3: { atletaMin: 15, atletaMax: 19, bomMax: 23, medioMax: 30 },   // 50-59: medio 24-26%, mau >30%
+    4: { atletaMin: 17, atletaMax: 21, bomMax: 25, medioMax: 31 }    // 60+: medio 26-28%, mau >31%
+};
+
+const BODY_FAT_FEMALE: Record<AgeBand, FatBand> = {
+    0: { atletaMin: 14, atletaMax: 17, bomMax: 21, medioMax: 32 },  // 18-29: medio 22-25%, mau >32%
+    1: { atletaMin: 15, atletaMax: 19, bomMax: 23, medioMax: 34 },  // 30-39: medio 24-27%, mau >34%
+    2: { atletaMin: 18, atletaMax: 22, bomMax: 26, medioMax: 36 },  // 40-49: medio 27-30%, mau >36%
+    3: { atletaMin: 20, atletaMax: 24, bomMax: 29, medioMax: 38 },  // 50-59: medio 30-33%, mau >38%
+    4: { atletaMin: 21, atletaMax: 26, bomMax: 31, medioMax: 39 }   // 60+: medio 32-35%, mau >39%
+};
+
+function getAgeBand(age: number | null | undefined): AgeBand {
+    if (age === null || age === undefined || age < 18) return 0;
+    if (age < 30) return 0;
+    if (age < 40) return 1;
+    if (age < 50) return 2;
+    if (age < 60) return 3;
+    return 4;
+}
+
+/**
+ * Classify Body Fat Percentage (%MG) by gender and age – aligned with reference table
  */
 export function classifyBodyFat(
     percentage: number | null | undefined,
-    gender: Gender = 'Masculino'
+    gender: Gender = 'Masculino',
+    age?: number | null
 ): BodyFatClassification | '' {
     if (percentage === null || percentage === undefined || isNaN(percentage)) {
         return '';
     }
 
     const genderLower = gender.toString().toLowerCase();
-    const isMale = genderLower === 'masculino' || genderLower === 'm';
-    const isFemale = genderLower === 'feminino' || genderLower === 'f';
+    const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
+    const isFemale = genderLower === 'feminino' || genderLower === 'f' || genderLower === 'female';
 
     if (!isMale && !isFemale) {
         return 'Verifique o Género';
     }
 
     const pct = percentage < 1 ? percentage * 100 : percentage;
+    const band = getAgeBand(age ?? null);
+    const thresholds = isMale ? BODY_FAT_MALE[band] : BODY_FAT_FEMALE[band];
 
-    if (isMale) {
-        if (pct < 6) return 'Gordura Vital';
-        if (pct < 14) return 'Muito Magro (Foco Performance)';
-        if (pct < 18) return 'Saudável e em Boa Forma';
-        if (pct < 25) return 'Nível Médio (Atenção)';
-        return 'Elevado (Risco para a Saúde)';
-    } else {
-        if (pct < 14) return 'Gordura Vital';
-        if (pct < 21) return 'Muito Magro/a (Foco Performance)';
-        if (pct < 25) return 'Saudável e em Boa Forma';
-        if (pct < 32) return 'Nível Médio (Atenção)';
-        return 'Elevado (Risco para a Saúde)';
-    }
+    if (pct < thresholds.atletaMin) return 'Gordura Vital';
+    if (pct <= thresholds.atletaMax) return isMale ? 'Muito Magro (Foco Performance)' : 'Muito Magro/a (Foco Performance)';
+    if (pct <= thresholds.bomMax) return 'Saudável e em Boa Forma';
+    if (pct <= thresholds.medioMax) return 'Nível Médio (Atenção)';
+    return 'Elevado (Risco para a Saúde)';
 }
 
 /**
@@ -180,10 +208,10 @@ export function calculateAllMetrics(input: CalculateAllMetricsInput): AutoCalcul
         ? manualOverrides.resultadoIMC
         : classifyBMI(imc) || '';
 
-    // Body fat classification
+    // Body fat classification (by gender and age – same thresholds as reference table)
     const resultadoPercentMG = manualOverrides.resultadoPercentMG !== undefined && manualOverrides.resultadoPercentMG !== null
         ? manualOverrides.resultadoPercentMG
-        : classifyBodyFat(percentualMG, gender) || '';
+        : classifyBodyFat(percentualMG, gender, age ?? null) || '';
 
     return {
         imc,

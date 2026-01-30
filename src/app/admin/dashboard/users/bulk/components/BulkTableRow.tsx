@@ -116,7 +116,7 @@ const OverridableField = memo(function OverridableField({
     );
 });
 
-// Classification badge - Standalone style without refined input look
+// Classification badge - uses BADGE_STYLES from colorFn (no truncate)
 const ClassBadge = memo(function ClassBadge({
     value,
     colorFn
@@ -127,19 +127,16 @@ const ClassBadge = memo(function ClassBadge({
     if (!value) {
         return (
             <div className="flex items-center justify-center w-full px-1">
-                <span className="text-xs text-gray-400 font-medium">-</span>
+                <span className="text-[10px] text-gray-400 font-medium">-</span>
             </div>
         );
     }
 
-    // Extract text color class from colorFn or map it
     const colorClass = colorFn(value);
 
     return (
-        <div className="flex items-center justify-center w-full px-1">
-            <span className={`text-xs font-bold truncate py-1 px-2 rounded-full ${colorClass}`}>
-                {value}
-            </span>
+        <div className="flex items-center justify-center w-full min-w-0 px-1">
+            <span className={colorClass}>{value}</span>
         </div>
     );
 });

@@ -44,6 +44,7 @@ export interface AdminUserDetail {
         idMetabolica: number | null;
         massaOssea: number | null;
         height: number | null;
+        smi: number | null;
         resultadoIMC: string | null;
         resultadoPercentMG: string | null;
         notas: string | null;
@@ -245,6 +246,7 @@ export class AdminUserService {
                 idMetabolica: p.idMetabolica ? Number(p.idMetabolica) : null,
                 massaOssea: p.massaOssea ? Number(p.massaOssea) : null,
                 height: p.height ? Number(p.height) : null,
+                smi: p.smi != null ? Number(p.smi) : null,
                 resultadoIMC: p.resultadoIMC,
                 resultadoPercentMG: p.resultadoPercentMG,
                 notas: p.notas

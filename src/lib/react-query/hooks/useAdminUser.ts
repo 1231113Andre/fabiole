@@ -46,6 +46,7 @@ export interface AdminUserData {
         idMetabolica: number | null;
         massaOssea: number | null;
         height: number | null;
+        smi: number | null;
         resultadoIMC: string | null;
         resultadoPercentMG: string | null;
         notas: string | null;

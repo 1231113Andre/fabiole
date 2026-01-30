@@ -40,6 +40,8 @@ export interface Pesagem {
     notas?: string;
     id?: string;
     height?: number;
+    smi?: number | null;
+    smiResult?: string | null;
 }
 
 export interface PerimetroCorporal {
@@ -92,12 +94,16 @@ export interface ReferenceTables {
     massaGordaMasculino?: ReferenceTableCategory;
     massaGordaFeminino?: ReferenceTableCategory;
     imc?: ImcReference;
+    pushUpsMasculino?: ReferenceTableCategory;
+    pushUpsFeminino?: ReferenceTableCategory;
     flexoesFeminino?: ReferenceTableCategory;
     flexoesMasculino?: ReferenceTableCategory;
     abdominaisFeminino?: ReferenceTableCategory;
     abdominaisMasculino?: ReferenceTableCategory;
     milhaFeminino?: ReferenceTableCategory;
     milhaMasculino?: ReferenceTableCategory;
+    smiMasculino?: ReferenceTableCategory;
+    smiFeminino?: ReferenceTableCategory;
 }
 
 export interface ChartData {
@@ -121,4 +127,4 @@ export interface DashboardStats {
 
 // References Tab Types
 export type Gender = "MALE" | "FEMALE";
-export type Category = "massaGorda" | "flexoes" | "abdominais" | "milha";
+export type Category = "massaGorda" | "pushUps" | "flexoes" | "abdominais" | "milha" | "smi";

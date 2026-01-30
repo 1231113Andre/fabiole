@@ -26,3 +26,5 @@ export interface Service {
 export type TrainingDuration = "30 minutos" | "45 minutos" | "1 hora";
 export type TrainingType = "individual" | "dupla" | "trio";
 
+
+

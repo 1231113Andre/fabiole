@@ -6,6 +6,7 @@ import {
     classifyBodyFat,
     calculateMM,
     calculateH2O,
+    calculateSMI,
     calculateAge,
     parseNumber
 } from "@/lib/body-metrics";
@@ -17,7 +18,7 @@ interface UsePesagemFormProps {
 }
 
 // Fields that are auto-calculated and can be manually overridden
-const AUTO_CALCULATED_FIELDS: (keyof Pesagem)[] = ['mm', 'h2o', 'imc', 'resultadoIMC', 'resultadoPercentMG'];
+const AUTO_CALCULATED_FIELDS: (keyof Pesagem)[] = ['mm', 'h2o', 'imc', 'smi', 'resultadoIMC', 'resultadoPercentMG'];
 
 export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProps) {
     // Calculate user age from birth date for Watson H2O formula
@@ -42,6 +43,7 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
             idMetabolica: null,
             massaOssea: null,
             imc: null,
+            smi: null,
             resultadoIMC: null,
             resultadoPercentMG: null,
             notas: null
@@ -84,10 +86,20 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
 
             // Check Fat Class override
             if (percentualMG) {
-                const expectedClass = classifyBodyFat(percentualMG, gender);
+                const expectedClass = classifyBodyFat(percentualMG, gender, userAge ?? undefined);
                 if (record.resultadoPercentMG && record.resultadoPercentMG !== expectedClass) {
                     overrides.add('resultadoPercentMG');
                 }
+            }
+
+            // Check SMI override – compare stored vs calculated from MM and height
+            if (record.mm != null && record.height != null) {
+                const calculatedSMI = calculateSMI(record.mm, record.height);
+                if (record.smi != null && calculatedSMI != null && Math.abs(record.smi - calculatedSMI) > 0.01) {
+                    overrides.add('smi');
+                }
+                // Ensure SMI is always set for display when opening edit (use stored or calculated)
+                initialData.smi = record.smi ?? calculatedSMI ?? initialData.smi;
             }
         } else {
             // New record logic (keep existing)
@@ -101,9 +113,11 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
                 if (mm) initialData.mm = mm;
                 const h2o = calculateH2O(initialData.peso, initialData.height ?? null, userAge, gender);
                 if (h2o) initialData.h2o = h2o;
+                const smi = calculateSMI(initialData.mm, initialData.height);
+                if (smi != null) initialData.smi = smi;
             }
             if (initialData.percentualMG) {
-                initialData.resultadoPercentMG = classifyBodyFat(initialData.percentualMG, gender) || '';
+                initialData.resultadoPercentMG = classifyBodyFat(initialData.percentualMG, gender, userAge ?? undefined) || '';
             }
         }
 
@@ -140,7 +154,7 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
 
         // Auto-calculate Fat classification - only if not manually overridden
         if (field === 'percentualMG' && !newOverrides.has('resultadoPercentMG')) {
-            newFormData.resultadoPercentMG = classifyBodyFat(parseNumber(value), gender) || '';
+            newFormData.resultadoPercentMG = classifyBodyFat(parseNumber(value), gender, userAge ?? undefined) || '';
         }
 
         // Auto-calculate MM (Massa Muscular / LBM) - only if not manually overridden
@@ -150,6 +164,11 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
             const mm = calculateMM(p, mg);
             if (mm) {
                 newFormData.mm = mm;
+                // SMI depends on MM and height – recalc if not overridden
+                if (!newOverrides.has('smi') && formData.height != null) {
+                    const smi = calculateSMI(mm, parseNumber(formData.height));
+                    if (smi != null) newFormData.smi = smi;
+                }
             }
         }
 
@@ -160,6 +179,16 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
             const h2o = calculateH2O(p, h, userAge, gender);
             if (h2o) {
                 newFormData.h2o = h2o;
+            }
+        }
+
+        // Auto-calculate SMI (MM / height²) - only if not manually overridden
+        if ((field === 'mm' || field === 'height') && !newOverrides.has('smi')) {
+            const mm = field === 'mm' ? parseNumber(value) : parseNumber(formData.mm);
+            const h = field === 'height' ? parseNumber(value) : parseNumber(formData.height);
+            const smi = calculateSMI(mm, h);
+            if (smi != null) {
+                newFormData.smi = smi;
             }
         }
 
@@ -188,7 +217,7 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
             newFormData.resultadoIMC = classifyBMI(formData.imc as number) || '';
         }
         if (field === 'resultadoPercentMG' && formData.percentualMG) {
-            newFormData.resultadoPercentMG = classifyBodyFat(parseNumber(formData.percentualMG), gender) || '';
+            newFormData.resultadoPercentMG = classifyBodyFat(parseNumber(formData.percentualMG), gender, userAge ?? undefined) || '';
         }
         if (field === 'mm' && formData.peso) {
             const mm = calculateMM(parseNumber(formData.peso), parseNumber(formData.percentualMG));
@@ -197,6 +226,10 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
         if (field === 'h2o' && formData.peso) {
             const h2o = calculateH2O(parseNumber(formData.peso), parseNumber(formData.height), userAge, gender);
             if (h2o) newFormData.h2o = h2o;
+        }
+        if (field === 'smi' && formData.mm != null && formData.height != null) {
+            const smi = calculateSMI(parseNumber(formData.mm), parseNumber(formData.height));
+            if (smi != null) newFormData.smi = smi;
         }
         setFormData(newFormData);
     };

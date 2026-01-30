@@ -1,7 +1,7 @@
 "use client";
 
 import { AvaliacaoFisica } from "../types";
-import { BADGE_STYLES, getMileResultStyle, classifyMileResult, classifyPushUps, calculateAge } from "@/lib/body-metrics";
+import { BADGE_STYLES, getMileResultStyle, classifyMileResult, classifyPushUps, classifySitUps, calculateAge } from "@/lib/body-metrics";
 
 interface AvaliacoesTabProps {
     avaliacoes: AvaliacaoFisica[];
@@ -34,6 +34,7 @@ export function AvaliacoesTab({ avaliacoes, gender, birth }: AvaliacoesTabProps)
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Push-Ups (1')</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">Push-Ups Res.</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm">Sit-Ups (1')</th>
+                                        <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">Sit-Ups Res.</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden md:table-cell">Mile Time</th>
                                         <th className="py-4 px-4 text-center font-semibold text-gray-700 text-sm hidden lg:table-cell">Mile Result</th>
                                         <th className="py-4 px-4 text-left font-semibold text-gray-700 text-sm hidden xl:table-cell">Notes</th>
@@ -41,23 +42,20 @@ export function AvaliacoesTab({ avaliacoes, gender, birth }: AvaliacoesTabProps)
                                 </thead>
                                 <tbody>
                                     {avaliacoes.map((av, index) => {
-                                        // On-the-fly calculation fallback
-                                        let mileRes = av.mileResult;
-                                        let pushRes = av.pushUpsResult;
-
-                                        if (userBirth) {
-                                            const age = calculateAge(userBirth);
-
-                                            // Mile
-                                            if (!mileRes && av.mile) {
-                                                mileRes = classifyMileResult(av.mile, age, userGender);
-                                            }
-
-                                            // Push-ups
-                                            if (!pushRes && av.pushUps !== null && av.pushUps !== undefined) {
-                                                pushRes = classifyPushUps(av.pushUps, age, userGender);
-                                            }
-                                        }
+                                        // Zawsze wyświetl wynik według aktualnej tabeli (Referências)
+                                        const age = userBirth ? calculateAge(userBirth) : null;
+                                        const pushRes =
+                                            av.pushUps !== null && av.pushUps !== undefined && age != null
+                                                ? classifyPushUps(av.pushUps, age, userGender)
+                                                : av.pushUpsResult || '';
+                                        const mileRes =
+                                            av.mile && age != null
+                                                ? classifyMileResult(av.mile, age, userGender)
+                                                : av.mileResult || '';
+                                        const sitRes =
+                                            av.sitUps !== null && av.sitUps !== undefined && age != null
+                                                ? classifySitUps(av.sitUps, age, userGender)
+                                                : '';
 
                                         return (
                                             <tr key={index} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
@@ -87,6 +85,17 @@ export function AvaliacoesTab({ avaliacoes, gender, birth }: AvaliacoesTabProps)
                                                 {/* Sit ups */}
                                                 <td className="py-4 px-4 text-center">
                                                     <span className={BADGE_STYLES.PURPLE}>{av.sitUps || "-"}</span>
+                                                </td>
+
+                                                {/* Sit-Ups Result */}
+                                                <td className="py-4 px-4 text-center hidden md:table-cell">
+                                                    {sitRes ? (
+                                                        <span className={getMileResultStyle(sitRes)}>
+                                                            {sitRes}
+                                                        </span>
+                                                    ) : (
+                                                        <span>-</span>
+                                                    )}
                                                 </td>
 
                                                 {/* Mile Time (Clean) */}

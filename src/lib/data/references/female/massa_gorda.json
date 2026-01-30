@@ -1,22 +1,32 @@
 {
-    "Gordura Vital": {
-        "percent": "10 - 13%",
-        "description": "Nível mínimo de gordura, essencial para a saúde."
+    "18-29": {
+        "excelente": "14 – 17%",
+        "bom": "18 – 21%",
+        "medio": "22 – 32%",
+        "mau": "> 32%"
     },
-    "Muito Magra (Performance)": {
-        "percent": "14 - 20%",
-        "description": "Típico de atletas com foco em definição."
+    "30-39": {
+        "excelente": "15 – 19%",
+        "bom": "20 – 23%",
+        "medio": "24 – 34%",
+        "mau": "> 34%"
     },
-    "Saudável e Boa Forma": {
-        "percent": "21 - 24%",
-        "description": "Nível considerado saudável e em boa forma."
+    "40-49": {
+        "excelente": "18 – 22%",
+        "bom": "23 – 26%",
+        "medio": "27 – 36%",
+        "mau": "> 36%"
     },
-    "Nível Médio ⚠️": {
-        "percent": "25 - 31%",
-        "description": "Pode indicar necessidade de atenção."
+    "50-59": {
+        "excelente": "20 – 24%",
+        "bom": "25 – 29%",
+        "medio": "30 – 38%",
+        "mau": "> 38%"
     },
-    "Elevado ❌": {
-        "percent": "32%+",
-        "description": "Risco para a saúde."
+    "60+": {
+        "excelente": "21 – 26%",
+        "bom": "27 – 31%",
+        "medio": "32 – 39%",
+        "mau": "> 39%"
     }
 }

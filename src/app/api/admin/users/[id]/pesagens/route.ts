@@ -28,6 +28,7 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
             gordVisceral: sanitizeValue(body.gordVisceral) ?? undefined,
             idMetabolica: sanitizeValue(body.idMetabolica) ?? undefined,
             massaOssea: sanitizeValue(body.massaOssea) ?? undefined,
+            smi: sanitizeValue(body.smi) ?? undefined,
             resultadoIMC: sanitizeStringValue(body.resultadoIMC) ?? undefined,
             resultadoPercentMG: sanitizeStringValue(body.resultadoPercentMG) ?? undefined,
             notas: sanitizeStringValue(body.notas) ?? undefined,

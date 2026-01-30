@@ -74,6 +74,7 @@ export function useRecordOperations({ userId, fetchUser, setSuccess, setError, s
                     muscleMass: { label: 'Massa Musc.', icon: 'fa-dumbbell' },
                     waterPercent: { label: 'H2O', icon: 'fa-droplet' },
                     imc: { label: 'IMC', icon: 'fa-calculator' },
+                    smi: { label: 'SMI', icon: 'fa-dumbbell' },
                     visceralFat: { label: 'Gord. Visceral', icon: 'fa-heart-pulse' },
                     metabolicAge: { label: 'Idade Metab.', icon: 'fa-clock' },
                     boneMass: { label: 'Massa Óssea', icon: 'fa-bone' },

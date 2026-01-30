@@ -63,6 +63,7 @@ model Pesagem {
   idMetabolica       Decimal? @db.Decimal(5, 2)
   massaOssea         Decimal? @db.Decimal(5, 2)
   height             Decimal? @db.Decimal(5, 2)
+  smi                Decimal? @db.Decimal(5, 2)
   resultadoIMC       String?  @db.VarChar(50)
   resultadoPercentMG String?  @db.VarChar(50)
   notas              String?

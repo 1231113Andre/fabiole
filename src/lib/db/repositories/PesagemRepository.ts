@@ -29,6 +29,7 @@ export interface CreatePesagemDTO {
     idMetabolica?: number;
     massaOssea?: number;
     height?: number;
+    smi?: number;
     resultadoIMC?: string;
     resultadoPercentMG?: string;
     notas?: string;
@@ -74,6 +75,7 @@ export class PesagemRepository extends BaseRepository {
                     idMetabolica: data.idMetabolica,
                     massaOssea: data.massaOssea,
                     height: data.height,
+                    smi: data.smi,
                     resultadoIMC: data.resultadoIMC,
                     resultadoPercentMG: data.resultadoPercentMG,
                     notas: data.notas,
@@ -115,6 +117,7 @@ export class PesagemRepository extends BaseRepository {
                     idMetabolica: r.idMetabolica,
                     massaOssea: r.massaOssea,
                     height: r.height,
+                    smi: r.smi,
                     resultadoIMC: r.resultadoIMC,
                     resultadoPercentMG: r.resultadoPercentMG,
                     notas: r.notas,

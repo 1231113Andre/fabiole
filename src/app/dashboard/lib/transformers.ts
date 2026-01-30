@@ -235,13 +235,17 @@ export function transformDashboardData(userData: UserSheetData | null | undefine
     // Load static reference data
     const staticReferences: ReferenceTables = {
         massaGordaMasculino: require("@/lib/data/references/male/massa_gorda.json"),
-        flexoesMasculino: require("@/lib/data/references/male/flexoes.json"),
-        abdominaisMasculino: require("@/lib/data/references/male/abdominais.json"),
-        milhaMasculino: require("@/lib/data/references/male/teste_milha.json"),
         massaGordaFeminino: require("@/lib/data/references/female/massa_gorda.json"),
+        pushUpsMasculino: require("@/lib/data/references/male/push_ups.json"),
+        pushUpsFeminino: require("@/lib/data/references/female/push_ups.json"),
+        flexoesMasculino: require("@/lib/data/references/male/flexoes.json"),
         flexoesFeminino: require("@/lib/data/references/female/flexoes.json"),
+        abdominaisMasculino: require("@/lib/data/references/male/abdominais.json"),
         abdominaisFeminino: require("@/lib/data/references/female/abdominais.json"),
+        milhaMasculino: require("@/lib/data/references/male/teste_milha.json"),
         milhaFeminino: require("@/lib/data/references/female/teste_milha.json"),
+        smiMasculino: require("@/lib/data/references/male/smi.json"),
+        smiFeminino: require("@/lib/data/references/female/smi.json"),
     };
 
     const referenceTables = {

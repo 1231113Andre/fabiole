@@ -9,17 +9,20 @@ import {
     classifyBodyFat,
     calculateMM,
     calculateH2OFull,
+    calculateSMI,
+    classifySMI,
     getBmiClassColor,
     getFatClassColor,
     getDeltaPesoColor,
     getBmiIcon,
     getFatIcon,
+    getMileResultStyle,
     BADGE_STYLES
 } from "@/lib/body-metrics";
 import { Pesagem } from "../../types";
 
 // Re-export color functions for backward compatibility
-export { getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, BADGE_STYLES };
+export { getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, calculateSMI, classifySMI, BADGE_STYLES };
 
 export interface PesagemMetrics {
     bmi: number | null;
@@ -46,7 +49,7 @@ export function calculatePesagemMetrics(
 ): PesagemMetrics {
     const bmi = calculateBMI(pesagem.peso, pesagem.height);
     const bmiClass = classifyBMI(bmi || pesagem.imc);
-    const fatClass = classifyBodyFat(pesagem.percentualMG, gender);
+    const fatClass = classifyBodyFat(pesagem.percentualMG, gender, userAge ?? undefined);
 
     // MM (LBM) - uses new formula: peso × (1 - %MG / 100)
     const mm = calculateMM(pesagem.peso, pesagem.percentualMG);

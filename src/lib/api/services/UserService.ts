@@ -146,10 +146,11 @@ export class UserService {
         }
 
         const mgValue = p.percentualMG ? Number(p.percentualMG) : null;
+        const userAge = userDB.birth ? calculateAge(userDB.birth) : null;
 
-        // Use existing result if available, otherwise auto-classify
+        // Use existing result if available, otherwise auto-classify (age-based thresholds)
         const resultadoIMC = p.resultadoIMC || classifyBMI(imcValue);
-        const resultadoPercentualMG = p.resultadoPercentMG || classifyBodyFat(mgValue, userGender);
+        const resultadoPercentualMG = p.resultadoPercentMG || classifyBodyFat(mgValue, userGender, userAge);
 
         return {
           data: p.date ? format(p.date, 'dd/MM/yyyy') : '',

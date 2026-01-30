@@ -3,14 +3,12 @@
   "version": "0.2.7",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS=--no-deprecation next dev",
-    "dev:turbo": "NODE_OPTIONS=--no-deprecation next dev --turbo",
-    "dev:noturbo": "NODE_OPTIONS=--no-deprecation NEXT_DISABLE_TURBOPACK=1 next dev --no-turbo",
-    "dev:win": "set NODE_OPTIONS=--no-deprecation && next dev",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "dev:turbo": "cross-env NODE_OPTIONS=--no-deprecation next dev --turbo",
+    "dev:noturbo": "cross-env NODE_OPTIONS=--no-deprecation NEXT_DISABLE_TURBOPACK=1 next dev --no-turbo",
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
-    "start": "NODE_OPTIONS=--no-deprecation next start",
-    "start:win": "set NODE_OPTIONS=--no-deprecation && next start",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "eslint"
   },
   "dependencies": {
@@ -48,6 +46,7 @@
     "zod": "^4.2.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "@eslint/eslintrc": "^3.3.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^25.0.2",

@@ -16,6 +16,9 @@ import {
     getBmiIcon,
     getFatIcon,
     getDeltaPesoColor,
+    getMileResultStyle,
+    calculateSMI,
+    classifySMI,
     BADGE_STYLES
 } from "@/lib/body-metrics";
 import { TooltipHeader } from "../../../components/ui/TooltipHeader";
@@ -23,9 +26,11 @@ import { TooltipHeader } from "../../../components/ui/TooltipHeader";
 interface PesagensTabProps {
     pesagens: Pesagem[];
     chartData: ChartData[];
+    /** User gender for SMI classification (e.g. "masculino" / "feminino"). */
+    gender?: string | null;
 }
 
-export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
+export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
     return (
         <div className="space-y-6">
             {pesagens.length > 0 ? (
@@ -41,74 +46,80 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                             </h4>
                         </div>
                         <div className="w-full overflow-visible">
-                            <table className="w-full text-xs border-collapse table-auto">
+                            <table className="w-full text-sm border-collapse table-fixed">
                                 <thead>
                                     <tr className="bg-gray-50 border-b">
-                                        <th className="py-3 px-2 text-left font-semibold text-gray-700 whitespace-nowrap">Data</th>
-                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Peso (kg)</th>
-                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                                            <TooltipHeader label="PESO" description="Δ Peso. Diferença entre pesagens consecutivas." />
+                                        <th className="py-3 px-2 text-left font-semibold text-gray-700 w-[4.2rem]">Data</th>
+                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 w-[4rem]">Peso</th>
+                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[3.5rem]">
+                                            <TooltipHeader label="Δ" description="Δ Peso. Diferença entre pesagens consecutivas." />
                                         </th>
-                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Altura (cm)</th>
-                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">% MG</th>
-                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                                            <TooltipHeader label="MM (kg)" description="Peso × (1 - %MG). Massa magra (LBM). Automático ao inserir dados." />
+                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 w-[3.8rem]">Alt.</th>
+                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 w-[2.8rem]">% MG</th>
+                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[3.2rem]">
+                                            <TooltipHeader label="MM" description="Peso × (1 - %MG). Massa magra (LBM)." isAuto={true} />
                                         </th>
-                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                                            <TooltipHeader label="% H2O" description="Fórmula Watson: calcula água corporal baseado em peso, altura, idade e género. Valor em kg abaixo." />
+                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[3.2rem]">
+                                            <TooltipHeader label="H2O" description="Fórmula Watson. % e kg." isAuto={true} />
                                         </th>
-                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                                            <TooltipHeader label="IMC" description="Peso ÷ Altura². Automático ao inserir dados." />
+                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[2.8rem]">
+                                            <TooltipHeader label="IMC" description="Peso ÷ Altura²." isAuto={true} />
                                         </th>
-                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Gordura Visc.</th>
-                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">ID Metab.</th>
-                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">Massa Óssea</th>
-                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                                            <TooltipHeader label="Resultado IMC" description="Classificação automática baseada no IMC: Baixo Peso, Normal, Pré-obesidade ou Obesidade." isAuto={true} />
+                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 w-[2.6rem]">G.Visc.</th>
+                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 w-[2.6rem]">ID M.</th>
+                                        <th className="py-3 px-2 text-center font-semibold text-gray-700 w-[2.8rem]">M.Óssea</th>
+                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[5rem]">
+                                            <TooltipHeader label="Res. IMC" description="Classificação automática IMC." isAuto={true} />
                                         </th>
-                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 whitespace-nowrap">
-                                            <TooltipHeader label="Resultado %MG" description="Classificação automática baseada no género e % de gordura." isAuto={true} />
+                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[5rem]">
+                                            <TooltipHeader label="Res. %MG" description="Classificação por género e % gordura." isAuto={true} />
+                                        </th>
+                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[3.5rem]">
+                                            <TooltipHeader label="SMI" description="MM ÷ Altura² (kg/m²)." isAuto={true} />
+                                        </th>
+                                        <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[4.5rem]">
+                                            <TooltipHeader label="SMI Res." description="Classificação por género." isAuto={true} />
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-none">
                                     {pesagens.map((pesagem, index) => (
                                         <tr key={index} className="group hover:bg-gray-50/50 transition-colors duration-200 border-t border-solid border-gray-300 first:border-none">
-                                            <td className="py-4 px-3 whitespace-nowrap font-medium text-gray-700">{pesagem.data}</td>
-                                            <td className="py-4 px-3 text-center font-bold text-gray-900">
+                                            <td className="py-3 px-2 whitespace-nowrap font-medium text-gray-700">{pesagem.data}</td>
+                                            <td className="py-3 px-2 text-center font-bold text-gray-900">
                                                 {pesagem.peso ? (
                                                     <span className="flex items-center justify-center">
-                                                        {pesagem.peso}<sup className="text-[7px] ml-0.5">kg</sup>
+                                                        {pesagem.peso}<sup className="text-[9px] ml-0.5">kg</sup>
                                                     </span>
                                                 ) : "-"}
                                             </td>
-                                            <td className={`py-4 px-3 text-center font-semibold ${getDeltaPesoColor(pesagem.deltaPeso)}`}>
+                                            <td className={`py-3 px-2 text-center font-semibold ${getDeltaPesoColor(pesagem.deltaPeso)}`}>
                                                 {pesagem.deltaPeso !== undefined && pesagem.deltaPeso !== null ? `${pesagem.deltaPeso > 0 ? '+' : ''}${pesagem.deltaPeso} kg` : '-'}
                                             </td>
-                                            <td className="py-4 px-3 text-center font-bold text-gray-700">
+                                            <td className="py-3 px-2 text-center font-bold text-gray-700">
                                                 {pesagem.height ? (
                                                     <div className="flex items-center justify-center">
                                                         <span>{pesagem.height}</span>
                                                         <div className="flex flex-col items-start ml-0.5 leading-none gap-0.5">
-                                                            <span className="text-[10px] text-black font-bold">cm</span>
-                                                            <span className="text-[9px] text-gray-900 font-normal whitespace-nowrap">(m'{String(pesagem.height % 100).padStart(2, '0')})</span>
+                                                            <span className="text-xs text-black font-bold">cm</span>
+                                                            <span className="text-[10px] text-gray-900 font-normal whitespace-nowrap">(m'{String(pesagem.height % 100).padStart(2, '0')})</span>
                                                         </div>
                                                     </div>
                                                 ) : '-'}
                                             </td>
-                                            <td className="py-4 px-3 text-center font-semibold text-gray-700">
+                                            <td className="py-3 px-2 text-center font-semibold text-gray-700">
                                                 {pesagem.percentualMG ? `${pesagem.percentualMG}%` : '-'}
                                             </td>
-                                            <td className="py-4 px-3 text-center">
+                                            <td className="py-3 px-2 text-center">
                                                 <span className={BADGE_STYLES.PURPLE}>
                                                     {pesagem.MM ? (
                                                         <span className="flex items-center justify-center">
-                                                            {pesagem.MM}<sup className="text-[7px] ml-0.5">kg</sup>
+                                                            {pesagem.MM}<sup className="text-[9px] ml-0.5">kg</sup>
                                                         </span>
                                                     ) : '-'}
                                                 </span>
                                             </td>
-                                            <td className="py-4 px-3 text-center">
+                                            <td className="py-3 px-2 text-center">
                                                 {pesagem.H2O ? (() => {
                                                     // Calculate h2oKg from percentage and peso
                                                     const h2oPercent = parseFloat(String(pesagem.H2O).replace(',', '.'));
@@ -119,12 +130,12 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                                     return (
                                                         <span className={`${BADGE_STYLES.BLUE} flex flex-col items-center leading-tight`}>
                                                             <span className="flex items-center gap-1">
-                                                                <i className="fa-duotone fa-droplet text-[9px]" />
+                                                                <i className="fa-duotone fa-droplet text-xs" />
                                                                 {pesagem.H2O}%
                                                             </span>
                                                             {h2oKg && (
-                                                                <span className="text-[10px] flex items-center">
-                                                                    ({h2oKg})<sup className="text-[7px] ml-0.5">kg</sup>
+                                                                <span className="text-xs flex items-center">
+                                                                    ({h2oKg})<sup className="text-[9px] ml-0.5">kg</sup>
                                                                 </span>
                                                             )}
                                                         </span>
@@ -133,23 +144,54 @@ export function PesagensTab({ pesagens, chartData }: PesagensTabProps) {
                                                     <span className={BADGE_STYLES.BLUE}>-</span>
                                                 )}
                                             </td>
-                                            <td className="py-4 px-3 text-center">
+                                            <td className="py-3 px-2 text-center">
                                                 <span className={BADGE_STYLES.GREEN}>{pesagem.IMC ? pesagem.IMC.toFixed(1).replace('.', ',') : "-"}</span>
                                             </td>
-                                            <td className="py-4 px-3 text-center font-semibold text-gray-900">{pesagem.gordVisceral || "-"}</td>
-                                            <td className="py-4 px-3 text-center font-semibold text-gray-900">{pesagem.IDMetabolica || "-"}</td>
-                                            <td className="py-4 px-3 text-center font-semibold text-gray-900">{pesagem.massaOssea || "-"}</td>
-                                            <td className="py-4 px-3 text-center">
-                                                <span className={`${getBmiClassColor(pesagem.resultadoIMC || '')} gap-2`}>
-                                                    <i className={`fa-duotone ${getBmiIcon(pesagem.resultadoIMC || '')}`}></i>
-                                                    {pesagem.resultadoIMC || "-"}
+                                            <td className="py-3 px-2 text-center font-semibold text-gray-900">{pesagem.gordVisceral || "-"}</td>
+                                            <td className="py-3 px-2 text-center font-semibold text-gray-900">{pesagem.IDMetabolica || "-"}</td>
+                                            <td className="py-3 px-2 text-center font-semibold text-gray-900">{pesagem.massaOssea || "-"}</td>
+                                            <td className="py-3 px-2 text-center">
+                                                <span className={`${getBmiClassColor(pesagem.resultadoIMC || '')}`}>
+                                                    <i className={`fa-duotone ${getBmiIcon(pesagem.resultadoIMC || '')} shrink-0 text-[12px]`}></i>
+                                                    <span>{pesagem.resultadoIMC || "-"}</span>
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-2 text-center">
+                                                <span className={`${getFatClassColor(pesagem.resultadoPercentualMG || '')}`}>
+                                                    <i className={`fa-duotone ${getFatIcon(pesagem.resultadoPercentualMG || '')} shrink-0 text-[12px]`}></i>
+                                                    <span>{pesagem.resultadoPercentualMG || "-"}</span>
                                                 </span>
                                             </td>
                                             <td className="py-4 px-3 text-center">
-                                                <span className={`${getFatClassColor(pesagem.resultadoPercentualMG || '')} gap-2`}>
-                                                    <i className={`fa-duotone ${getFatIcon(pesagem.resultadoPercentualMG || '')}`}></i>
-                                                    {pesagem.resultadoPercentualMG || "-"}
-                                                </span>
+                                                {(() => {
+                                                    const mm = pesagem.MM;
+                                                    const h = pesagem.height;
+                                                    const smiVal = (mm != null && mm > 0 && h != null && h > 0)
+                                                        ? calculateSMI(mm, h)
+                                                        : null;
+                                                    return smiVal != null ? (
+                                                        <span className={BADGE_STYLES.PURPLE}>
+                                                            {smiVal.toFixed(2).replace('.', ',')}
+                                                        </span>
+                                                    ) : '-';
+                                                })()}
+                                            </td>
+                                            <td className="py-4 px-3 text-center">
+                                                {(() => {
+                                                    const mm = pesagem.MM;
+                                                    const h = pesagem.height;
+                                                    const smiVal = (mm != null && mm > 0 && h != null && h > 0)
+                                                        ? calculateSMI(mm, h)
+                                                        : null;
+                                                    const smiRes = (smiVal != null && gender)
+                                                        ? classifySMI(smiVal, gender)
+                                                        : '';
+                                                    return smiRes ? (
+                                                        <span className={getMileResultStyle(smiRes)}>
+                                                            {smiRes}
+                                                        </span>
+                                                    ) : '-';
+                                                })()}
                                             </td>
                                         </tr>
                                     ))}
