@@ -6,7 +6,7 @@ interface PersonalInfoSectionProps {
     onChange: (field: keyof UserData, value: any) => void;
 }
 
-const inputClasses = "w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 hover:border-gray-300";
+const inputClasses = "w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 hover:border-gray-300";
 const labelClasses = "block text-xs font-semibold text-gray-600 mb-1.5 flex items-center gap-1.5";
 
 export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = React.memo(({ user, onChange }) => {

@@ -192,8 +192,8 @@ export default function DashboardLayoutClient({
             />
 
             {/* Main Content */}
-            <main className={`flex-1 transition-[margin-left] duration-300 ease-in-out ${sidebarMargin} mt-[72px] p-4 md:p-6 lg:p-8 min-h-[calc(100vh-72px)] bg-whiten`}>
-                <div className="max-w-screen-2xl mx-auto">
+            <main className={`flex-1 transition-[margin-left] duration-300 ease-in-out ${sidebarMargin} mt-[72px] p-4 md:p-6 lg:p-8 min-h-[calc(100vh-72px)] bg-whiten overflow-x-hidden`}>
+                <div className="max-w-screen-2xl mx-auto w-full">
                     {children}
                 </div>
             </main>

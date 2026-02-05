@@ -106,8 +106,8 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
     }
 
     return (
-        <div className="w-full overflow-visible pb-16">
-            <table className="w-full text-xs border-collapse table-auto">
+        <div className="w-full overflow-x-auto premium-scrollbar shadow-inner pb-16">
+            <table className="w-full text-xs border-collapse min-w-max">
                 <thead>
                     <tr className="bg-gray-50 border-b">
                         <th className="py-3 px-2 text-left font-semibold text-gray-700 whitespace-nowrap">Data</th>

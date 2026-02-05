@@ -105,9 +105,9 @@ function FormInput({
                 onChange={(e) => onChange(type === 'number' ? parseFloat(e.target.value) : e.target.value)}
                 placeholder={placeholder}
                 required={required}
-                className={`w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all ${showAutoMode ? 'bg-violet-50 border-violet-200 font-bold text-violet-700' :
+                className={`w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all text-gray-900 ${showAutoMode ? 'bg-violet-50 border-violet-200 font-bold text-violet-700' :
                     showManualMode ? 'bg-amber-50 border-amber-200 font-bold text-amber-700' :
-                        'border-gray-200'
+                        'border-gray-200 bg-white'
                     }`}
             />
         </div>

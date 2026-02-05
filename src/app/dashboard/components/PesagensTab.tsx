@@ -22,6 +22,7 @@ import {
     BADGE_STYLES
 } from "@/lib/body-metrics";
 import { TooltipHeader } from "../../../components/ui/TooltipHeader";
+import { CustomChartTooltip } from "./CustomChartTooltip";
 
 interface PesagensTabProps {
     pesagens: Pesagem[];
@@ -36,7 +37,7 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
             {pesagens.length > 0 ? (
                 <>
                     {/* Table Card */}
-                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-visible">
+                    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
                         <div className="border-b border-gray-100 px-6 py-5">
                             <h4 className="text-lg font-semibold text-gray-900 flex items-center gap-3">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
@@ -45,8 +46,8 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
                                 Registo de Pesagens
                             </h4>
                         </div>
-                        <div className="w-full overflow-visible">
-                            <table className="w-full text-sm border-collapse table-fixed">
+                        <div className="w-full overflow-x-auto premium-scrollbar shadow-inner">
+                            <table className="w-full text-sm border-collapse min-w-max">
                                 <thead>
                                     <tr className="bg-gray-50 border-b">
                                         <th className="py-3 px-2 text-left font-semibold text-gray-700 w-[4.2rem]">Data</th>
@@ -225,16 +226,16 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                                             <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                             <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <Tooltip
-                                                contentStyle={{
-                                                    backgroundColor: '#ffffff',
-                                                    border: 'none',
-                                                    borderRadius: '12px',
-                                                    boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)',
-                                                }}
-                                                labelStyle={{ fontWeight: 600, color: '#1f2937' }}
+                                            <Tooltip content={<CustomChartTooltip unit="kg" />} />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="peso"
+                                                stroke="#e6915b"
+                                                strokeWidth={3}
+                                                fill="url(#colorPeso)"
+                                                dot={{ fill: '#e6915b', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                                activeDot={{ r: 6, fill: '#e6915b', stroke: '#fff', strokeWidth: 2, shadow: '0 0 10px rgba(230, 145, 91, 0.5)' }}
                                             />
-                                            <Area type="monotone" dataKey="peso" stroke="#e6915b" strokeWidth={3} fill="url(#colorPeso)" dot={{ fill: '#e6915b', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#e6915b' }} />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -264,16 +265,16 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                                             <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                             <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <Tooltip
-                                                contentStyle={{
-                                                    backgroundColor: '#ffffff',
-                                                    border: 'none',
-                                                    borderRadius: '12px',
-                                                    boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)',
-                                                }}
-                                                labelStyle={{ fontWeight: 600, color: '#1f2937' }}
+                                            <Tooltip content={<CustomChartTooltip unit="%" />} />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="massaGorda"
+                                                stroke="#f43f5e"
+                                                strokeWidth={3}
+                                                fill="url(#colorMassaGorda)"
+                                                dot={{ fill: '#f43f5e', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                                activeDot={{ r: 6, fill: '#f43f5e', stroke: '#fff', strokeWidth: 2 }}
                                             />
-                                            <Area type="monotone" dataKey="massaGorda" stroke="#f43f5e" strokeWidth={3} fill="url(#colorMassaGorda)" dot={{ fill: '#f43f5e', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#f43f5e' }} />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -303,16 +304,16 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                                             <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                             <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <Tooltip
-                                                contentStyle={{
-                                                    backgroundColor: '#ffffff',
-                                                    border: 'none',
-                                                    borderRadius: '12px',
-                                                    boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)',
-                                                }}
-                                                labelStyle={{ fontWeight: 600, color: '#1f2937' }}
+                                            <Tooltip content={<CustomChartTooltip unit="kg" />} />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="massaMuscular"
+                                                stroke="#3b82f6"
+                                                strokeWidth={3}
+                                                fill="url(#colorMassaMuscular)"
+                                                dot={{ fill: '#3b82f6', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                                activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
                                             />
-                                            <Area type="monotone" dataKey="massaMuscular" stroke="#3b82f6" strokeWidth={3} fill="url(#colorMassaMuscular)" dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#3b82f6' }} />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -342,16 +343,16 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                                             <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                             <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <Tooltip
-                                                contentStyle={{
-                                                    backgroundColor: '#ffffff',
-                                                    border: 'none',
-                                                    borderRadius: '12px',
-                                                    boxShadow: '0 10px 40px -10px rgba(0,0,0,0.15)',
-                                                }}
-                                                labelStyle={{ fontWeight: 600, color: '#1f2937' }}
+                                            <Tooltip content={<CustomChartTooltip />} />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="gorduraVisceral"
+                                                stroke="#a855f7"
+                                                strokeWidth={3}
+                                                fill="url(#colorGorduraVisceral)"
+                                                dot={{ fill: '#a855f7', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                                activeDot={{ r: 6, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
                                             />
-                                            <Area type="monotone" dataKey="gorduraVisceral" stroke="#a855f7" strokeWidth={3} fill="url(#colorGorduraVisceral)" dot={{ fill: '#a855f7', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#a855f7' }} />
                                         </AreaChart>
                                     </ResponsiveContainer>
                                 </div>

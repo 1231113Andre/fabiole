@@ -10,6 +10,7 @@ import {
     ResponsiveContainer,
 } from "recharts";
 import { PersonalInfo, DashboardStats, ChartData } from "../types";
+import { CustomChartTooltip } from "./CustomChartTooltip";
 
 interface OverviewTabProps {
     personalInfo: PersonalInfo | null;
@@ -333,18 +334,7 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                                         tickLine={false}
                                         axisLine={false}
                                     />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#ffffff',
-                                            border: '1px solid #e2e8f0',
-                                            borderRadius: '8px',
-                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                                            color: '#000',
-                                            padding: '12px'
-                                        }}
-                                        itemStyle={{ color: '#000' }}
-                                        labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
-                                    />
+                                    <Tooltip content={<CustomChartTooltip unit="kg" />} />
                                     <Area
                                         type="monotone"
                                         dataKey="peso"
@@ -352,6 +342,8 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                                         strokeWidth={3}
                                         fillOpacity={1}
                                         fill="url(#colorPeso)"
+                                        dot={{ fill: '#e6915b', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                        activeDot={{ r: 6, fill: '#e6915b', stroke: '#fff', strokeWidth: 2 }}
                                     />
                                 </AreaChart>
                             </ResponsiveContainer>

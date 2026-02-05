@@ -112,7 +112,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                 </div>
             )}
 
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+            <div className="flex gap-2 mb-6 overflow-x-auto premium-scrollbar pb-2">
                 {tabs.map(tab => {
                     const isActive = activeTab === tab.id;
                     return (
@@ -134,7 +134,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                 })}
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 overflow-hidden">
                 {activeTab === 'info' && (
                     <UserEditForm
                         user={user}

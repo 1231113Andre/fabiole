@@ -29,8 +29,8 @@ export const PesagensTable: React.FC<PesagensTableProps> = ({
     }
 
     return (
-        <div className="w-full overflow-visible">
-            <table className="w-full text-sm border-collapse table-fixed">
+        <div className="w-full overflow-x-auto premium-scrollbar shadow-inner relative">
+            <table className="w-full text-sm border-collapse min-w-max">
                 <thead>
                     <tr className="bg-gray-50 border-b">
                         <th className="py-3 px-2 text-left font-semibold text-gray-700 w-[4.2rem]">Data</th>

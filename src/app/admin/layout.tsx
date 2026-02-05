@@ -125,8 +125,8 @@ export default function AdminLayout({
             />
 
             {/* Main Content */}
-            <main className={`flex-1 ml-0 ${sidebarMargin} mt-[72px] p-6 min-h-[calc(100vh-72px)] bg-gray-50 transition-[margin-left] duration-300`}>
-                <div className="max-w-screen-2xl mx-auto">
+            <main className={`flex-1 ml-0 ${sidebarMargin} mt-[72px] p-6 min-h-[calc(100vh-72px)] bg-gray-50 transition-[margin-left] duration-300 overflow-x-hidden`}>
+                <div className="max-w-screen-2xl mx-auto w-full">
                     {children}
                 </div>
             </main>

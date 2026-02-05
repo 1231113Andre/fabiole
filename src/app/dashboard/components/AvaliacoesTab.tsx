@@ -26,8 +26,8 @@ export function AvaliacoesTab({ avaliacoes, gender, birth }: AvaliacoesTabProps)
                                 Avaliação Física / Physical Evaluation
                             </h4>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
+                        <div className="overflow-x-auto premium-scrollbar shadow-inner">
+                            <table className="w-full min-w-max">
                                 <thead>
                                     <tr className="bg-gray-50 border-b border-gray-100">
                                         <th className="py-4 px-4 text-left font-semibold text-gray-700 text-sm xl:pl-8">Date</th>

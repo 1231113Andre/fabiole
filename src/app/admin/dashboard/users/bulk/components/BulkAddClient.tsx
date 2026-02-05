@@ -252,8 +252,8 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
                 <div className="custom-divider mb-6" />
 
                 {/* Table */}
-                <div className="w-full overflow-x-auto pb-4 custom-scrollbar">
-                    <table className="w-full text-xs border-collapse table-auto">
+                <div className="w-full overflow-x-auto pb-4 premium-scrollbar shadow-inner">
+                    <table className="w-full text-xs border-collapse min-w-max">
                         <BulkTableHeader type={type} />
                         <tbody>
                             {currentRows.map((row, index) => (

@@ -76,10 +76,9 @@ const Modal = ({ isOpen, onClose, children, size = "4xl", className = "" }: Moda
                 aria-hidden="true"
             />
 
-            {/* Modal Container */}
             <div
                 className={`
-                    relative bg-white 
+                    relative bg-white text-gray-900 
                     w-full ${sizeClasses[size]} 
                     
                     /* Mobile: Bottom Sheet Styles */
