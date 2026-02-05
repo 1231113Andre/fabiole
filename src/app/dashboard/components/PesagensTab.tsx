@@ -234,7 +234,7 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
                                                 strokeWidth={3}
                                                 fill="url(#colorPeso)"
                                                 dot={{ fill: '#e6915b', stroke: '#fff', strokeWidth: 2, r: 4 }}
-                                                activeDot={{ r: 6, fill: '#e6915b', stroke: '#fff', strokeWidth: 2, shadow: '0 0 10px rgba(230, 145, 91, 0.5)' }}
+                                                activeDot={{ r: 6, fill: '#e6915b', stroke: '#fff', strokeWidth: 2 }}
                                             />
                                         </AreaChart>
                                     </ResponsiveContainer>
