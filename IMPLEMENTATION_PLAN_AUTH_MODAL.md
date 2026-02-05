@@ -3,7 +3,7 @@
 The goal is to replace the standalone `/login` and `/registar` pages with the newly ported `AuthModal` system. The modal will be triggered from the Navbar.
 
 ## User Requirements
-- Import `AuthModal` system from `pairly` (Completed).
+- Ensure AuthModal system is integrated (Completed).
 - Keep existing login/registration logic (Completed adaptation in `AuthModal` forms).
 - **Critical**: `/login` and `/registar` pages should not exist/be used.
 - "Login" and "Register" buttons in Navbar should open the specific modal view.

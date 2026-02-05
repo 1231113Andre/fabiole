@@ -121,7 +121,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                             variant={isActive ? "new_primary_rounded" : "new_primary_no_bg_rounded"}
                             onClick={() => setActiveTab(tab.id)}
                             icon={<i className={`fa-duotone ${tab.icon}`}></i>}
-                            className={`h-11 ${!isActive ? 'bg-white border-gray-200 hover:border-orange-400' : ''}`}
+                            className={`h-11 ${!isActive ? 'bg-white border-gray-200 hover:border-primary' : ''}`}
                         >
                             <span className="mr-2">{tab.label}</span>
                             {tab.count !== undefined && (

@@ -4,18 +4,18 @@ import { z } from 'zod';
  * Registration form validation schema
  */
 export const registerSchema = z.object({
-    firstName: z.string().min(2, 'First name is required'),
-    lastName: z.string().min(2, 'Last name is required'),
-    email: z.string().email('Please enter a valid email address.'),
+    firstName: z.string().min(2, 'O nome deve ter pelo menos 2 caracteres'),
+    lastName: z.string().min(2, 'O apelido deve ter pelo menos 2 caracteres'),
+    email: z.string().email('Por favor, introduza um e-mail válido.'),
     password: z.string()
-        .min(8, 'Password must be at least 8 characters long.')
-        .refine((password) => /[A-Z]/.test(password), 'Password must contain at least one uppercase letter.')
-        .refine((password) => /[a-z]/.test(password), 'Password must contain at least one lowercase letter.')
-        .refine((password) => /[0-9]/.test(password), 'Password must contain at least one number.'),
-    birthDate: z.string().min(1, "Birth date is required"),
+        .min(8, 'A palavra-passe deve ter pelo menos 8 caracteres.')
+        .refine((password) => /[A-Z]/.test(password), 'A palavra-passe deve conter pelo menos uma letra maiúscula.')
+        .refine((password) => /[a-z]/.test(password), 'A palavra-passe deve conter pelo menos uma letra minúscula.')
+        .refine((password) => /[0-9]/.test(password), 'A palavra-passe deve conter pelo menos um número.'),
+    birthDate: z.string().min(1, "A data de nascimento é obrigatória"),
     gender: z.enum(['Masculino', 'Feminino', 'Outro']),
     terms: z.boolean().refine(val => val === true, {
-        message: 'You must agree to the terms of service.',
+        message: 'Deve concordar com os termos de serviço.',
     }),
 });
 

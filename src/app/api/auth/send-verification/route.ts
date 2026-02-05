@@ -12,6 +12,7 @@ import { RATE_LIMITS } from '@/lib/security/rateLimit';
 import { VerificationCodeService } from '@/lib/email';
 import { z } from 'zod';
 import { createOptionsHandler } from '@/lib/api/utils/cors';
+import { db } from '@/lib/db/client';
 
 const sendVerificationSchema = z.object({
     email: z.string().email('Invalid email address'),
@@ -30,6 +31,16 @@ const sendVerificationHandler = new BaseRouteHandler()
             firstName?: string;
         };
 
+        // Check if user already exists
+        const existingUser = await db.user.findUnique({
+            where: { email },
+            select: { id: true }, // Select minimal data for performance
+        });
+
+        if (existingUser) {
+            return ApiResponse.conflict('Este email já está registado. Tenta iniciar sessão.');
+        }
+
         const result = await VerificationCodeService.sendVerificationCode(email, firstName);
 
         if (!result.success) {
@@ -45,6 +56,6 @@ const sendVerificationHandler = new BaseRouteHandler()
 export const POST = sendVerificationHandler.toNextHandler();
 
 export const OPTIONS = createOptionsHandler({
-  methods: ['POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type'],
+    methods: ['POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
 });

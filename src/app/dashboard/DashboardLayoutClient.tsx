@@ -52,6 +52,7 @@ export default function DashboardLayoutClient({
     // UI state
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+    const [isMobile, setIsMobile] = useState(false);
     const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
 
     // Refresh hook with cooldown
@@ -68,6 +69,28 @@ export default function DashboardLayoutClient({
         user,
         isAuthenticated,
     } = useDashboardData();
+
+    // Handle responsive layout behavior
+    useEffect(() => {
+        const handleResize = () => {
+            const width = window.innerWidth;
+            const mobile = width < 1024;
+            setIsMobile(mobile);
+
+            // Auto-collapse sidebar on laptop screens (1024px - 1400px) if not manually set
+            if (!mobile && width < 1400) {
+                setIsCollapsed(true);
+            } else if (width >= 1400) {
+                setIsCollapsed(false);
+            }
+        };
+
+        // Initial check
+        handleResize();
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -116,19 +139,20 @@ export default function DashboardLayoutClient({
 
     // Memoize sidebar margin calculation
     const sidebarMargin = useMemo(() => {
+        if (isMobile) return "ml-0"; // No margin on mobile
         return isCollapsed ? "lg:ml-[90px]" : "lg:ml-[290px]";
-    }, [isCollapsed]);
+    }, [isCollapsed, isMobile]);
 
     // Set CSS variable for sidebar width dynamically
     useEffect(() => {
-        const sidebarWidth = isCollapsed ? "90px" : "290px";
+        const sidebarWidth = isMobile ? "0px" : (isCollapsed ? "90px" : "290px");
         document.documentElement.style.setProperty("--sidebar-width", sidebarWidth);
-    }, [isCollapsed]);
+    }, [isCollapsed, isMobile]);
 
     // Loading state
     if (isLoading || (!isLoading && !isAuthenticated)) {
         return (
-            <div className="flex h-screen items-center justify-center bg-whiten dark:bg-boxdark-2">
+            <div className="flex h-screen items-center justify-center bg-boxdark-2">
                 <LoadingSpinner />
             </div>
         );
@@ -168,11 +192,20 @@ export default function DashboardLayoutClient({
             />
 
             {/* Main Content */}
-            <main className={`flex-1 ml-0 ${sidebarMargin} mt-[72px] p-6 min-h-[calc(100vh-72px)] bg-whiten transition-[margin-left] duration-300`}>
+            <main className={`flex-1 transition-[margin-left] duration-300 ease-in-out ${sidebarMargin} mt-[72px] p-4 md:p-6 lg:p-8 min-h-[calc(100vh-72px)] bg-whiten`}>
                 <div className="max-w-screen-2xl mx-auto">
                     {children}
                 </div>
             </main>
+
+            {/* Mobile Overlay */}
+            {sidebarOpen && isMobile && (
+                <div
+                    className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden animate-in fade-in"
+                    onClick={handleCloseSidebar}
+                    aria-hidden="true"
+                />
+            )}
         </div>
     );
 }

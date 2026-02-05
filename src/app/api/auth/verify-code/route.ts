@@ -19,10 +19,10 @@ const verifyCodeSchema = z.object({
 });
 
 const errorMessages: Record<string, string> = {
-    EXPIRED: 'Verification code has expired. Please request a new one.',
-    INVALID: 'Invalid verification code. Please try again.',
-    NOT_FOUND: 'No verification code found. Please request a new one.',
-    TOO_MANY_ATTEMPTS: 'Too many failed attempts. Please request a new code.',
+    EXPIRED: 'O código de verificação expirou. Por favor, peça um novo.',
+    INVALID: 'Código de verificação inválido. Por favor, tente novamente.',
+    NOT_FOUND: 'Nenhum código de verificação encontrado. Por favor, peça um novo.',
+    TOO_MANY_ATTEMPTS: 'Demasiadas tentativas falhadas. Por favor, peça um novo código.',
 };
 
 const verifyCodeHandler = new BaseRouteHandler()
@@ -41,14 +41,14 @@ const verifyCodeHandler = new BaseRouteHandler()
 
         if (!result.valid) {
             const errorMessage = result.error
-                ? errorMessages[result.error] || 'Verification failed'
-                : 'Verification failed';
+                ? errorMessages[result.error] || 'Falha na verificação'
+                : 'Falha na verificação';
 
             return ApiResponse.error(errorMessage, 400);
         }
 
         return ApiResponse.success({
-            message: 'Email verified successfully',
+            message: 'E-mail verificado com sucesso',
             verified: true,
             email,
         });

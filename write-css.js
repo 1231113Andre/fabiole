@@ -5,7 +5,7 @@ const css = `/* Tailwind CSS v4 */
 @import "tailwindcss";
 
 :root {
-  /* Light mode palette (from pairly) */
+  /* Light mode palette */
   --background: oklch(0.99 0.002 95);
   --foreground: oklch(0.15 0.01 260);
   --muted: oklch(0.96 0.003 95);
@@ -20,7 +20,7 @@ const css = `/* Tailwind CSS v4 */
   --separator: oklch(0.95 0.002 95);
   --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 
-  /* Brand palette (from pairly) */
+  /* Brand palette */
   --primary: #e6915b;
   --primary-hover: #d18251;
   --primary-foreground: oklch(1 0 0);
@@ -43,7 +43,7 @@ const css = `/* Tailwind CSS v4 */
 }
 
 :root.dark {
-  /* Dark mode palette (from pairly) */
+  /* Dark mode palette */
   --background: oklch(0.10 0.02 265);
   --foreground: oklch(0.98 0.002 260);
   --card: oklch(0.14 0.025 265);
@@ -162,7 +162,7 @@ main {
 }
 
 /* ========================================================= */
-/* NAVBAR - Pairly-inspired centered layout                  */
+/* NAVBAR - Centered layout */
 /* ========================================================= */
 
 :root {
@@ -173,7 +173,7 @@ main {
   --navbar-cta-hover: rgba(234, 88, 12, 0.2);
 }
 
-/* Fixed Navbar - Absolute positioning like Pairly */
+/* Fixed Navbar - Absolute positioning */
 .navbar-fixed {
   position: absolute;
   top: 0;
@@ -237,7 +237,7 @@ main {
   }
 }
 
-/* Individual Nav Link - Pairly style */
+/* Individual Nav Link */
 .navbar-link {
   display: inline-flex;
   align-items: center;
@@ -282,7 +282,7 @@ main {
   gap: 0.75rem;
 }
 
-/* CTA Button - Pairly orange glow style */
+/* CTA Button - Orange glow style */
 .navbar-cta {
   display: inline-flex;
   align-items: center;

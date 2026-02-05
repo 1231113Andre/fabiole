@@ -1,45 +1,19 @@
-/**
- * Loading States for Admin Panel
- * Using the same spinner style as the main app LoadingSpinner
- */
+import { LoadingSpinner as UiSpinner } from "@/components/ui/spinner";
+
+const ADMIN_DEFAULT_STEPS = [
+    { label: "A carregar o painel...", description: "A carregar as ferramentas administrativas." },
+    { label: "A validar acessos", description: "A verificar as suas permissões de administrador." },
+    { label: "A preparar dados", description: "A organizar as estatísticas e utilizadores." },
+    { label: "Quase lá", description: "A abrir a consola de administração." }
+];
 
 export function LoadingSpinner() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
-            {/* Two-part spinner - same as main app */}
-            <div className="relative w-16 h-16">
-                {/* Outer ring - slower rotation */}
-                <div
-                    className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary"
-                    style={{ animation: 'spin 1.5s linear infinite' }}
-                />
-                {/* Inner ring - faster rotation, opposite direction */}
-                <div
-                    className="absolute inset-2 rounded-full border-4 border-transparent border-b-primary/70 border-l-primary/70"
-                    style={{ animation: 'spin-reverse 1s linear infinite' }}
-                />
-                {/* Center dot */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" />
-                </div>
-            </div>
-
-            {/* Loading text */}
-            <p className="mt-6 text-gray-500 text-sm font-medium tracking-wide">
-                A carregar...
-            </p>
-
-            {/* Custom keyframes */}
-            <style jsx>{`
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-                @keyframes spin-reverse {
-                    from { transform: rotate(360deg); }
-                    to { transform: rotate(0deg); }
-                }
-            `}</style>
+        <div className="flex items-center justify-center min-h-screen bg-boxdark-2">
+            <UiSpinner
+                steps={ADMIN_DEFAULT_STEPS}
+                size="text-5xl"
+            />
         </div>
     );
 }

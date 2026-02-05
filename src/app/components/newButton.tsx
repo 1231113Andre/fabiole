@@ -57,30 +57,28 @@ const VARIANTS = {
   new_primary_rounded:
     "bg-primary text-white rounded-lg shadow-md " +
     "font-medium text-base px-6 disabled:opacity-60 " +
-    "hover:!bg-transparent hover:border-orange-400 hover:!text-primary " +
-    "hover:shadow-[0_10px_24px_rgba(230,145,91,0.35)] " +
+    "hover:!bg-transparent hover:border-primary hover:!text-primary " +
     "active:shadow-lg " +
     "transition-all duration-200 ease-out " +
-    "border-2 border-orange-400",
+    "border-2 border-primary",
   new_primary_full_rounded:
     "bg-primary text-white rounded-full shadow-md " +
     "font-medium text-base px-6 disabled:opacity-60 " +
-    "hover:!bg-transparent hover:border-orange-400 hover:!text-primary " +
-    "hover:shadow-[0_10px_24px_rgba(230,145,91,0.35)] " +
+    "hover:!bg-transparent hover:border-primary hover:!text-primary " +
     "active:shadow-lg " +
     "transition-all duration-200 ease-out " +
-    "border-2 border-orange-400",
+    "border-2 border-primary",
   new_primary_no_bg_rounded:
     "bg-transparent text-popover-foreground rounded-lg " +
     "font-medium text-base px-6 disabled:opacity-60 " +
     "hover:shadow-2xl " +
     "active:shadow-lg " +
     "transition-all duration-200 ease-out " +
-    "border-2 border-orange-400",
+    "border-2 border-primary",
   new_secondary_no_border_on_idle:
     "bg-transparent text-popover-foreground rounded-lg shadow-md " +
     "font-medium text-base px-6 disabled:opacity-60 " +
-    "hover:bg-primary-hover hover:backdrop-blur-sm hover:shadow-2xl hover:bg-primary hover:border-orange-400 " +
+    "hover:bg-primary-hover hover:backdrop-blur-sm hover:shadow-2xl hover:bg-primary hover:border-primary " +
     "active:shadow-lg " +
     "transition-all duration-200 ease-out " +
     "border-2 border-transparent",
@@ -89,14 +87,14 @@ const VARIANTS = {
     "font-medium text-base px-6 disabled:opacity-60 " +
     "hover:bg-primary-hover hover:text-popover-foreground hover:backdrop-blur-sm hover:shadow-2xl hover:bg-primary " +
     "active:shadow-lg " +
-    "transition-all duration-200 ease-out " + "border-2 border-orange-400",
+    "transition-all duration-200 ease-out " + "border-2 border-primary",
 
   sort_button:
     "bg-card text-foreground rounded-lg shadow-md " +
     "font-montserrat-semibold text-sm px-6 py-3 disabled:opacity-60 " +
     "hover:bg-primary hover:text-primary-foreground hover:shadow-lg" +
     "transition-all duration-200 ease-out " +
-    "border-2 border-orange-400",
+    "border-2 border-primary",
   new_destructive_no_bg_rounded:
     "bg-transparent text-destructive rounded-lg shadow-md " +
     "font-medium text-base px-6 disabled:opacity-60 " +

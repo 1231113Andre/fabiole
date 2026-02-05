@@ -9,7 +9,7 @@ import {
     calculateH2O,
     calculateAge,
     classifyMileResult,
-    classifyPushUps
+    classifySitUps
 } from "@/lib/body-metrics";
 
 export function useBulkState(type: BulkType, userGender: string, userBirthDate?: Date | string | null) {
@@ -90,7 +90,7 @@ export function useBulkState(type: BulkType, userGender: string, userBirthDate?:
             if (field === 'pushUps') {
                 const count = parseInt(value);
                 if (!isNaN(count) && userAge && userGender) {
-                    newRow.pushUpsResult = classifyPushUps(count, userAge, userGender);
+                    newRow.pushUpsResult = classifySitUps(count, userAge, userGender);
                 } else {
                     newRow.pushUpsResult = '';
                 }

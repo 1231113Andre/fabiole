@@ -90,11 +90,11 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
 
             setStep('verify');
             startTimer(60);
-            notify('Verification code sent to your email!', 'success');
+            notify('Código de verificação enviado para o seu e-mail!', 'success');
         } catch (error: any) {
             setError('root.serverError', {
                 type: 'custom',
-                message: error.message || 'Failed to send verification code'
+                message: error.message || 'Falha ao enviar o código de verificação'
             });
         } finally {
             setIsLoading(false);
@@ -115,7 +115,9 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
     // Handle back to form
     const handleBack = useCallback(() => {
         setStep('form');
-    }, []);
+        // Clear server errors when going back
+        setError('root.serverError', { message: '' });
+    }, [setError]);
 
     // Toggle password visibility
     const togglePasswordVisibility = useCallback(() => {
@@ -151,10 +153,10 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
 
             <Input
                 id="email"
-                label="Email address"
+                label="Endereço de e-mail"
                 type="email"
                 registration={register('email')}
-                placeholder="mail@example.com"
+                placeholder="email@exemplo.com"
                 error={errors.email}
                 disabled={isFormLoading}
                 autoComplete="email"
@@ -198,7 +200,7 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
                 ) : (
                     <>
                         <i className="fa-duotone fa-user-plus mr-2" />
-                        Sign Up
+                        Criar conta
                     </>
                 )}
             </NewButton>

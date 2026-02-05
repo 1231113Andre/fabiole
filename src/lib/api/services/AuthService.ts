@@ -105,7 +105,10 @@ export class AuthService {
     const normalizedEmail = userData.email.toLowerCase().trim();
 
     // 1. Check if user exists in DB
-    const existing = await db.user.findUnique({ where: { email: normalizedEmail } });
+    const existing = await db.user.findUnique({
+      where: { email: normalizedEmail },
+      select: { id: true }
+    });
     if (existing) {
       throw new Error('User with this email already exists');
     }

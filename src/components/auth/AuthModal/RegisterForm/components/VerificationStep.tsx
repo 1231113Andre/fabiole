@@ -41,10 +41,10 @@ export const VerificationStep = React.memo<VerificationStepProps>(({
                     <i className="fa-solid fa-envelope text-2xl text-[var(--primary)]" />
                 </div>
                 <h3 className="text-xl font-semibold text-white">
-                    Check your email
+                    VERIFICAÇÃO DE E-MAIL
                 </h3>
                 <p className="text-sm text-[var(--muted-foreground)]">
-                    We sent a 6-digit code to<br />
+                    Enviámos um código de 6 dígitos para<br />
                     <span className="font-medium text-white">{email}</span>
                 </p>
             </div>
@@ -74,9 +74,9 @@ export const VerificationStep = React.memo<VerificationStepProps>(({
                         h="10"
                     >
                         {timeLeft > 0 ? (
-                            `Resend code in ${timeLeft}s`
+                            `Reenviar código em ${timeLeft}s`
                         ) : (
-                            "Didn't receive the code? Resend"
+                            "Não recebeu o código? Reenviar"
                         )}
                     </NewButton>
                 </div>
@@ -87,7 +87,7 @@ export const VerificationStep = React.memo<VerificationStepProps>(({
                     className="text-sm text-[var(--muted-foreground)] hover:text-white disabled:opacity-50"
                 >
                     <i className="fa-solid fa-arrow-left mr-2" />
-                    Back to form
+                    Voltar ao formulário
                 </button>
             </div>
         </div>

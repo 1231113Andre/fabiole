@@ -71,7 +71,7 @@
 
   /* Brand Colors */
   --primary: #e6915b;
-  /* Orange brand color */
+  /* Original Brand Orange */
   --primary-hover: #d37d45;
   --primary-foreground: #ffffff;
 
@@ -99,9 +99,10 @@
   --status-pending-bg: #f1f5f9;
   --status-pending-text: #475569;
 
-  --status-in-progress-border: #3b82f6;
-  --status-in-progress-bg: #eff6ff;
-  --status-in-progress-text: #1d4ed8;
+  /* Reverting status colors to orange for consistency if they were changed */
+  --status-in-progress-border: #e6915b;
+  --status-in-progress-bg: #fff7ed;
+  --status-in-progress-text: #c2410c;
 
   --status-completed-border: #22c55e;
   --status-completed-bg: #f0fdf4;
@@ -196,7 +197,7 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .ui-text-accent {
-  background: linear-gradient(to right, #e6915b, #e6915b);
+  background: linear-gradient(to right, #e6915b, #fb923c);
   -webkit-background-clip: text;
   background-clip: text;
   color: var(--primary);

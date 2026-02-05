@@ -94,8 +94,6 @@ export interface ReferenceTables {
     massaGordaMasculino?: ReferenceTableCategory;
     massaGordaFeminino?: ReferenceTableCategory;
     imc?: ImcReference;
-    pushUpsMasculino?: ReferenceTableCategory;
-    pushUpsFeminino?: ReferenceTableCategory;
     flexoesFeminino?: ReferenceTableCategory;
     flexoesMasculino?: ReferenceTableCategory;
     abdominaisFeminino?: ReferenceTableCategory;
@@ -127,4 +125,4 @@ export interface DashboardStats {
 
 // References Tab Types
 export type Gender = "MALE" | "FEMALE";
-export type Category = "massaGorda" | "pushUps" | "flexoes" | "abdominais" | "milha" | "smi";
+export type Category = "massaGorda" | "flexoes" | "abdominais" | "milha" | "smi";

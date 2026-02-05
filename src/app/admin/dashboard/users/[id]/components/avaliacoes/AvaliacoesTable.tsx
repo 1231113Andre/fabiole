@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Avaliacao, Pesagem } from "../../types";
-import { BADGE_STYLES, classifyMileResult, classifyPushUps, calculateAge, calculateVO2MaxRockport } from "@/lib/body-metrics";
+import { BADGE_STYLES, classifyMileResult, classifySitUps, calculateAge, calculateVO2MaxRockport } from "@/lib/body-metrics";
 import { TooltipHeader } from "@/components/ui/TooltipHeader";
 
 const getMileResultStyle = (result: string | null): string => {
@@ -186,7 +186,7 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
 
                             // 1. Auto-classify Push-ups if needed
                             if (!pushRes) {
-                                pushRes = classifyPushUps(a.pushUps as any, age, gender as any);
+                                pushRes = classifySitUps(a.pushUps as any, age, gender as any);
                             }
 
                             // 2. Mile Logic only if mile exists

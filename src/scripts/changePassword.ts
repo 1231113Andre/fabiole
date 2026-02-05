@@ -4,13 +4,13 @@ import { hashPassword } from '../lib/security/password';
 import { Logger } from '../lib/utils/logger';
 
 const EMAIL = 'kamszotlol@proton.me';
-const NEW_PASSWORD = '12345';
+const NEW_PASSWORD = 'password123';
 
 async function main() {
     Logger.info('Password', `Changing password for ${EMAIL}`);
 
     const hashedPassword = await hashPassword(NEW_PASSWORD);
-    
+
     const user = await db.user.update({
         where: { email: EMAIL },
         data: { password: hashedPassword }

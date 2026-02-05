@@ -206,7 +206,7 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
                         <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
                             <div className="border-b border-gray-100 px-6 py-4">
                                 <h3 className="font-semibold text-gray-900 flex items-center gap-3">
-                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-amber-600">
                                         <i className="fa-duotone fa-weight-scale text-white text-sm"></i>
                                     </div>
                                     Peso (kg)

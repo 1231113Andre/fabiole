@@ -236,8 +236,6 @@ export function transformDashboardData(userData: UserSheetData | null | undefine
     const staticReferences: ReferenceTables = {
         massaGordaMasculino: require("@/lib/data/references/male/massa_gorda.json"),
         massaGordaFeminino: require("@/lib/data/references/female/massa_gorda.json"),
-        pushUpsMasculino: require("@/lib/data/references/male/push_ups.json"),
-        pushUpsFeminino: require("@/lib/data/references/female/push_ups.json"),
         flexoesMasculino: require("@/lib/data/references/male/flexoes.json"),
         flexoesFeminino: require("@/lib/data/references/female/flexoes.json"),
         abdominaisMasculino: require("@/lib/data/references/male/abdominais.json"),

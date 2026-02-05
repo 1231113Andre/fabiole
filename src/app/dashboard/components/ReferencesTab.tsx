@@ -29,8 +29,6 @@ export function ReferencesTab({
         switch (selectedCategory) {
             case "massaGorda":
                 return referenceTables?.[`massaGorda${genderKey}` as keyof ReferenceTables];
-            case "pushUps":
-                return referenceTables?.[`pushUps${genderKey}` as keyof ReferenceTables];
             case "flexoes":
                 return referenceTables?.[`flexoes${genderKey}` as keyof ReferenceTables];
             case "abdominais":
@@ -136,13 +134,6 @@ export function ReferencesTab({
                             MASSA GORDA 💪
                         </NewButton>
                         <NewButton
-                            variant={selectedCategory === "pushUps" ? "new_primary_rounded" : "new_secondary_no_border_on_idle"}
-                            onClick={() => setSelectedCategory("pushUps")}
-                            className="w-full sm:w-auto min-w-[160px]"
-                        >
-                            PUSH UPS 💪
-                        </NewButton>
-                        <NewButton
                             variant={selectedCategory === "flexoes" ? "new_primary_rounded" : "new_secondary_no_border_on_idle"}
                             onClick={() => setSelectedCategory("flexoes")}
                             className="w-full sm:w-auto min-w-[160px]"
@@ -177,7 +168,6 @@ export function ReferencesTab({
                         <div className="border-b border-gray-100 px-6 py-5 bg-gray-50/50 flex items-center justify-between">
                             <h4 className="text-lg font-semibold text-gray-900">
                                 {selectedCategory === "massaGorda" && "Massa Gorda"}
-                                {selectedCategory === "pushUps" && "Push Ups"}
                                 {selectedCategory === "flexoes" && "Flexões (1 min)"}
                                 {selectedCategory === "abdominais" && "Abdominais (1 min)"}
                                 {selectedCategory === "milha" && "Teste da Milha (1609m)"}
@@ -215,46 +205,6 @@ export function ReferencesTab({
                                                     <td className="px-4 py-3 text-center font-medium text-blue-700">{values.bom || '-'}</td>
                                                     <td className="px-4 py-3 text-center font-medium text-yellow-700">{values.medio || '-'}</td>
                                                     <td className="px-4 py-3 text-center font-medium text-red-700">{values.mau || '-'}</td>
-                                                </tr>
-                                            ))}
-                                        {(!currentData || Object.keys(currentData).length === 0) && (
-                                            <tr>
-                                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                                    Dados indisponíveis. Tente recarregar a página.
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            ) : selectedCategory === "pushUps" ? (
-                                /* PUSH UPS (Idade + níveis – Masculino e Feminino) */
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-gray-50 border-b border-gray-100">
-                                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Idade</th>
-                                            <th className="px-4 py-3 text-center font-semibold text-green-700">Excelente</th>
-                                            <th className="px-4 py-3 text-center font-semibold text-blue-600">Acima da Média</th>
-                                            <th className="px-4 py-3 text-center font-semibold text-yellow-600">Média</th>
-                                            <th className="px-4 py-3 text-center font-semibold text-red-600">Fraco</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {currentData && Object.entries(currentData)
-                                            .sort(([a], [b]) => {
-                                                const getStartAge = (key: string) => {
-                                                    if (key.includes('+')) return 60;
-                                                    const match = key.match(/^(\d+)/);
-                                                    return match ? parseInt(match[1]) : 0;
-                                                };
-                                                return getStartAge(a) - getStartAge(b);
-                                            })
-                                            .map(([ageRange, values]: [string, any]) => (
-                                                <tr key={ageRange} className="hover:bg-gray-50/50 transition-colors">
-                                                    <td className="px-4 py-3 font-medium text-gray-900">{ageRange}</td>
-                                                    <td className="px-4 py-3 text-center font-medium text-green-700">{values.excelente || '-'}</td>
-                                                    <td className="px-4 py-3 text-center font-medium text-blue-700">{values.acimaMedia || '-'}</td>
-                                                    <td className="px-4 py-3 text-center font-medium text-yellow-700">{values.media || '-'}</td>
-                                                    <td className="px-4 py-3 text-center font-medium text-red-700">{values.fraco || '-'}</td>
                                                 </tr>
                                             ))}
                                         {(!currentData || Object.keys(currentData).length === 0) && (

@@ -19,14 +19,18 @@ export const MILE_REFERENCES = {
 /** Abdominais 1' (Homens/Mulheres) – Excelente, Bom, Médio, Abaixo da Média – aligned with referências table */
 export const ABDOMINAIS_REFERENCES = {
     MALE: {
-        "18-25": { excelente: "44+", bom: "39-43", medio: "35-38", abaixoMedia: "< 30" },
-        "35-45": { excelente: "35+", bom: "27-34", medio: "23-26", abaixoMedia: "< 17" },
-        "55-65": { excelente: "24+", bom: "18-23", medio: "12-17", abaixoMedia: "< 7" }
+        "20-29": { excelente: "44+", bom: "39-43", medio: "35-38", abaixoMedia: "< 35" },
+        "30-39": { excelente: "40+", bom: "35-39", medio: "30-34", abaixoMedia: "< 30" },
+        "40-49": { excelente: "35+", bom: "27-34", medio: "23-26", abaixoMedia: "< 23" },
+        "50-59": { excelente: "28+", bom: "21-27", medio: "15-20", abaixoMedia: "< 15" },
+        "60+": { excelente: "24+", bom: "18-23", medio: "12-17", abaixoMedia: "< 12" }
     },
     FEMALE: {
-        "18-25": { excelente: "39+", bom: "33-38", medio: "29-32", abaixoMedia: "< 25" },
-        "35-45": { excelente: "27+", bom: "19-26", medio: "15-18", abaixoMedia: "< 7" },
-        "55-65": { excelente: "14+", bom: "7-13", medio: "4-6", abaixoMedia: "< 2" }
+        "20-29": { excelente: "39+", bom: "33-38", medio: "29-32", abaixoMedia: "< 29" },
+        "30-39": { excelente: "32+", bom: "25-31", medio: "20-24", abaixoMedia: "< 20" },
+        "40-49": { excelente: "27+", bom: "19-26", medio: "15-18", abaixoMedia: "< 15" },
+        "50-59": { excelente: "20+", bom: "12-19", medio: "8-11", abaixoMedia: "< 8" },
+        "60+": { excelente: "14+", bom: "7-13", medio: "4-6", abaixoMedia: "< 4" }
     }
 };
 
@@ -48,20 +52,3 @@ export const SMI_REFERENCES = {
     }
 };
 
-/** Push-ups reference (PUSH UPS) – Excelente, Acima da Média, Média, Fraco – aligned with referências table */
-export const PUSHUPS_REFERENCES = {
-    MALE: {
-        "18-29": { excelente: "30+", acimaMedia: "22-29", media: "17-21", fraco: "< 11" },
-        "30-39": { excelente: "22+", acimaMedia: "17-21", media: "11-16", fraco: "< 8" },
-        "40-49": { excelente: "18+", acimaMedia: "11-17", media: "8-10", fraco: "< 5" },
-        "50-59": { excelente: "13+", acimaMedia: "9-12", media: "7-8", fraco: "< 3" },
-        "60-69": { excelente: "10+", acimaMedia: "6-9", media: "4-5", fraco: "< 2" }
-    },
-    FEMALE: {
-        "18-29": { excelente: "27+", acimaMedia: "21-26", media: "15-20", fraco: "< 10" },
-        "30-39": { excelente: "20+", acimaMedia: "15-19", media: "11-14", fraco: "< 8" },
-        "40-49": { excelente: "15+", acimaMedia: "11-14", media: "8-10", fraco: "< 4" },
-        "50-59": { excelente: "11+", acimaMedia: "8-10", media: "5-7", fraco: "< 2" },
-        "60-69": { excelente: "9+", acimaMedia: "5-8", media: "2-4", fraco: "< 1" }
-    }
-};

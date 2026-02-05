@@ -170,11 +170,11 @@ export function useRegister() {
 
   return useMutation<RegisterResponse, Error, RegisterData>({
     mutationFn: async (registerData: RegisterData) => {
-      // Get CSRF token - wait up to 100ms if not immediately available
+      // Get CSRF token - wait up to 2000ms if not immediately available
       // (should already be loaded by the time user fills the form)
       let csrfToken = getCsrfToken();
       if (!csrfToken) {
-        csrfToken = await waitForCsrfToken(100);
+        csrfToken = await waitForCsrfToken(2000);
       }
 
       const headers: HeadersInit = {
@@ -236,10 +236,10 @@ export function useLogout() {
 
   return useMutation<void, Error, void>({
     mutationFn: async () => {
-      // Get CSRF token - wait up to 100ms if not immediately available
+      // Get CSRF token - wait up to 2000ms if not immediately available
       let csrfToken = getCsrfToken();
       if (!csrfToken) {
-        csrfToken = await waitForCsrfToken(100);
+        csrfToken = await waitForCsrfToken(2000);
       }
 
       const headers: HeadersInit = {};

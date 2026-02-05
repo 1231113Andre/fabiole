@@ -156,7 +156,7 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                                 Pendente
                             </span>
                         ) : (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#e6915b] to-[#fb923c] px-3 py-1 text-xs font-semibold text-white shadow-sm">
                                 <i className="fas fa-hourglass-half text-[10px]"></i>
                                 Aguarda
                             </span>

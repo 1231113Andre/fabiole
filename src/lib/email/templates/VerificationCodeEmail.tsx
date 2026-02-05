@@ -42,9 +42,9 @@ const PURPOSE_CONTENT: Record<VerificationPurpose, {
 
 // Fabiole brand colors from globals.css
 const COLORS = {
-  primary: '#e6915b',       // Brand orange
+  primary: '#e6915b',       // Brand Orange
   primaryHover: '#d37d45',
-  accent: '#fb923c',        // Tailwind orange-400
+  accent: '#fb923c',        // Light orange accent
   background: '#ffffff',
   foreground: '#171717',
   muted: '#737373',
@@ -84,18 +84,18 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
       <td align="center" style="padding: 48px 16px;">
         
         <!-- Email container -->
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background: linear-gradient(180deg, #1c2434 0%, #0a1628 100%); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background: linear-gradient(180deg, ${COLORS.darkBg} 0%, ${COLORS.darkBgDeep} 100%); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);">
           
           <!-- Text Logo Header -->
           <tr>
             <td align="center" style="padding: 48px 48px 16px 48px;">
-              <table role="presentation" cellpadding="0" cellspacing="0" style="border: 3px solid #e6915b; border-radius: 16px; padding: 20px 32px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="border: 3px solid ${COLORS.primary}; border-radius: 16px; padding: 20px 32px;">
                 <tr>
                   <td align="center">
-                    <h1 style="margin: 0; font-size: 28px; font-weight: 800; font-style: italic; color: #e6915b; letter-spacing: 2px; text-transform: uppercase;">
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 800; font-style: italic; color: ${COLORS.primary}; letter-spacing: 2px; text-transform: uppercase;">
                       FÁBIO LÉ
                     </h1>
-                    <p style="margin: 6px 0 0 0; font-size: 10px; font-weight: 600; color: #fb923c; letter-spacing: 4px; text-transform: uppercase;">
+                    <p style="margin: 6px 0 0 0; font-size: 10px; font-weight: 600; color: ${COLORS.accent}; letter-spacing: 4px; text-transform: uppercase;">
                       PERSONAL TRAINER
                     </p>
                   </td>
@@ -110,15 +110,15 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
               <h2 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; text-transform: uppercase; letter-spacing: 2px;">
                 ${content.title}
               </h2>
-              <div style="width: 60px; height: 3px; background: linear-gradient(90deg, #e6915b, #fb923c); margin: 16px auto 0 auto; border-radius: 2px;"></div>
+              <div style="width: 60px; height: 3px; background: linear-gradient(90deg, ${COLORS.primary}, ${COLORS.accent}); margin: 16px auto 0 auto; border-radius: 2px;"></div>
             </td>
           </tr>
 
           <!-- Greeting -->
           <tr>
             <td align="center" style="padding: 0 48px 16px 48px;">
-              <p style="margin: 0; font-size: 18px; color: #dee4ee; line-height: 1.5;">
-                Hey <span style="color: #e6915b; font-weight: 600;">${firstName}</span>!
+              <p style="margin: 0; font-size: 18px; color: ${COLORS.textLight}; line-height: 1.5;">
+                Hey <span style="color: ${COLORS.primary}; font-weight: 600;">${firstName}</span>!
               </p>
             </td>
           </tr>
@@ -126,7 +126,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
           <!-- Description -->
           <tr>
             <td align="center" style="padding: 0 48px 32px 48px;">
-              <p style="margin: 0; font-size: 15px; color: #8a99af; line-height: 1.7;">
+              <p style="margin: 0; font-size: 15px; color: ${COLORS.textMuted}; line-height: 1.7;">
                 ${content.description}
               </p>
             </td>
@@ -135,9 +135,9 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
           <!-- Code Box -->
           <tr>
             <td align="center" style="padding: 0 48px 32px 48px;">
-              <table role="presentation" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #e6915b 0%, #d37d45 100%); border-radius: 12px; padding: 3px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryHover} 100%); border-radius: 12px; padding: 3px;">
                 <tr>
-                  <td style="background: #0a1628; border-radius: 10px; padding: 18px 28px;">
+                  <td style="background: ${COLORS.darkBgDeep}; border-radius: 10px; padding: 18px 28px;">
                     <span style="font-size: 32px; font-weight: 800; letter-spacing: 10px; font-family: 'Courier New', Courier, monospace; color: #ffffff; display: block; text-align: center;">
                       ${code}
                     </span>
@@ -150,7 +150,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
           <!-- Expiry Warning -->
           <tr>
             <td align="center" style="padding: 0 48px 24px 48px;">
-              <p style="margin: 0; font-size: 14px; color: #fb923c; font-weight: 600; line-height: 1.5;">
+              <p style="margin: 0; font-size: 14px; color: ${COLORS.accent}; font-weight: 600; line-height: 1.5;">
                 This code expires in <strong>${expiryMinutes} minutes</strong>
               </p>
             </td>
@@ -159,7 +159,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
           <!-- Disclaimer -->
           <tr>
             <td align="center" style="padding: 0 48px 40px 48px;">
-              <p style="margin: 0; font-size: 13px; color: #8a99af; line-height: 1.6;">
+              <p style="margin: 0; font-size: 13px; color: ${COLORS.textMuted}; line-height: 1.6;">
                 ${content.disclaimer}
               </p>
             </td>
@@ -167,7 +167,7 @@ export function renderVerificationCodeEmail(props: VerificationCodeEmailProps): 
 
           <!-- CTA Bar -->
           <tr>
-            <td style="background: linear-gradient(90deg, #e6915b 0%, #d37d45 100%); padding: 20px 48px;">
+            <td style="background: linear-gradient(90deg, ${COLORS.primary} 0%, ${COLORS.primaryHover} 100%); padding: 20px 48px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">

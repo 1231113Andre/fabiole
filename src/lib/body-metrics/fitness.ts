@@ -1,5 +1,5 @@
 import { Gender } from "./types";
-import { MILE_REFERENCES, PUSHUPS_REFERENCES, ABDOMINAIS_REFERENCES, SMI_REFERENCES } from "./references";
+import { MILE_REFERENCES, ABDOMINAIS_REFERENCES, SMI_REFERENCES } from "./references";
 
 /**
  * Classify Mile Test Result (TESTE DA MILHA – aligned with referências table)
@@ -121,70 +121,9 @@ export function calculateVO2MaxRockport(
 }
 
 /**
- * Classify Push-ups Result (PUSH UPS – aligned with referências table)
- * Returns: Excelente, Acima da Média, Média, Fraco
- * @param count Number of push-ups
- * @param age User age
- * @param gender User gender
- */
-export function classifyPushUps(
-    count: number | null | undefined,
-    age: number | null | undefined,
-    gender: Gender = 'Masculino'
-): string {
-    if (count === null || count === undefined || !age || age < 10) return '';
-
-    const genderLower = gender.toString().toLowerCase();
-    const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
-    const table = isMale ? PUSHUPS_REFERENCES.MALE : PUSHUPS_REFERENCES.FEMALE;
-
-    // Age bands: 18-29, 30-39, 40-49, 50-59, 60-69
-    let ageKey: keyof typeof table = "18-29";
-    if (age >= 18 && age <= 29) ageKey = "18-29";
-    else if (age >= 30 && age <= 39) ageKey = "30-39";
-    else if (age >= 40 && age <= 49) ageKey = "40-49";
-    else if (age >= 50 && age <= 59) ageKey = "50-59";
-    else if (age >= 60) ageKey = "60-69";
-
-    const ref = table[ageKey];
-    if (!ref || !('excelente' in ref)) return '';
-
-    const excelente = (ref as { excelente: string }).excelente;
-    const acimaMedia = (ref as { acimaMedia: string }).acimaMedia;
-    const media = (ref as { media: string }).media;
-    const fraco = (ref as { fraco: string }).fraco;
-
-    // Excelente: "30+" -> count >= 30
-    if (excelente.includes('+')) {
-        const min = parseInt(excelente.replace('+', '').trim(), 10);
-        if (!isNaN(min) && count >= min) return 'Excelente';
-    }
-
-    // Acima da Média: "22-29"
-    if (acimaMedia && acimaMedia.includes('-')) {
-        const parts = acimaMedia.split('-').map((s) => parseInt(s.trim(), 10));
-        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Acima da Média';
-    }
-
-    // Média: "17-21"
-    if (media && media.includes('-')) {
-        const parts = media.split('-').map((s) => parseInt(s.trim(), 10));
-        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Média';
-    }
-
-    // Fraco: "< 11" -> count < 11
-    if (fraco && fraco.startsWith('<')) {
-        const maxExclusive = parseInt(fraco.replace('<', '').trim(), 10);
-        if (!isNaN(maxExclusive) && count < maxExclusive) return 'Fraco';
-    }
-
-    return 'Fraco';
-}
-
-/**
  * Classify Sit-ups (Abdominais 1') Result – aligned with referências table (Homens/Mulheres)
  * Returns: Excelente, Bom, Médio, Abaixo da Média
- * Age bands from table: 18-25, 35-45, 55-65
+ * Age bands from table: 20-29, 30-39, 40-49, 50-59, 60+
  */
 export function classifySitUps(
     count: number | null | undefined,
@@ -197,11 +136,13 @@ export function classifySitUps(
     const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
     const table = isMale ? ABDOMINAIS_REFERENCES.MALE : ABDOMINAIS_REFERENCES.FEMALE;
 
-    // Age bands: 18-25, 35-45, 55-65 (map other ages to nearest band)
-    let ageKey: keyof typeof table = "18-25";
-    if (age <= 25) ageKey = "18-25";
-    else if (age <= 45) ageKey = "35-45";
-    else ageKey = "55-65";
+    // Age bands: 20-29, 30-39, 40-49, 50-59, 60+
+    let ageKey: keyof typeof table = "20-29";
+    if (age < 30) ageKey = "20-29";
+    else if (age < 40) ageKey = "30-39";
+    else if (age < 50) ageKey = "40-49";
+    else if (age < 60) ageKey = "50-59";
+    else ageKey = "60+";
 
     const ref = table[ageKey];
     if (!ref || !('excelente' in ref)) return '';
@@ -229,7 +170,7 @@ export function classifySitUps(
         if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Médio';
     }
 
-    // Abaixo da Média: "< 30" -> count < 30
+    // Abaixo da Média: "< 35" -> count < 35
     if (abaixoMedia && abaixoMedia.startsWith('<')) {
         const maxExclusive = parseInt(abaixoMedia.replace('<', '').trim(), 10);
         if (!isNaN(maxExclusive) && count < maxExclusive) return 'Abaixo da Média';

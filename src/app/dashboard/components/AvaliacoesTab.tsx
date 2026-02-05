@@ -1,7 +1,7 @@
 "use client";
 
 import { AvaliacaoFisica } from "../types";
-import { BADGE_STYLES, getMileResultStyle, classifyMileResult, classifyPushUps, classifySitUps, calculateAge } from "@/lib/body-metrics";
+import { BADGE_STYLES, getMileResultStyle, classifyMileResult, classifySitUps, calculateAge } from "@/lib/body-metrics";
 
 interface AvaliacoesTabProps {
     avaliacoes: AvaliacaoFisica[];
@@ -46,7 +46,7 @@ export function AvaliacoesTab({ avaliacoes, gender, birth }: AvaliacoesTabProps)
                                         const age = userBirth ? calculateAge(userBirth) : null;
                                         const pushRes =
                                             av.pushUps !== null && av.pushUps !== undefined && age != null
-                                                ? classifyPushUps(av.pushUps, age, userGender)
+                                                ? classifySitUps(av.pushUps, age, userGender)
                                                 : av.pushUpsResult || '';
                                         const mileRes =
                                             av.mile && age != null

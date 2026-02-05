@@ -102,12 +102,12 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
         // Prepare all records for bulk insert
         // Fields that should remain as strings (not parsed to numbers)
         const stringFields = new Set(['date', 'notas', 'notes', 'mile', 'mileResult']);
-        
+
         const records = allRows.map(record => {
             const payload: Record<string, unknown> = { ...record };
             delete payload.id;
             delete payload.overrides;
-            
+
             // Convert numeric fields
             Object.keys(payload).forEach(key => {
                 if (!stringFields.has(key) && payload[key]) {
@@ -194,7 +194,7 @@ export function BulkAddClient({ initialUser, type }: BulkAddClientProps) {
                                 }
                             }}
                             icon={<i className={`fa-duotone ${tab.icon}`}></i>}
-                            className={`h-11 ${!isTabActive ? 'bg-white border-gray-200 hover:border-orange-400 hover:!bg-white hover:!text-gray-900' : ''}`}
+                            className={`h-11 ${!isTabActive ? 'bg-white border-gray-200 hover:border-primary hover:!bg-white hover:!text-gray-900' : ''}`}
                         >
                             <span className="mr-2">{tab.label}</span>
                             {isTabActive && newRecordsCount > 0 ? (
