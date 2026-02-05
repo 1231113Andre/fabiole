@@ -19,6 +19,9 @@ import {
     getMileResultStyle,
     calculateSMI,
     classifySMI,
+    classifyBMI,
+    classifyBodyFat,
+    calculateAge,
     BADGE_STYLES
 } from "@/lib/body-metrics";
 import { TooltipHeader } from "../../../components/ui/TooltipHeader";
@@ -29,9 +32,10 @@ interface PesagensTabProps {
     chartData: ChartData[];
     /** User gender for SMI classification (e.g. "masculino" / "feminino"). */
     gender?: string | null;
+    birth?: string | null;
 }
 
-export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
+export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabProps) {
     return (
         <div className="space-y-6">
             {pesagens.length > 0 ? (
@@ -152,16 +156,27 @@ export function PesagensTab({ pesagens, chartData, gender }: PesagensTabProps) {
                                             <td className="py-3 px-2 text-center font-semibold text-gray-900">{pesagem.IDMetabolica || "-"}</td>
                                             <td className="py-3 px-2 text-center font-semibold text-gray-900">{pesagem.massaOssea || "-"}</td>
                                             <td className="py-3 px-2 text-center">
-                                                <span className={`${getBmiClassColor(pesagem.resultadoIMC || '')}`}>
-                                                    <i className={`fa-duotone ${getBmiIcon(pesagem.resultadoIMC || '')} shrink-0 text-[12px]`}></i>
-                                                    <span>{pesagem.resultadoIMC || "-"}</span>
-                                                </span>
+                                                {(() => {
+                                                    const resBmi = classifyBMI(pesagem.IMC);
+                                                    return (
+                                                        <span className={`${getBmiClassColor(resBmi)}`}>
+                                                            <i className={`fa-duotone ${getBmiIcon(resBmi)} shrink-0 text-[12px]`}></i>
+                                                            <span>{resBmi || "-"}</span>
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="py-3 px-2 text-center">
-                                                <span className={`${getFatClassColor(pesagem.resultadoPercentualMG || '')}`}>
-                                                    <i className={`fa-duotone ${getFatIcon(pesagem.resultadoPercentualMG || '')} shrink-0 text-[12px]`}></i>
-                                                    <span>{pesagem.resultadoPercentualMG || "-"}</span>
-                                                </span>
+                                                {(() => {
+                                                    const age = birth ? calculateAge(birth) : null;
+                                                    const resFat = classifyBodyFat(pesagem.percentualMG, gender as any, age);
+                                                    return (
+                                                        <span className={`${getFatClassColor(resFat)}`}>
+                                                            <i className={`fa-duotone ${getFatIcon(resFat)} shrink-0 text-[12px]`}></i>
+                                                            <span>{resFat || "-"}</span>
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="py-4 px-3 text-center">
                                                 {(() => {

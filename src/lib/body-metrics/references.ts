@@ -52,3 +52,20 @@ export const SMI_REFERENCES = {
     }
 };
 
+/** Flexões 1' (Homens/Mulheres) – Excelente, Bom, Médio, Mau – aligned with referências table */
+export const FLEXOES_REFERENCES = {
+    MALE: {
+        "20-29": { excelente: "50+", bom: "36-49", medio: "20-35", mau: "0-19" },
+        "30-39": { excelente: "45+", bom: "30-44", medio: "17-29", mau: "0-16" },
+        "40-49": { excelente: "40+", bom: "26-39", medio: "14-25", mau: "0-13" },
+        "50-59": { excelente: "35+", bom: "21-34", medio: "11-20", mau: "0-10" },
+        "60+": { excelente: "30+", bom: "17-29", medio: "8-16", mau: "0-7" }
+    },
+    FEMALE: {
+        "20-29": { excelente: "35+", bom: "25-34", medio: "13-24", mau: "0-12" },
+        "30-39": { excelente: "30+", bom: "21-29", medio: "11-20", mau: "0-10" },
+        "40-49": { excelente: "25+", bom: "18-24", medio: "9-17", mau: "0-8" },
+        "50-59": { excelente: "21+", bom: "15-20", medio: "7-14", mau: "0-6" },
+        "60+": { excelente: "19+", bom: "12-18", medio: "5-11", mau: "0-4" }
+    }
+};

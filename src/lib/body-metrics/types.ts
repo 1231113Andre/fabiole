@@ -10,11 +10,10 @@ export type BMIClassification =
 
 export type BodyFatClassification =
     | 'Gordura Vital'
-    | 'Muito Magro (Foco Performance)'
-    | 'Muito Magro/a (Foco Performance)'
-    | 'Saudável e em Boa Forma'
-    | 'Nível Médio (Atenção)'
-    | 'Elevado (Risco para a Saúde)'
+    | 'Excelente (Atleta)'
+    | 'Bom (Saudável)'
+    | 'Médio (Aceitável)'
+    | 'Risco/Obesidade'
     | 'Verifique o Género';
 
 export interface AutoCalculatedMetrics {

@@ -1,5 +1,64 @@
 import { Gender } from "./types";
-import { MILE_REFERENCES, ABDOMINAIS_REFERENCES, SMI_REFERENCES } from "./references";
+import { MILE_REFERENCES, ABDOMINAIS_REFERENCES, SMI_REFERENCES, FLEXOES_REFERENCES } from "./references";
+
+/**
+ * Classify Push-ups (Flexões 1') Result – aligned with referências table (Homens/Mulheres)
+ * Returns: Excelente, Bom, Médio, Mau
+ */
+export function classifyPushUps(
+    count: number | null | undefined,
+    age: number | null | undefined,
+    gender: Gender = 'Masculino'
+): string {
+    if (count === null || count === undefined || !age || age < 10) return '';
+
+    const genderLower = gender.toString().toLowerCase();
+    const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
+    const table = isMale ? FLEXOES_REFERENCES.MALE : FLEXOES_REFERENCES.FEMALE;
+
+    // Age bands: 20-29, 30-39, 40-49, 50-59, 60+
+    let ageKey: keyof typeof table = "20-29";
+    if (age < 30) ageKey = "20-29";
+    else if (age < 40) ageKey = "30-39";
+    else if (age < 50) ageKey = "40-49";
+    else if (age < 60) ageKey = "50-59";
+    else ageKey = "60+";
+
+    const ref = table[ageKey];
+    if (!ref || !('excelente' in ref)) return '';
+
+    const excelente = (ref as { excelente: string }).excelente;
+    const bom = (ref as { bom: string }).bom;
+    const medio = (ref as { medio: string }).medio;
+    const mau = (ref as { mau: string }).mau;
+
+    // Excelente: "50+"
+    if (excelente && excelente.includes('+')) {
+        const min = parseInt(excelente.replace('+', '').trim(), 10);
+        if (!isNaN(min) && count >= min) return 'Excelente';
+    }
+
+    // Bom: "36-49"
+    if (bom && bom.includes('-')) {
+        const parts = bom.split('-').map((s) => parseInt(s.trim(), 10));
+        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Bom';
+    }
+
+    // Médio: "20-35"
+    if (medio && medio.includes('-')) {
+        const parts = medio.split('-').map((s) => parseInt(s.trim(), 10));
+        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Médio';
+    }
+
+    // Mau: "0-19"
+    if (mau && mau.includes('-')) {
+        const parts = mau.split('-').map((s) => parseInt(s.trim(), 10));
+        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Mau';
+    }
+
+    return 'Mau';
+}
+
 
 /**
  * Classify Mile Test Result (TESTE DA MILHA – aligned with referências table)

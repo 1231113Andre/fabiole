@@ -44,7 +44,7 @@ export function PesagensInfoCards() {
                         <p className="text-xs text-violet-600 leading-relaxed">
                             <strong>Classificação:</strong> Por género e idade
                             <br />
-                            <span className="text-violet-500">Ex: Homem 25% → Nível Médio</span>
+                            <span className="text-violet-500">Ex: Homem 25% → Médio (Aceitável)</span>
                         </p>
                     </div>
                 </div>

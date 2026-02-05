@@ -1,6 +1,7 @@
 "use client";
 
 import { PersonalInfo } from "../types";
+import { calculateAge } from "@/lib/body-metrics";
 
 interface PersonalInfoTabProps {
     personalInfo: PersonalInfo;
@@ -72,20 +73,7 @@ export function PersonalInfoTab({ personalInfo }: PersonalInfoTabProps) {
                             Idade
                         </span>
                         <span className="text-lg font-semibold text-black pl-6">
-                            {(() => {
-                                if (!personalInfo.birthDate) return 'N/A';
-                                const parts = personalInfo.birthDate.split('/');
-                                if (parts.length !== 3) return personalInfo.age ? `${personalInfo.age} Anos` : 'N/A';
-                                const day = parseInt(parts[0]);
-                                const month = parseInt(parts[1]) - 1;
-                                const year = parseInt(parts[2]);
-                                const birth = new Date(year, month, day);
-                                const today = new Date();
-                                let age = today.getFullYear() - birth.getFullYear();
-                                const m = today.getMonth() - birth.getMonth();
-                                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-                                return age > 0 && age < 120 ? `${age} Anos` : 'N/A';
-                            })()}
+                            {personalInfo.birthDate ? `${calculateAge(personalInfo.birthDate)} Anos` : 'N/A'}
                         </span>
                     </div>
                 </div>

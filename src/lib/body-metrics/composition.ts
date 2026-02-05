@@ -154,22 +154,23 @@ export function classifyBodyFat(
     const thresholds = isMale ? BODY_FAT_MALE[band] : BODY_FAT_FEMALE[band];
 
     if (pct < thresholds.atletaMin) return 'Gordura Vital';
-    if (pct <= thresholds.atletaMax) return isMale ? 'Muito Magro (Foco Performance)' : 'Muito Magro/a (Foco Performance)';
-    if (pct <= thresholds.bomMax) return 'Saudável e em Boa Forma';
-    if (pct <= thresholds.medioMax) return 'Nível Médio (Atenção)';
-    return 'Elevado (Risco para a Saúde)';
+    if (pct <= thresholds.atletaMax) return 'Excelente (Atleta)';
+    if (pct <= thresholds.bomMax) return 'Bom (Saudável)';
+    if (pct <= thresholds.medioMax) return 'Médio (Aceitável)';
+    return 'Risco/Obesidade';
 }
 
 /**
  * Get CSS class for body fat classification badge
  */
 export function getFatClassColor(fatClass: string): string {
-    if (fatClass === 'Saudável e em Boa Forma' || fatClass.includes('Performance')) {
+    const f = fatClass.toLowerCase();
+    if (f.includes('saudável') || f.includes('excelente') || f.includes('atleta')) {
         return BADGE_STYLES.GREEN;
     }
-    if (fatClass === 'Gordura Vital') return BADGE_STYLES.BLUE;
-    if (fatClass === 'Nível Médio (Atenção)') return BADGE_STYLES.YELLOW;
-    if (fatClass === 'Elevado (Risco para a Saúde)') return BADGE_STYLES.RED;
+    if (f.includes('vital')) return BADGE_STYLES.BLUE;
+    if (f.includes('médio') || f.includes('aceitável')) return BADGE_STYLES.YELLOW;
+    if (f.includes('risco') || f.includes('obesidade') || f.includes('elevado')) return BADGE_STYLES.RED;
     return BADGE_STYLES.GRAY;
 }
 
@@ -177,10 +178,11 @@ export function getFatClassColor(fatClass: string): string {
  * Get Icon for Body Fat classification
  */
 export function getFatIcon(fatClass: string): string {
-    if (fatClass === 'Saudável e em Boa Forma' || fatClass.includes('Performance')) return 'fa-check';
-    if (fatClass === 'Gordura Vital') return 'fa-heart-pulse';
-    if (fatClass === 'Nível Médio (Atenção)') return 'fa-square-exclamation';
-    if (fatClass === 'Elevado (Risco para a Saúde)') return 'fa-triangle-exclamation';
+    const f = fatClass.toLowerCase();
+    if (f.includes('saudável') || f.includes('excelente') || f.includes('atleta')) return 'fa-check';
+    if (f.includes('vital')) return 'fa-heart-pulse';
+    if (f.includes('médio') || f.includes('aceitável')) return 'fa-square-exclamation';
+    if (f.includes('risco') || f.includes('obesidade')) return 'fa-triangle-exclamation';
     return 'fa-minus';
 }
 

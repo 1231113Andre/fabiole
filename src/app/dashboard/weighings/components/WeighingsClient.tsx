@@ -46,7 +46,7 @@ export function WeighingsClient({ initialData }: WeighingsClientProps) {
             </div>
 
             {/* Content */}
-            <PesagensTab pesagens={pesagens} chartData={chartData} gender={personalInfo?.gender} />
+            <PesagensTab pesagens={pesagens} chartData={chartData} gender={personalInfo?.gender} birth={personalInfo?.birth} />
         </>
     );
 }

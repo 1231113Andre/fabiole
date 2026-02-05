@@ -54,10 +54,10 @@ export function getMileResultStyle(result: string): string {
     if (r.includes('excelente') || r.includes('bom') || r.includes('apto') || r.includes('acima')) {
         return BADGE_STYLES.GREEN;
     }
-    if (r.includes('médio') || r.includes('média') || r.includes('atenção') || r.includes('abaixo')) {
+    if (r.includes('médio') || r.includes('média') || r.includes('atenção')) {
         return BADGE_STYLES.YELLOW;
     }
-    if (r.includes('fraco') || r.includes('risco') || r.includes('mau') || r.includes('baixo') || r.includes('crítico')) {
+    if (r.includes('fraco') || r.includes('risco') || r.includes('mau') || r.includes('baixo') || r.includes('crítico') || r.includes('abaixo')) {
         return BADGE_STYLES.RED;
     }
 
