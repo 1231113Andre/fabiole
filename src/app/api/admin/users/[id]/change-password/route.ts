@@ -3,11 +3,14 @@ import { db } from "@/lib/db/client";
 import { hashPassword, validatePasswordStrength } from "@/lib/security/password";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
-import { getErrorMessage } from "@/lib/utils/sanitizers";
+import { getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
 import { clearCachedAuthUser } from '@/lib/cache/userCache';
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    if (!isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
     const body = await req.json();
     const { newPassword } = body;
 

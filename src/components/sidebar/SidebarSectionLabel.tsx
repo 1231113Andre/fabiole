@@ -14,7 +14,7 @@ export const SidebarSectionLabel = memo(function SidebarSectionLabel({
     if (isCollapsed) return null;
 
     return (
-        <div className="px-6 mb-1 mt-2 text-[11px] font-bold uppercase tracking-widest text-gray-500">
+        <div className="px-4 mb-1 mt-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
             {label}
         </div>
     );

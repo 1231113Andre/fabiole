@@ -6,6 +6,7 @@ import { clearCachedAuthUser } from "@/lib/cache/userCache";
 import { cookies } from "next/headers";
 import { AuthService } from "@/lib/api/services/AuthService";
 import { Logger } from "@/lib/utils/logger";
+import { isValidUuid, isSafeAvatarUrl } from "@/lib/utils/sanitizers";
 
 export async function POST(req: NextRequest) {
     try {
@@ -20,6 +21,12 @@ export async function POST(req: NextRequest) {
         }
 
         const targetUserId = userId || session.uuid;
+        if (!isValidUuid(targetUserId)) {
+            return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+        }
+        if (!isSafeAvatarUrl(avatarUrl)) {
+            return NextResponse.json({ error: "Invalid avatar URL" }, { status: 400 });
+        }
 
         // If targetUserId is different, check if current user is ADMIN
         if (targetUserId !== session.uuid) {

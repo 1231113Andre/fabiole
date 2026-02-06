@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeInt, sanitizeStringValue, getErrorMessage } from "@/lib/utils/sanitizers";
+import { sanitizeInt, sanitizeStringValue, getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { avaliacaoRepository } from "@/lib/db/repositories/AvaliacaoRepository";
 import type { CreateAvaliacaoDTO } from "@/lib/db/repositories/AvaliacaoRepository";
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: user_uuid } = await params;
+    if (!isValidUuid(user_uuid)) {
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
     const body = await req.json();
 
     // Validate required field: date

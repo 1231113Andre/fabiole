@@ -33,10 +33,10 @@ interface DashboardSidebarProps {
 }
 
 // ============================================
-// CONSTANTS
+// CONSTANTS - More compact widths
 // ============================================
-const SIDEBAR_WIDTH_EXPANDED = "290px";
-const SIDEBAR_WIDTH_COLLAPSED = "90px";
+const SIDEBAR_WIDTH_EXPANDED = "260px";
+const SIDEBAR_WIDTH_COLLAPSED = "72px";
 
 // ============================================
 // MAIN COMPONENT
@@ -70,14 +70,14 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
             <React.Fragment key={item.id}>
                 {item.dividerLabel && (
                     isCollapsed ? (
-                        <div className="mx-5 my-2 border-t border-gray-300" />
+                        <div className="mx-4 my-1.5 border-t border-gray-200" />
                     ) : (
-                        <div className="flex items-center gap-3 my-1 px-3">
-                            <div className="h-px bg-gray-300 flex-1" />
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                        <div className="flex items-center gap-2 my-1 px-3">
+                            <div className="h-px bg-gray-200 flex-1" />
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
                                 {item.dividerLabel}
                             </span>
-                            <div className="h-px bg-gray-300 flex-1" />
+                            <div className="h-px bg-gray-200 flex-1" />
                         </div>
                     )
                 )}
@@ -103,15 +103,15 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
             />
 
 
-            {/* Sidebar Container */}
+            {/* Sidebar Container - More compact */}
             <aside
                 className={`
                     fixed top-0 left-0 h-screen z-[999] flex flex-col 
                     transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)] 
                     overflow-y-auto overflow-x-hidden
-                    bg-white border-r border-gray-200 shadow-xl shadow-gray-200/50
+                    bg-white/95 backdrop-blur-md border-r border-gray-100 shadow-lg
                     ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-                    ${isCollapsed ? "w-[90px]" : "w-[290px]"}
+                    ${isCollapsed ? "w-[72px]" : "w-[260px]"}
                 `}
             >
                 {/* Brand */}
@@ -121,22 +121,22 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
                     brandName={brandName}
                 />
 
-                {/* Navigation Scroll Area */}
-                <nav className="py-2 flex-1 flex flex-col gap-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200">
+                {/* Navigation Scroll Area - More compact padding */}
+                <nav className="py-1.5 flex-1 flex flex-col gap-0.5 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200">
                     <SidebarSectionLabel label="Menu" isCollapsed={isCollapsed} />
 
                     {menuItemsElements}
 
                     {/* Back Link Group */}
                     {isCollapsed ? (
-                        <div className="mx-5 my-2 border-t border-gray-300" />
+                        <div className="mx-4 my-1.5 border-t border-gray-200" />
                     ) : (
-                        <div className="flex items-center gap-3 my-1 px-3">
-                            <div className="h-px bg-gray-300 flex-1" />
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                        <div className="flex items-center gap-2 my-1 px-3">
+                            <div className="h-px bg-gray-200 flex-1" />
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
                                 Navegação
                             </span>
-                            <div className="h-px bg-gray-300 flex-1" />
+                            <div className="h-px bg-gray-200 flex-1" />
                         </div>
                     )}
 
@@ -144,18 +144,18 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
                         href={backLink}
                         onClick={handleNavigate}
                         className={`
-                            group flex items-center gap-3.5 px-5 py-3 mx-3 rounded-xl 
-                            border-none text-[15px] font-semibold text-left cursor-pointer 
+                            group flex items-center gap-3 px-4 py-2 mx-2.5 rounded-lg 
+                            border-none text-sm font-semibold text-left cursor-pointer 
                             transition-all duration-200 
                             bg-transparent text-gray-700 hover:bg-primary/10 hover:text-primary 
                             no-underline
-                            ${isCollapsed ? "justify-center px-3 mx-2" : ""}
+                            ${isCollapsed ? "justify-center px-2.5 mx-2" : ""}
                         `}
                         title={isCollapsed ? backLabel : ""}
                     >
                         <i
-                            className={`fa-duotone fa-house text-xl transition-colors duration-200 
-                                ${isCollapsed ? "text-2xl" : "w-6 text-center"} 
+                            className={`fa-duotone fa-house text-lg transition-colors duration-200 
+                                ${isCollapsed ? "text-xl" : "w-5 text-center"} 
                                 text-gray-500 group-hover:text-primary`}
                             aria-hidden="true"
                         />
@@ -165,19 +165,19 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
                 </nav>
 
                 <div className="flex flex-col">
-                    {/* Beta Notice (Only when expanded) */}
+                    {/* Beta Notice (Only when expanded) - More compact */}
                     {!isCollapsed && (
-                        <div className="mx-3 mb-2 p-2.5 rounded-xl bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 border border-violet-200/50 backdrop-blur-sm">
+                        <div className="mx-2.5 mb-2 p-2 rounded-lg bg-gradient-to-br from-primary/10 via-primary/5 to-primary/10 border border-primary/20 backdrop-blur-sm">
                             <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md shadow-violet-500/25">
-                                    <i className="fa-duotone fa-flask-vial text-white text-[10px]" aria-hidden="true" />
+                                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center shadow-md shadow-primary/25">
+                                    <i className="fa-duotone fa-flask-vial text-white text-[9px]" aria-hidden="true" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-xs font-bold text-violet-700 uppercase tracking-wide leading-none">Beta</p>
-                                    <p className="text-[12px] font-semibold text-violet-600/90 leading-tight font-medium mt-0.5">
+                                    <p className="text-[10px] font-bold text-primary uppercase tracking-wide leading-none">Beta</p>
+                                    <p className="text-[11px] font-semibold text-primary/80 leading-tight font-medium mt-0.5">
                                         v{process.env.NEXT_PUBLIC_VERSION || "0.1.0"}
-                                        <span className="text-violet-400 mx-1">•</span>
-                                        <span className="font-mono">{process.env.NEXT_PUBLIC_COMMIT_ID || "dev"}</span>
+                                        <span className="text-primary/40 mx-1">•</span>
+                                        <span className="font-mono text-[10px]">{process.env.NEXT_PUBLIC_COMMIT_ID || "dev"}</span>
                                     </p>
                                 </div>
                             </div>

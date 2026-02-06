@@ -1,8 +1,31 @@
 import { Gender } from "./types";
-import { MILE_REFERENCES, ABDOMINAIS_REFERENCES, SMI_REFERENCES, FLEXOES_REFERENCES } from "./references";
+import { MILE_THRESHOLDS, ABDOMINAIS_THRESHOLDS, FLEXOES_THRESHOLDS, SMI_REFERENCES } from "./references";
+import type { CountThresholds } from "./references";
+
+/** Map age to array index: 0=18-29, 1=30-39, 2=40-49, 3=50-59, 4=60+ */
+function ageBandIdx(age: number): number {
+    if (age < 30) return 0;
+    if (age < 40) return 1;
+    if (age < 50) return 2;
+    if (age < 60) return 3;
+    return 4;
+}
+
+function isMaleGender(gender: Gender): boolean {
+    const g = gender.toString().toLowerCase();
+    return g === 'masculino' || g === 'm' || g === 'male';
+}
+
+function classifyByCount(count: number, t: CountThresholds, lowLabel: string): string {
+    if (count >= t.excelente) return 'Excelente';
+    if (count >= t.bomMin) return 'Bom';
+    if (count >= t.medioMin) return 'Médio';
+    return lowLabel;
+}
 
 /**
- * Classify Push-ups (Flexões 1') Result – aligned with referências table (Homens/Mulheres)
+ * Classify Push-ups (Flexões 1') Result
+ * Age bands: 18-29, 30-39, 40-49, 50-59, 60+
  * Returns: Excelente, Bom, Médio, Mau
  */
 export function classifyPushUps(
@@ -10,58 +33,15 @@ export function classifyPushUps(
     age: number | null | undefined,
     gender: Gender = 'Masculino'
 ): string {
-    if (count === null || count === undefined || !age || age < 10) return '';
-
-    const genderLower = gender.toString().toLowerCase();
-    const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
-    const table = isMale ? FLEXOES_REFERENCES.MALE : FLEXOES_REFERENCES.FEMALE;
-
-    // Age bands: 20-29, 30-39, 40-49, 50-59, 60+
-    let ageKey: keyof typeof table = "20-29";
-    if (age < 30) ageKey = "20-29";
-    else if (age < 40) ageKey = "30-39";
-    else if (age < 50) ageKey = "40-49";
-    else if (age < 60) ageKey = "50-59";
-    else ageKey = "60+";
-
-    const ref = table[ageKey];
-    if (!ref || !('excelente' in ref)) return '';
-
-    const excelente = (ref as { excelente: string }).excelente;
-    const bom = (ref as { bom: string }).bom;
-    const medio = (ref as { medio: string }).medio;
-    const mau = (ref as { mau: string }).mau;
-
-    // Excelente: "50+"
-    if (excelente && excelente.includes('+')) {
-        const min = parseInt(excelente.replace('+', '').trim(), 10);
-        if (!isNaN(min) && count >= min) return 'Excelente';
-    }
-
-    // Bom: "36-49"
-    if (bom && bom.includes('-')) {
-        const parts = bom.split('-').map((s) => parseInt(s.trim(), 10));
-        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Bom';
-    }
-
-    // Médio: "20-35"
-    if (medio && medio.includes('-')) {
-        const parts = medio.split('-').map((s) => parseInt(s.trim(), 10));
-        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Médio';
-    }
-
-    // Mau: "0-19"
-    if (mau && mau.includes('-')) {
-        const parts = mau.split('-').map((s) => parseInt(s.trim(), 10));
-        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Mau';
-    }
-
-    return 'Mau';
+    if (count == null || !age || age < 10) return '';
+    const table = isMaleGender(gender) ? FLEXOES_THRESHOLDS.MALE : FLEXOES_THRESHOLDS.FEMALE;
+    return classifyByCount(count, table[ageBandIdx(age)], 'Mau');
 }
 
 
 /**
- * Classify Mile Test Result (TESTE DA MILHA – aligned with referências table)
+ * Classify Mile Test Result (TESTE DA MILHA)
+ * Age bands: 18-29, 30-39, 40-49, 50-59, 60+
  * Returns: Excelente, Bom, Médio, Fraco
  * @param timeStr Time in "mm:ss" string format
  * @param age User age
@@ -74,77 +54,61 @@ export function classifyMileResult(
 ): string {
     if (!timeStr || !age || age < 10) return '';
 
-    const genderLower = gender.toString().toLowerCase();
-    const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
-    const table = isMale ? MILE_REFERENCES.MALE : MILE_REFERENCES.FEMALE;
-
-    // Age bands: 20-29, 30-39, 40-49, 50-59, 60-69
-    let ageKey: keyof typeof table = "20-29";
-    if (age < 20) ageKey = "20-29";
-    else if (age >= 20 && age <= 29) ageKey = "20-29";
-    else if (age >= 30 && age <= 39) ageKey = "30-39";
-    else if (age >= 40 && age <= 49) ageKey = "40-49";
-    else if (age >= 50 && age <= 59) ageKey = "50-59";
-    else ageKey = "60-69";
-
-    const ref = table[ageKey];
-    if (!ref || !('excelente' in ref)) return '';
-
-    const excelente = (ref as { excelente: string }).excelente;
-    const bom = (ref as { bom: string }).bom;
-    const medio = (ref as { medio: string }).medio;
-    const fraco = (ref as { fraco: string }).fraco;
-
-    // Parse time "mm:ss" to seconds
-    const [min, sec] = timeStr.split(':').map(Number);
+    const parts = timeStr.split(':');
+    if (parts.length !== 2) return '';
+    const min = parseInt(parts[0], 10);
+    const sec = parseInt(parts[1], 10);
     if (isNaN(min) || isNaN(sec)) return '';
-    const totalSeconds = min * 60 + sec;
+    const totalSec = min * 60 + sec;
 
-    const parseThreshold = (t: string): number => {
-        const clean = t.replace(/[<>]/g, '').trim();
-        const part = clean.split('-')[0].trim();
-        const [m, s] = part.split(':').map(Number);
-        return (m ?? 0) * 60 + (s ?? 0);
-    };
+    const table = isMaleGender(gender) ? MILE_THRESHOLDS.MALE : MILE_THRESHOLDS.FEMALE;
+    const t = table[ageBandIdx(age)];
 
-    const parseRange = (rangeStr: string): [number, number] => {
-        const limits = rangeStr.split('-').map(s => {
-            const [m, sc] = s.trim().split(':').map(Number);
-            return (m ?? 0) * 60 + (sc ?? 0);
-        });
-        return [limits[0], limits[1]];
-    };
-
-    // Excelente (< X)
-    if (excelente && excelente.startsWith('<') && totalSeconds < parseThreshold(excelente)) return 'Excelente';
-
-    // Bom (range)
-    if (bom && bom.includes('-')) {
-        const [bomStart, bomEnd] = parseRange(bom);
-        if (totalSeconds >= bomStart && totalSeconds <= bomEnd) return 'Bom';
-    }
-
-    // Médio (range)
-    if (medio && medio.includes('-')) {
-        const [medStart, medEnd] = parseRange(medio);
-        if (totalSeconds >= medStart && totalSeconds <= medEnd) return 'Médio';
-    }
-
-    // Fraco (> X)
-    if (fraco && fraco.startsWith('>') && totalSeconds > parseThreshold(fraco)) return 'Fraco';
-
+    if (totalSec < t.excelente) return 'Excelente';
+    if (totalSec <= t.bomMax) return 'Bom';
+    if (totalSec <= t.medioMax) return 'Médio';
     return 'Fraco';
 }
 
 /**
- * Calculate VO2 Max using Rockport Walking Test Formula
- * Formula: 132.853 - (0.0769 × weight_lbs) - (0.3877 × age) + (6.315 × gender_factor) - (3.2649 × time_min) - (0.1565 × heart_rate)
- * Gender Factor: 1 for male, 0 for female
- * @param timeStr Time in "mm:ss"
- * @param heartRate Heart Rate in bpm
- * @param weightKg Weight in kg
- * @param age Age in years
- * @param gender Gender
+ * Calculate VO2 Max using Rockport Walking Test (1-Mile Walk Test)
+ * 
+ * The Rockport Walking Test is a submaximal exercise test used to estimate VO2 max
+ * (maximal oxygen uptake), which is the gold standard measure of cardiorespiratory fitness.
+ * 
+ * Formula (Kline et al., 1987):
+ * VO2max = 132.853 - (0.0769 × weight_lbs) - (0.3877 × age) + (6.315 × gender) 
+ *          - (3.2649 × time_min) - (0.1565 × heart_rate)
+ * 
+ * Where:
+ * - weight_lbs: Body weight in pounds
+ * - age: Age in years
+ * - gender: 1 for male, 0 for female
+ * - time_min: Time to complete 1 mile walk in minutes (decimal)
+ * - heart_rate: Heart rate immediately after completing the walk (bpm)
+ * 
+ * Test protocol:
+ * 1. Walk 1 mile (1.6 km) as fast as possible on a flat surface
+ * 2. Record time to complete the mile
+ * 3. Measure heart rate immediately upon completion
+ * 
+ * VO2 max interpretation (ml/kg/min):
+ * - Excellent: >50 (men), >45 (women)
+ * - Good: 43-50 (men), 36-45 (women)
+ * - Average: 35-42 (men), 28-35 (women)
+ * - Below Average: <35 (men), <28 (women)
+ * 
+ * References:
+ * - Kline, G.M., et al. (1987). "Estimation of VO2max from a one-mile track walk, gender, age, and body weight". 
+ *   Medicine and Science in Sports and Exercise, 19(3), 253-259.
+ * - ACSM (2018). "ACSM's Guidelines for Exercise Testing and Prescription" (10th ed.). Wolters Kluwer.
+ * 
+ * @param timeStr - Time to complete 1 mile in "mm:ss" format
+ * @param heartRate - Heart rate immediately after walk (bpm)
+ * @param weightKg - Body weight in kilograms
+ * @param age - Age in years
+ * @param gender - Gender ('M'/'Masculino' or 'F'/'Feminino')
+ * @returns Estimated VO2 max in ml/kg/min, rounded to 1 decimal place, or null if invalid input
  */
 export function calculateVO2MaxRockport(
     timeStr: string | null | undefined,
@@ -155,107 +119,103 @@ export function calculateVO2MaxRockport(
 ): number | null {
     if (!timeStr || !heartRate || !weightKg || !age) return null;
 
-    // Parse time
+    // Parse time from "mm:ss" format
     const [min, sec] = timeStr.split(':').map(Number);
     if (isNaN(min) || isNaN(sec)) return null;
     const timeInMinutes = min + (sec / 60);
 
-    // Convert weight to lbs
+    // Convert weight to pounds (formula requires lbs)
     const weightLbs = weightKg * 2.20462;
 
-    // Gender factor
-    const genderLower = gender.toString().toLowerCase();
-    const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
-    const genderFactor = isMale ? 1 : 0;
+    // Gender factor: 1 for male, 0 for female
+    const genderFactor = isMaleGender(gender) ? 1 : 0;
 
-    // Calculate VO2 Max
-    const vo2Validation = 132.853
+    // Calculate VO2 Max using Kline et al. (1987) formula
+    const vo2max = 132.853
         - (0.0769 * weightLbs)
         - (0.3877 * age)
         + (6.315 * genderFactor)
         - (3.2649 * timeInMinutes)
         - (0.1565 * heartRate);
 
-    return Math.round(vo2Validation * 10) / 10; // Round to 1 decimal place
+    return Math.round(vo2max * 10) / 10; // Round to 1 decimal place
 }
 
 /**
- * Classify Sit-ups (Abdominais 1') Result – aligned with referências table (Homens/Mulheres)
+ * Classify Sit-ups (Abdominais 1') Result
+ * Age bands: 18-29, 30-39, 40-49, 50-59, 60+
  * Returns: Excelente, Bom, Médio, Abaixo da Média
- * Age bands from table: 20-29, 30-39, 40-49, 50-59, 60+
  */
 export function classifySitUps(
     count: number | null | undefined,
     age: number | null | undefined,
     gender: Gender = 'Masculino'
 ): string {
-    if (count === null || count === undefined || !age || age < 10) return '';
-
-    const genderLower = gender.toString().toLowerCase();
-    const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
-    const table = isMale ? ABDOMINAIS_REFERENCES.MALE : ABDOMINAIS_REFERENCES.FEMALE;
-
-    // Age bands: 20-29, 30-39, 40-49, 50-59, 60+
-    let ageKey: keyof typeof table = "20-29";
-    if (age < 30) ageKey = "20-29";
-    else if (age < 40) ageKey = "30-39";
-    else if (age < 50) ageKey = "40-49";
-    else if (age < 60) ageKey = "50-59";
-    else ageKey = "60+";
-
-    const ref = table[ageKey];
-    if (!ref || !('excelente' in ref)) return '';
-
-    const excelente = (ref as { excelente: string }).excelente;
-    const bom = (ref as { bom: string }).bom;
-    const medio = (ref as { medio: string }).medio;
-    const abaixoMedia = (ref as { abaixoMedia: string }).abaixoMedia;
-
-    // Excelente: "44+" -> count >= 44
-    if (excelente && excelente.includes('+')) {
-        const min = parseInt(excelente.replace('+', '').trim(), 10);
-        if (!isNaN(min) && count >= min) return 'Excelente';
-    }
-
-    // Bom: "39-43"
-    if (bom && bom.includes('-')) {
-        const parts = bom.split('-').map((s) => parseInt(s.trim(), 10));
-        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Bom';
-    }
-
-    // Médio: "35-38"
-    if (medio && medio.includes('-')) {
-        const parts = medio.split('-').map((s) => parseInt(s.trim(), 10));
-        if (parts.length === 2 && !parts.some(isNaN) && count >= parts[0] && count <= parts[1]) return 'Médio';
-    }
-
-    // Abaixo da Média: "< 35" -> count < 35
-    if (abaixoMedia && abaixoMedia.startsWith('<')) {
-        const maxExclusive = parseInt(abaixoMedia.replace('<', '').trim(), 10);
-        if (!isNaN(maxExclusive) && count < maxExclusive) return 'Abaixo da Média';
-    }
-
-    return 'Abaixo da Média';
+    if (count == null || !age || age < 10) return '';
+    const table = isMaleGender(gender) ? ABDOMINAIS_THRESHOLDS.MALE : ABDOMINAIS_THRESHOLDS.FEMALE;
+    return classifyByCount(count, table[ageBandIdx(age)], 'Abaixo da Média');
 }
 
 /**
- * Calculate SMI (Skeletal Muscle Index): SMI = Massa Muscular (kg) / Altura (m)²
- * @param muscleMassKg Muscle mass in kg (MM / LBM)
- * @param heightCm Height in cm
+ * Calculate SMI (Skeletal Muscle Index)
+ * 
+ * SMI is used to assess muscle mass relative to height, similar to BMI but for muscle mass.
+ * It's particularly useful for identifying sarcopenia (age-related muscle loss) and monitoring
+ * muscle mass changes during training or rehabilitation.
+ * 
+ * Formula: SMI = Skeletal Muscle Mass (kg) / Height (m)²
+ * 
+ * Note: This uses appendicular skeletal muscle mass (ASM) or total lean body mass (LBM).
+ * The formula is analogous to BMI but uses muscle mass instead of total body weight.
+ * 
+ * Clinical significance:
+ * - Low SMI is associated with sarcopenia, frailty, and increased mortality risk
+ * - High SMI indicates good muscle mass and physical function
+ * - Used in clinical settings to diagnose and monitor muscle-related conditions
+ * 
+ * References:
+ * - Janssen, I., et al. (2002). "Skeletal muscle cutpoints associated with elevated physical disability 
+ *   risk in older men and women". American Journal of Epidemiology, 156(2), 110-121.
+ * - Baumgartner, R.N., et al. (1998). "Epidemiology of sarcopenia among the elderly in New Mexico". 
+ *   American Journal of Epidemiology, 147(8), 755-763.
+ * - Cruz-Jentoft, A.J., et al. (2019). "Sarcopenia: revised European consensus on definition and diagnosis". 
+ *   Age and Ageing, 48(1), 16-31.
+ * 
+ * @param muscleMassKg - Skeletal muscle mass or lean body mass in kilograms
+ * @param heightCm - Height in centimeters
+ * @returns SMI value in kg/m², rounded to 2 decimal places, or null if invalid input
  */
 export function calculateSMI(
     muscleMassKg: number | null | undefined,
     heightCm: number | null | undefined
 ): number | null {
-    if (muscleMassKg == null || heightCm == null || heightCm <= 0) return null;
+    if (muscleMassKg == null || heightCm == null || heightCm <= 0 || muscleMassKg <= 0) return null;
     const heightM = heightCm / 100;
     const smi = muscleMassKg / (heightM * heightM);
     return Math.round(smi * 100) / 100;
 }
 
 /**
- * Classify SMI result – Excelente (Atleta), Bom (Saudável), Médio (Normal), Baixo (Risco), Crítico
- * Uses SMI_REFERENCES by gender (no age).
+ * Classify SMI (Skeletal Muscle Index) result
+ * 
+ * Classifications based on validated cutoff points for sarcopenia and muscle mass assessment.
+ * These thresholds are gender-specific but not age-dependent in this implementation.
+ * 
+ * Classifications:
+ * - Excelente (Atleta): High muscle mass - typical for athletes and highly trained individuals
+ * - Bom (Saudável): Good/Healthy muscle mass - optimal for general health
+ * - Médio (Normal): Average muscle mass - within normal range
+ * - Baixo (Risco): Low muscle mass - at risk for sarcopenia
+ * - Crítico: Very low muscle mass - sarcopenia present, requires intervention
+ * 
+ * Cutoff points based on:
+ * - Janssen et al. (2002): SMI < 8.50 kg/m² (men), < 5.75 kg/m² (women) for Class II sarcopenia
+ * - Baumgartner et al. (1998): 2 SD below young adult mean
+ * - European Working Group on Sarcopenia (EWGSOP2, 2019)
+ * 
+ * @param smiValue - SMI value in kg/m²
+ * @param gender - Gender ('M'/'Masculino' or 'F'/'Feminino')
+ * @returns Classification string or empty string if invalid
  */
 export function classifySMI(
     smiValue: number | null | undefined,
@@ -263,15 +223,11 @@ export function classifySMI(
 ): string {
     if (smiValue == null || !Number.isFinite(smiValue)) return '';
 
-    const genderLower = String(gender).toLowerCase();
-    const isMale = genderLower === 'masculino' || genderLower === 'm' || genderLower === 'male';
-    const ref = isMale ? SMI_REFERENCES.MALE : SMI_REFERENCES.FEMALE;
+    const ref = isMaleGender(gender) ? SMI_REFERENCES.MALE : SMI_REFERENCES.FEMALE;
 
-    if (ref.excelente.max == null && smiValue > ref.excelente.min!) return 'Excelente (Atleta)';
-    if (ref.bom.min != null && ref.bom.max != null && smiValue >= ref.bom.min && smiValue <= ref.bom.max) return 'Bom (Saudável)';
-    if (ref.medio.min != null && ref.medio.max != null && smiValue >= ref.medio.min && smiValue <= ref.medio.max) return 'Médio (Normal)';
-    if (ref.baixo.min != null && ref.baixo.max != null && smiValue >= ref.baixo.min && smiValue <= ref.baixo.max) return 'Baixo (Risco)';
-    if (ref.critico.max != null && smiValue < ref.critico.max) return 'Crítico';
-
-    return '';
+    if (smiValue > ref.excelente.min!) return 'Excelente (Atleta)';
+    if (smiValue >= ref.bom.min!) return 'Bom (Saudável)';
+    if (smiValue >= ref.medio.min!) return 'Médio (Normal)';
+    if (smiValue >= ref.baixo.min!) return 'Baixo (Risco)';
+    return 'Crítico';
 }

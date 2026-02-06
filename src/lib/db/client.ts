@@ -1,3 +1,4 @@
+import 'server-only';
 /**
  * @fileoverview Database client singleton
  * @description Prisma client with pg adapter for Prisma Postgres

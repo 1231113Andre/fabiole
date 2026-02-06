@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeIntForUpdate, sanitizeStringForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
+import { sanitizeIntForUpdate, sanitizeStringForUpdate, getErrorMessage, isValidNumericId } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { avaliacaoRepository } from "@/lib/db/repositories/AvaliacaoRepository";
 import type { UpdateAvaliacaoDTO } from "@/lib/db/repositories/AvaliacaoRepository";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    const numId = isValidNumericId(id);
+    if (numId === null) {
+        return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
     const body = await req.json();
 
     try {
@@ -25,7 +29,7 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         }
 
         // Use repository - automatically invalidates cache and returns fresh data
-        const result = await avaliacaoRepository.update(Number(id), updateData as UpdateAvaliacaoDTO);
+        const result = await avaliacaoRepository.update(numId, updateData as UpdateAvaliacaoDTO);
 
         if (!result.success) {
             Logger.error('Admin', `Failed to update avaliacao ${id}`, result.error);
@@ -42,10 +46,14 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
 
 export const DELETE = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    const numId = isValidNumericId(id);
+    if (numId === null) {
+        return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
 
     try {
         // Use repository - automatically invalidates cache
-        const result = await avaliacaoRepository.delete(Number(id));
+        const result = await avaliacaoRepository.delete(numId);
 
         if (!result.success) {
             // Check if it's a "not found" error

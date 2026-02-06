@@ -26,7 +26,11 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Invalid content type" }, { status: 400 });
         }
 
-        const fileExtension = fileName?.split(".").pop() || "jpg";
+        const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'] as const;
+        const rawExt = fileName?.split(".").pop()?.toLowerCase() || "jpg";
+        const fileExtension = ALLOWED_EXTENSIONS.includes(rawExt as typeof ALLOWED_EXTENSIONS[number])
+            ? rawExt
+            : "jpg";
         const key = `avatars/${crypto.randomUUID()}.${fileExtension}`;
 
         // 3. Generate presigned URL

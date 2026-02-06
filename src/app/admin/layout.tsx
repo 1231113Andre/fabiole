@@ -78,14 +78,14 @@ export default function AdminLayout({
     // Memoize activeTab calculation
     const activeTab = useMemo(() => getActiveTabFromPath(pathname), [pathname]);
 
-    // Memoize sidebar margin calculation
+    // Memoize sidebar margin calculation - Updated for compact design
     const sidebarMargin = useMemo(() => {
-        return isCollapsed ? "lg:ml-[90px]" : "lg:ml-[290px]";
+        return isCollapsed ? "lg:ml-[72px]" : "lg:ml-[260px]";
     }, [isCollapsed]);
 
-    // Set CSS variable for sidebar width dynamically
+    // Set CSS variable for sidebar width dynamically - Updated for compact design
     useEffect(() => {
-        const sidebarWidth = isCollapsed ? "90px" : "290px";
+        const sidebarWidth = isCollapsed ? "72px" : "260px";
         document.documentElement.style.setProperty("--sidebar-width", sidebarWidth);
     }, [isCollapsed]);
 
@@ -124,8 +124,8 @@ export default function AdminLayout({
                 isCollapsed={isCollapsed}
             />
 
-            {/* Main Content */}
-            <main className={`flex-1 ml-0 ${sidebarMargin} mt-[72px] p-6 min-h-[calc(100vh-72px)] bg-gray-50 transition-[margin-left] duration-300 overflow-x-hidden`}>
+            {/* Main Content - Updated for compact header */}
+            <main className={`flex-1 ml-0 ${sidebarMargin} mt-14 p-3 sm:p-4 lg:p-6 min-h-[calc(100vh-3.5rem)] bg-gray-50 transition-[margin-left] duration-300 overflow-x-hidden`}>
                 <div className="max-w-screen-2xl mx-auto w-full">
                     {children}
                 </div>

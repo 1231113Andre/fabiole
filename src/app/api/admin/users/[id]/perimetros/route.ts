@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeValue, getErrorMessage } from "@/lib/utils/sanitizers";
+import { sanitizeValue, getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { perimetroRepository } from "@/lib/db/repositories/PerimetroRepository";
 import type { CreatePerimetroDTO } from "@/lib/db/repositories/PerimetroRepository";
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: user_uuid } = await params;
+    if (!isValidUuid(user_uuid)) {
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
     const body = await req.json();
 
     // Validate required field: date

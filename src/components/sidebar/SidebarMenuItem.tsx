@@ -31,18 +31,18 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
         ? item.icon
         : `fa-duotone ${item.icon.replace("fas ", "").replace("fa-", "fa-")}`;
 
-    // Conditional styling
+    // Conditional styling - More compact
     const baseClassName = isCollapsed
-        ? "justify-center mx-auto w-12 h-12 px-0"
-        : "px-5 mx-3";
+        ? "justify-center mx-auto w-11 h-11 px-0"
+        : "px-4 mx-2.5";
 
     const activeClassName = isActive
-        ? "bg-primary text-white shadow-lg shadow-primary/25"
-        : "bg-transparent text-gray-700 hover:bg-gray-100 hover:text-gray-900";
+        ? "bg-gradient-to-r from-primary to-primary-hover text-white shadow-md shadow-primary/25"
+        : "bg-transparent text-gray-700 hover:bg-primary/10 hover:text-primary";
 
     const className = `
-        group relative flex items-center gap-3.5 rounded-xl 
-        border-none text-[15px] font-semibold text-left cursor-pointer 
+        group relative flex items-center gap-3 rounded-lg 
+        border-none text-sm font-semibold text-left cursor-pointer 
         transition-all duration-200 no-underline
         ${isCollapsed ? "py-0" : "py-2"}
         ${baseClassName}
@@ -51,8 +51,8 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
 
     const Icon = (
         <i
-            className={`${iconClass} text-xl transition-colors duration-200 
-                ${isCollapsed ? "text-2xl" : "w-6 text-center"} 
+            className={`${iconClass} text-lg transition-colors duration-200 
+                ${isCollapsed ? "text-xl" : "w-5 text-center"} 
                 ${isActive ? "text-white" : "text-gray-500 group-hover:text-primary"}`}
             aria-hidden="true"
         />

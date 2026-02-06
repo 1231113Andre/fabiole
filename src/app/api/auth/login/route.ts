@@ -149,7 +149,7 @@ const loginHandler = new BaseRouteHandler()
         const lockoutResult = await recordFailedAttempt(email, ip);
 
         if (lockoutResult.isLocked) {
-          const lockoutDuration = formatLockoutDuration(lockoutCheck.lockoutCount || 1);
+          const lockoutDuration = formatLockoutDuration(lockoutResult.lockoutCount ?? 1);
           return ApiResponse.error(
             `Demasiadas tentativas falhadas. Conta bloqueada por ${lockoutDuration}.`,
             401,

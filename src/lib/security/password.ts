@@ -1,3 +1,4 @@
+import 'server-only';
 /**
  * @fileoverview Password hashing and validation utilities
  * @description Secure password hashing using bcryptjs

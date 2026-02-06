@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
-import { hashPassword } from "@/lib/security/password";
+import { hashPassword, validatePasswordStrength } from "@/lib/security/password";
 import { AccountEmailService } from "@/lib/email/services/AccountEmailService";
+import { VerificationCodeService } from "@/lib/email";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
 import { invalidateAdminUsers, invalidateAdminStats } from "@/lib/cache/adminCache";
@@ -20,9 +21,17 @@ export const POST = withAdminAuth(async (req, session) => {
             return NextResponse.json({ error: 'Faltam campos obrigatórios' }, { status: 400 });
         }
 
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // Validate password strength
+        const passwordValidation = validatePasswordStrength(password);
+        if (!passwordValidation.isValid) {
+            return NextResponse.json({ error: passwordValidation.error || 'Password does not meet security requirements' }, { status: 400 });
+        }
+
         // Check if user already exists
         const existingUser = await db.user.findUnique({
-            where: { email },
+            where: { email: normalizedEmail },
             select: { id: true }
         });
 
@@ -38,7 +47,7 @@ export const POST = withAdminAuth(async (req, session) => {
             data: {
                 name,
                 surname,
-                email,
+                email: normalizedEmail,
                 phone: phone || null,
                 password: hashedPassword,
                 gender: gender || 'Masculino',
@@ -59,13 +68,23 @@ export const POST = withAdminAuth(async (req, session) => {
             }
         });
 
-        // Send email notification if requested
+        // Send email notification if requested (password reset code + welcome email, no plain-text password)
         if (sendNotification) {
             try {
-                // We execute this asynchronously without awaiting to not block the response
+                // Send password reset code - user will set password via "Recuperar Password" flow
+                VerificationCodeService.sendVerificationCode(
+                    newUser.email,
+                    newUser.name,
+                    'password-reset'
+                ).then(result => {
+                    if (!result.success) {
+                        Logger.error('Email', `Could not send password reset code to ${newUser.email}.`, result.error);
+                    }
+                }).catch(err => Logger.error('Email', `Failed to send password reset code to ${newUser.email}.`, err));
+
+                // Send welcome email (no password - instructs user to use the code received)
                 AccountEmailService.sendManualAccountCreatedEmail({
                     email: newUser.email,
-                    password: password, // Send the original password, not the hashed one
                     firstName: newUser.name,
                     role: role || 'USER'
                 }).catch(err => Logger.error('Email', `Asynchronous Dispatch Failure: Could not deliver welcome notification to manually registered user ${newUser.email}.`, err));

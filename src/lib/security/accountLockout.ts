@@ -275,7 +275,7 @@ export async function checkAccountLockout(
 export async function recordFailedAttempt(
   email: string,
   ip?: string
-): Promise<{ isLocked: boolean; attempts: number; remainingSeconds?: number; lockoutDuration?: number }> {
+): Promise<{ isLocked: boolean; attempts: number; remainingSeconds?: number; lockoutDuration?: number; lockoutCount?: number }> {
   const key = getLockoutKey(email, ip);
   const now = Date.now();
 
@@ -313,6 +313,7 @@ export async function recordFailedAttempt(
       attempts: entry.attempts,
       remainingSeconds,
       lockoutDuration: isLocked ? calculateLockoutDuration(entry.lockoutCount) : undefined,
+      lockoutCount: entry.lockoutCount ?? 1,
     };
   } catch (error) {
     // If Redis is unavailable, log error but don't block the login attempt

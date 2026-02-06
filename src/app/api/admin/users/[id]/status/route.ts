@@ -7,12 +7,16 @@ import { clearUserData } from "@/lib/cache/userCache";
 import { clearCachedAuthUser } from "@/lib/cache/userCache";
 import { AccountEmailService } from "@/lib/email/services/AccountEmailService";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
+import { isValidUuid } from "@/lib/utils/sanitizers";
 
 const VALID_STATUSES = ['ACTIVE', 'SUSPENDED', 'BANNED'] as const;
 type AccountStatus = typeof VALID_STATUSES[number];
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id: userId } = await params;
+    if (!isValidUuid(userId)) {
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
     const body = await req.json();
     const { status, sendNotification, reason } = body;
 

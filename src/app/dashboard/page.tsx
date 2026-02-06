@@ -1,16 +1,8 @@
-import type { Metadata } from "next";
 import NewButton from "@/app/components/newButton";
 import { DashboardClient } from "./components/DashboardClient";
 import { getSession } from "@/lib/security/session";
 import { redirect } from "next/navigation";
 import { UserService } from "@/lib/api/services/UserService";
-import { Logger } from "@/lib/utils/logger";
-import { UserSheetData } from "@/lib/types/dashboard";
-
-export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Painel do cliente com visão geral dos treinos"
-};
 
 export const dynamic = 'force-dynamic';
 
@@ -23,11 +15,11 @@ export default async function DashboardOverviewPage() {
 
   // Fetch full user data using centralized service (Source of Truth: Prisma)
   // This ensures consistency between server-side render and client-side API calls
-  let userData: UserSheetData | null = null;
+  let userData;
   try {
     userData = await UserService.getUserData(session.email);
   } catch (error) {
-    Logger.error('Dashboard', `SSR Data Retrieval Yielded Error: Could not compile profile overview for user ${session.email}.`, error);
+    console.error("Error fetching user data:", error);
     // If user not found or error, handle gracefully
     return (
       <div className="flex items-center justify-center min-h-screen text-gray-500">
@@ -98,7 +90,7 @@ export default async function DashboardOverviewPage() {
                 iconPosition="left"
                 className="w-full sm:w-auto min-w-[200px] shadow-md uppercase font-bold pr-10"
               >
-                Admin Panel
+                Painel Admin
               </NewButton>
 
               {/* Tooltip Wrapper - Positioned Top Right */}

@@ -5,6 +5,7 @@ import { db } from "@/lib/db/client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Logger } from "@/lib/utils/logger";
+import { isValidUuid } from "@/lib/utils/sanitizers";
 
 export async function GET(req: NextRequest) {
     try {
@@ -15,6 +16,11 @@ export async function GET(req: NextRequest) {
 
         const { searchParams } = new URL(req.url);
         let targetUserId = searchParams.get("userId") || session.uuid;
+
+        // Validate UUID format - prevents path traversal and invalid IDs
+        if (!isValidUuid(targetUserId)) {
+            return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+        }
 
         // If targetUserId is different, check if current user is ADMIN
         if (targetUserId !== session.uuid) {

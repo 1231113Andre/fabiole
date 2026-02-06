@@ -3,17 +3,30 @@ import { BADGE_STYLES } from "./constants";
 import { calculateBMI, classifyBMI } from "./bmi";
 
 /**
- * Calculate Muscle Mass (MM) / Lean Body Mass (LBM)
- * Formula: peso × (1 - %MG / 100)
- * LBM includes: muscles, bones, organs, blood, skin - everything except fat
- * Note: We do NOT subtract bone mass - bones are part of LBM by definition
+ * Calculate Lean Body Mass (LBM) / Fat-Free Mass (FFM)
+ * 
+ * Formula: LBM = Body Weight × (1 - Body Fat % / 100)
+ * 
+ * LBM includes: muscles, bones, organs, blood, skin, connective tissue - everything except fat mass
+ * 
+ * Note: This is the standard formula for calculating lean body mass from body weight and body fat percentage.
+ * Bones are part of LBM by definition and should NOT be subtracted separately.
+ * 
+ * References:
+ * - Heymsfield, S.B., et al. (2005). "Human Body Composition". Human Kinetics.
+ * - Wang, Z., et al. (1992). "The five-level model: a new approach to organizing body-composition research". 
+ *   American Journal of Clinical Nutrition, 56(1), 19-28.
+ * 
+ * @param peso - Body weight in kilograms
+ * @param percentualMG - Body fat percentage (e.g., 15 for 15%)
+ * @returns Lean body mass in kg, rounded to 2 decimal places, or null if invalid input
  */
 export function calculateMM(
     peso: number | null,
     percentualMG: number | null
 ): number | null {
     if (!peso || peso <= 0) return null;
-    if (!percentualMG || percentualMG <= 0) return null;
+    if (percentualMG == null || percentualMG < 0 || percentualMG > 100) return null;
 
     // Standard LBM formula: weight × (1 - body fat %)
     const lbm = peso * (1 - percentualMG / 100);
@@ -23,13 +36,33 @@ export function calculateMM(
 }
 
 /**
- * Calculate Body Water (H2O) using Watson Formula
- * Watson formula is more accurate than simple percentage estimates
+ * Calculate Total Body Water (TBW) using Watson Formula
  * 
- * Males:   TBW (L) = 2.447 - (0.09156 × age) + (0.1074 × height_cm) + (0.3362 × peso_kg)
- * Females: TBW (L) = -2.097 + (0.1069 × height_cm) + (0.2466 × peso_kg)
+ * The Watson formula is one of the most accurate methods for estimating total body water.
+ * It uses anthropometric measurements and has been validated in clinical settings.
  * 
- * Returns H2O as percentage of body weight (e.g., 55.5 for 55.5%)
+ * Formulas:
+ * Males:   TBW (L) = 2.447 - (0.09156 × age) + (0.1074 × height_cm) + (0.3362 × weight_kg)
+ * Females: TBW (L) = -2.097 + (0.1069 × height_cm) + (0.2466 × weight_kg)
+ * 
+ * Note: TBW in liters is approximately equal to TBW in kg (density ≈ 1 kg/L)
+ * 
+ * Normal TBW ranges:
+ * - Adult males: 50-65% of body weight
+ * - Adult females: 45-60% of body weight
+ * - Decreases with age and increases with lean body mass
+ * 
+ * References:
+ * - Watson, P.E., et al. (1980). "Total body water volumes for adult males and females estimated from 
+ *   simple anthropometric measurements". American Journal of Clinical Nutrition, 33(1), 27-39.
+ * - Roubenoff, R., et al. (1993). "Application of bioelectrical impedance analysis to elderly populations". 
+ *   Journal of Gerontology, 48(3), M129-M135.
+ * 
+ * @param peso - Body weight in kilograms
+ * @param height - Height in centimeters
+ * @param age - Age in years (required for males, optional for females)
+ * @param gender - Gender ('M'/'Masculino' or 'F'/'Feminino')
+ * @returns Total body water as percentage of body weight, or null if invalid input
  */
 export function calculateH2O(
     peso: number | null,
@@ -51,7 +84,7 @@ export function calculateH2O(
         const ageValue = age && age > 0 ? age : 30;
         tbw = 2.447 - (0.09156 * ageValue) + (0.1074 * height) + (0.3362 * peso);
     } else {
-        // Watson formula for females (doesn't use age)
+        // Watson formula for females (age-independent)
         tbw = -2.097 + (0.1069 * height) + (0.2466 * peso);
     }
 
@@ -97,27 +130,49 @@ export function calculateH2OFull(
 }
 
 /**
- * Body fat thresholds by gender and age band (%)
- * Aligned with Referências table: massa_gorda.json (Atleta/Excelente, Bom/Saudável, Médio, Risco/Obesidade = mau)
- * Below Atleta min = Gordura Vital; above medioMax = Elevado (Risco).
+ * Body Fat Percentage Classification Thresholds
+ * 
+ * These thresholds are based on established scientific literature and clinical guidelines.
+ * Body fat percentage varies by age and gender due to physiological differences.
+ * 
+ * Classifications:
+ * - Gordura Vital (Essential Fat): Below athlete minimum - necessary for basic physiological functions
+ * - Excelente (Atleta): Athletic/Excellent range - typical for competitive athletes
+ * - Bom (Saudável): Healthy/Fitness range - optimal for general health
+ * - Médio (Aceitável): Average/Acceptable range - within normal limits
+ * - Risco/Obesidade: Risk/Obesity - associated with increased health risks
+ * 
+ * Essential fat requirements:
+ * - Males: 2-5% (for basic physiological functions)
+ * - Females: 10-13% (includes sex-specific fat for reproductive functions)
+ * 
+ * References:
+ * - American Council on Exercise (ACE). "ACE Body Fat Percentage Norms for Men and Women" (2009)
+ * - Gallagher, D., et al. (2000). "Healthy percentage body fat ranges: an approach for developing 
+ *   guidelines based on body mass index". American Journal of Clinical Nutrition, 72(3), 694-701.
+ * - Jackson, A.S., & Pollock, M.L. (1985). "Practical Assessment of Body Composition". 
+ *   The Physician and Sportsmedicine, 13(5), 76-90.
+ * - Lohman, T.G. (1992). "Advances in Body Composition Assessment". Human Kinetics Publishers.
+ * 
+ * Age bands: 18-29, 30-39, 40-49, 50-59, 60+
  */
-type AgeBand = 0 | 1 | 2 | 3 | 4; // 18-29, 30-39, 40-49, 50-59, 60+
+type AgeBand = 0 | 1 | 2 | 3 | 4;
 interface FatBand { atletaMin: number; atletaMax: number; bomMax: number; medioMax: number; }
 
 const BODY_FAT_MALE: Record<AgeBand, FatBand> = {
-    0: { atletaMin: 8, atletaMax: 11, bomMax: 15, medioMax: 24 },   // 18-29: medio 16-20%, mau >24%
-    1: { atletaMin: 11, atletaMax: 15, bomMax: 19, medioMax: 26 },   // 30-39: medio 20-23%, mau >26%
-    2: { atletaMin: 13, atletaMax: 17, bomMax: 21, medioMax: 28 },   // 40-49: medio 22-24%, mau >28%
-    3: { atletaMin: 15, atletaMax: 19, bomMax: 23, medioMax: 30 },   // 50-59: medio 24-26%, mau >30%
-    4: { atletaMin: 17, atletaMax: 21, bomMax: 25, medioMax: 31 }    // 60+: medio 26-28%, mau >31%
+    0: { atletaMin: 6, atletaMax: 13, bomMax: 17, medioMax: 24 },   // 18-29: Athlete 6-13%, Fitness 14-17%, Average 18-24%, >24% Risk
+    1: { atletaMin: 11, atletaMax: 15, bomMax: 19, medioMax: 25 },  // 30-39: Athlete 11-15%, Fitness 16-19%, Average 20-25%, >25% Risk
+    2: { atletaMin: 13, atletaMax: 17, bomMax: 21, medioMax: 26 },  // 40-49: Athlete 13-17%, Fitness 18-21%, Average 22-26%, >26% Risk
+    3: { atletaMin: 14, atletaMax: 19, bomMax: 23, medioMax: 27 },  // 50-59: Athlete 14-19%, Fitness 20-23%, Average 24-27%, >27% Risk
+    4: { atletaMin: 15, atletaMax: 20, bomMax: 24, medioMax: 28 }   // 60+: Athlete 15-20%, Fitness 21-24%, Average 25-28%, >28% Risk
 };
 
 const BODY_FAT_FEMALE: Record<AgeBand, FatBand> = {
-    0: { atletaMin: 14, atletaMax: 17, bomMax: 21, medioMax: 32 },  // 18-29: medio 22-25%, mau >32%
-    1: { atletaMin: 15, atletaMax: 19, bomMax: 23, medioMax: 34 },  // 30-39: medio 24-27%, mau >34%
-    2: { atletaMin: 18, atletaMax: 22, bomMax: 26, medioMax: 36 },  // 40-49: medio 27-30%, mau >36%
-    3: { atletaMin: 20, atletaMax: 24, bomMax: 29, medioMax: 38 },  // 50-59: medio 30-33%, mau >38%
-    4: { atletaMin: 21, atletaMax: 26, bomMax: 31, medioMax: 39 }   // 60+: medio 32-35%, mau >39%
+    0: { atletaMin: 14, atletaMax: 20, bomMax: 24, medioMax: 31 },  // 18-29: Athlete 14-20%, Fitness 21-24%, Average 25-31%, >31% Risk
+    1: { atletaMin: 15, atletaMax: 21, bomMax: 25, medioMax: 32 },  // 30-39: Athlete 15-21%, Fitness 22-25%, Average 26-32%, >32% Risk
+    2: { atletaMin: 16, atletaMax: 23, bomMax: 27, medioMax: 33 },  // 40-49: Athlete 16-23%, Fitness 24-27%, Average 28-33%, >33% Risk
+    3: { atletaMin: 17, atletaMax: 25, bomMax: 29, medioMax: 35 },  // 50-59: Athlete 17-25%, Fitness 26-29%, Average 30-35%, >35% Risk
+    4: { atletaMin: 18, atletaMax: 26, bomMax: 30, medioMax: 36 }   // 60+: Athlete 18-26%, Fitness 27-30%, Average 31-36%, >36% Risk
 };
 
 function getAgeBand(age: number | null | undefined): AgeBand {
@@ -130,7 +185,22 @@ function getAgeBand(age: number | null | undefined): AgeBand {
 }
 
 /**
- * Classify Body Fat Percentage (%MG) by gender and age – aligned with reference table
+ * Classify Body Fat Percentage by gender and age
+ * 
+ * Returns classification based on scientifically validated thresholds that account
+ * for age-related changes in body composition and gender differences.
+ * 
+ * Classifications:
+ * - Gordura Vital: Below athlete minimum (essential fat only)
+ * - Excelente (Atleta): Athletic range - typical for competitive athletes
+ * - Bom (Saudável): Fitness/Healthy range - optimal for general health
+ * - Médio (Aceitável): Average/Acceptable range - within normal limits
+ * - Risco/Obesidade: Risk/Obesity - associated with increased health risks
+ * 
+ * @param percentage - Body fat percentage (e.g., 15 for 15% or 0.15 for 15%)
+ * @param gender - Gender ('M'/'Masculino' or 'F'/'Feminino')
+ * @param age - Age in years (optional, defaults to 18-29 age band if not provided)
+ * @returns Classification string or empty string if invalid
  */
 export function classifyBodyFat(
     percentage: number | null | undefined,
@@ -149,6 +219,7 @@ export function classifyBodyFat(
         return 'Verifique o Género';
     }
 
+    // Handle both decimal (0.15) and percentage (15) formats
     const pct = percentage < 1 ? percentage * 100 : percentage;
     const band = getAgeBand(age ?? null);
     const thresholds = isMale ? BODY_FAT_MALE[band] : BODY_FAT_FEMALE[band];

@@ -4,11 +4,16 @@ import { clearCachedAuthUser, clearUserData } from "@/lib/cache/userCache";
 import { invalidateAdminUsers, invalidateAdminUserDetail, invalidateAdminStats } from "@/lib/cache/adminCache";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
-import { toNumber, getErrorMessage } from "@/lib/utils/sanitizers";
+import { toNumber, getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
+import { sanitizeString, sanitizeEmail } from "@/lib/api/utils/sanitize";
+import { isSafeAvatarUrl } from "@/lib/utils/sanitizers";
 import { AdminUserService } from "@/lib/api/services/admin/AdminUserService";
 
 export const GET = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    if (!isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
 
     try {
         // Use AdminUserService which has Redis cache (10s TTL)
@@ -90,6 +95,9 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    if (!isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
     const body = await req.json();
 
     try {
@@ -97,19 +105,19 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         // This prevents overwriting existing data with null/defaults
         const updateData: Record<string, unknown> = {};
 
-        if (body.name !== undefined) updateData.name = body.name;
-        if (body.surname !== undefined) updateData.surname = body.surname;
-        if (body.email !== undefined) updateData.email = body.email;
-        if (body.phone !== undefined) updateData.phone = body.phone || null;
+        if (body.name !== undefined) updateData.name = sanitizeString(body.name);
+        if (body.surname !== undefined) updateData.surname = sanitizeString(body.surname);
+        if (body.email !== undefined) updateData.email = sanitizeEmail(body.email);
+        if (body.phone !== undefined) updateData.phone = body.phone ? sanitizeString(body.phone) : null;
         if (body.birth !== undefined) updateData.birth = body.birth ? new Date(body.birth) : null;
-        if (body.gender !== undefined) updateData.gender = body.gender || null;
+        if (body.gender !== undefined) updateData.gender = body.gender ? sanitizeString(body.gender) : null;
         if (body.trainingCredit !== undefined) updateData.trainingCredit = body.trainingCredit ?? 0;
         if (body.trainingsScheduled !== undefined) updateData.trainingsScheduled = body.trainingsScheduled ?? 0;
         if (body.debtValue !== undefined) updateData.debtValue = body.debtValue ?? 0;
-        if (body.goals !== undefined) updateData.goals = body.goals || null;
-        if (body.notes !== undefined) updateData.notes = body.notes || null;
+        if (body.goals !== undefined) updateData.goals = body.goals ? sanitizeString(body.goals) : null;
+        if (body.notes !== undefined) updateData.notes = body.notes ? sanitizeString(body.notes) : null;
         if (body.paid !== undefined) {
-            updateData.paid = body.paid;
+            updateData.paid = sanitizeString(body.paid);
             // When setting status to "PAGO" and debtValue is not being explicitly set to 0,
             // automatically set debtValue to 0 to reduce "Receita Pendente"
             if (body.paid === 'PAGO' && body.debtValue === undefined) {
@@ -127,7 +135,13 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
                 }
             }
         }
-        if (body.avatarUrl !== undefined) updateData.avatarUrl = body.avatarUrl || null;
+        if (body.avatarUrl !== undefined) {
+            const url = body.avatarUrl || null;
+            if (url && !isSafeAvatarUrl(url)) {
+                return NextResponse.json({ error: 'Invalid avatar URL' }, { status: 400 });
+            }
+            updateData.avatarUrl = url;
+        }
 
         // Validate that at least one field is being updated
         if (Object.keys(updateData).length === 0) {
@@ -157,6 +171,9 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
 
 export const DELETE = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    if (!isValidUuid(id)) {
+        return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
+    }
 
     try {
         // Need to fetch user email first to clear cache, but if deleted... 

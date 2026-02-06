@@ -20,28 +20,29 @@ export class AccountEmailService extends BaseEmailService {
             to: { email },
             subject: `Welcome to Fabiole, ${firstName}! 🎉`,
             html,
-            text: `Welcome to Fabiole, ${firstName}!\n\nYour account has been created successfully. You're now ready to start your fitness journey with personalized coaching.\n\nVisit your dashboard: https://fabiole.pt/dashboard`,
+            text: `Welcome to Fabiole, ${firstName}!\n\nYour account has been created successfully. You're now ready to start your fitness journey with personalized coaching.\n\nVisit your dashboard: https://fabiole.com/dashboard`,
         });
     }
 
     /**
-     * Send email when an account is manually created by admin
+     * Send email when an account is manually created by admin.
+     * Does NOT include password - user receives a separate verification code to set password via "Recuperar Password".
      */
     static async sendManualAccountCreatedEmail(options: {
         email: string;
-        password: string;
         firstName: string;
         role?: string;
     }): Promise<SendEmailResult> {
-        const { email, password, firstName, role = 'USER' } = options;
+        const { email, firstName, role = 'USER' } = options;
 
         const isAdmin = role === 'ADMINISTRATOR';
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fabiole.com';
 
         const html = renderManualAccountEmail({
             firstName,
             email,
-            password,
-            isAdmin
+            isAdmin,
+            resetUrl: `${siteUrl}/`,
         });
 
         const senderName = isAdmin ? 'Fabiole | Administrator Account Created' : 'Fabiole | User Account created';
@@ -49,9 +50,9 @@ export class AccountEmailService extends BaseEmailService {
         return this.send({
             from: this.createDefaultSender(senderName),
             to: { email },
-            subject: `Bem-vindo(a) à Fabiole - As suas credenciais de acesso`,
+            subject: `Bem-vindo(a) à Fabiole - Definir a sua password`,
             html,
-            text: `Bem-vindo(a) à Fabiole, ${firstName}!\n\nA sua conta foi criada manualmente pela administração.\n\nCredenciais:\nEmail: ${email}\nPassword: ${password}\n\nImportante: Por favor, altere a sua password no primeiro acesso na aba "Definições".\n\nAceda em: https://fabiole.com/`,
+            text: `Bem-vindo(a) à Fabiole, ${firstName}!\n\nA sua conta foi criada manualmente pela administração.\n\nReceberá em breve um email separado com um código de verificação para definir a sua password.\n\nPara definir a sua password:\n1. Aceda a ${siteUrl}\n2. Clique em "Iniciar sessão" e depois "Recuperar Password"\n3. Introduza o seu email e o código que recebeu\n4. Defina a sua nova password\n\nAceda em: ${siteUrl}/`,
         });
     }
 

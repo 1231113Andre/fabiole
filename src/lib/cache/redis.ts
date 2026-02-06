@@ -1,3 +1,4 @@
+import 'server-only';
 /**
  * @fileoverview Redis client for persistent storage
  * @description Redis client utility with fallback to in-memory storage

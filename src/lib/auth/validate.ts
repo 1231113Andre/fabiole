@@ -1,3 +1,4 @@
+import 'server-only';
 /**
  * @fileoverview Authentication validation helper for API routes and middleware
  * @description Provides utilities to check user authentication status
@@ -108,31 +109,11 @@ export async function validateAuth(request?: NextRequest): Promise<AuthResult> {
         };
       }
 
-      // Fallback: try to parse as JSON (legacy format for backward compatibility)
-      try {
-        const userData = JSON.parse(session.value) as AuthUser;
-
-        // Validate user data structure
-        if (!userData.email || !userData.name || !userData.surname) {
-          return {
-            authenticated: false,
-            error: 'Invalid session data',
-          };
-        }
-
-        // Legacy format - warn but allow (for migration period)
-        Logger.warn('Security', 'Legacy Protocol Detected: Identity is using a deprecated JSON session format. Migration to signed JWT is highly recommended for enhanced security.');
-
-        return {
-          authenticated: true,
-          user: userData,
-        };
-      } catch (parseError) {
-        return {
-          authenticated: false,
-          error: 'Invalid session format',
-        };
-      }
+      // JWT verification failed - session invalid (legacy JSON format no longer supported)
+      return {
+        authenticated: false,
+        error: 'Invalid session format',
+      };
     } catch (error) {
       return {
         authenticated: false,

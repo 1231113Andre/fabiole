@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeValueForUpdate, sanitizeStringForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
+import { sanitizeValueForUpdate, sanitizeStringForUpdate, getErrorMessage, isValidNumericId } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { pesagemRepository } from "@/lib/db/repositories/PesagemRepository";
 import type { UpdatePesagemDTO } from "@/lib/db/repositories/PesagemRepository";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    const numId = isValidNumericId(id);
+    if (numId === null) {
+        return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
     const body = await req.json();
 
     try {
@@ -33,7 +37,7 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         }
 
         // Use repository - automatically invalidates cache and returns fresh data
-        const result = await pesagemRepository.update(Number(id), updateData as UpdatePesagemDTO);
+        const result = await pesagemRepository.update(numId, updateData as UpdatePesagemDTO);
 
         if (!result.success) {
             Logger.error('Admin', `Failed to update pesagem ${id}`, result.error);
@@ -50,10 +54,14 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
 
 export const DELETE = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    const numId = isValidNumericId(id);
+    if (numId === null) {
+        return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
 
     try {
         // Use repository - automatically invalidates cache
-        const result = await pesagemRepository.delete(Number(id));
+        const result = await pesagemRepository.delete(numId);
 
         if (!result.success) {
             // Check if it's a "not found" error

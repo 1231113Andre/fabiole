@@ -26,8 +26,8 @@ const TTL = {
   USER_DATA_MS: 60 * 1000, // 1 minute (memory fallback)
   REFERENCE_TABLES_SECONDS: 30 * 60, // 30 minutes (Redis)
   REFERENCE_TABLES_MS: 30 * 60 * 1000, // 30 minutes (memory fallback)
-  AUTH_USER_SECONDS: 60 * 60, // 1 hour (Redis)
-  AUTH_USER_MS: 60 * 60 * 1000, // 1 hour (memory)
+  AUTH_USER_SECONDS: 15 * 60, // 15 minutes (Redis) - reduced from 1h to limit exposure of password hash in cache
+  AUTH_USER_MS: 15 * 60 * 1000, // 15 minutes (memory)
 };
 
 /**

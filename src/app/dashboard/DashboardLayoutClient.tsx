@@ -137,15 +137,15 @@ export default function DashboardLayoutClient({
     // Memoize activeTab calculation
     const activeTab = useMemo(() => getActiveTabFromPath(pathname), [pathname]);
 
-    // Memoize sidebar margin calculation
+    // Memoize sidebar margin calculation - Updated for compact design
     const sidebarMargin = useMemo(() => {
         if (isMobile) return "ml-0"; // No margin on mobile
-        return isCollapsed ? "lg:ml-[90px]" : "lg:ml-[290px]";
+        return isCollapsed ? "lg:ml-[72px]" : "lg:ml-[260px]";
     }, [isCollapsed, isMobile]);
 
-    // Set CSS variable for sidebar width dynamically
+    // Set CSS variable for sidebar width dynamically - Updated for compact design
     useEffect(() => {
-        const sidebarWidth = isMobile ? "0px" : (isCollapsed ? "90px" : "290px");
+        const sidebarWidth = isMobile ? "0px" : (isCollapsed ? "72px" : "260px");
         document.documentElement.style.setProperty("--sidebar-width", sidebarWidth);
     }, [isCollapsed, isMobile]);
 
@@ -191,9 +191,9 @@ export default function DashboardLayoutClient({
                 isCollapsed={isCollapsed}
             />
 
-            {/* Main Content */}
-            <main className={`flex-1 transition-[margin-left] duration-300 ease-in-out ${sidebarMargin} mt-[72px] p-4 md:p-6 lg:p-8 min-h-[calc(100vh-72px)] bg-whiten overflow-x-hidden`}>
-                <div className="max-w-screen-2xl mx-auto w-full">
+            {/* Main Content - Updated for compact header */}
+            <main className={`flex-1 transition-[margin-left] duration-300 ease-in-out ${sidebarMargin} mt-14 p-3 sm:p-4 lg:p-6 min-h-[calc(100vh-3.5rem)] bg-whiten overflow-x-hidden`}>
+                <div className="max-w-screen-xl mx-auto w-full">
                     {children}
                 </div>
             </main>

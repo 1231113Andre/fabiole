@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeValueForUpdate, getErrorMessage } from "@/lib/utils/sanitizers";
+import { sanitizeValueForUpdate, getErrorMessage, isValidNumericId } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { perimetroRepository } from "@/lib/db/repositories/PerimetroRepository";
 import type { UpdatePerimetroDTO } from "@/lib/db/repositories/PerimetroRepository";
 
 export const PUT = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    const numId = isValidNumericId(id);
+    if (numId === null) {
+        return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
     const body = await req.json();
 
     try {
@@ -30,7 +34,7 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         }
 
         // Use repository - automatically invalidates cache and returns fresh data
-        const result = await perimetroRepository.update(Number(id), updateData as UpdatePerimetroDTO);
+        const result = await perimetroRepository.update(numId, updateData as UpdatePerimetroDTO);
 
         if (!result.success) {
             Logger.error('Admin', `Failed to update perimetro ${id}`, result.error);
@@ -47,10 +51,14 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
 
 export const DELETE = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
+    const numId = isValidNumericId(id);
+    if (numId === null) {
+        return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
+    }
 
     try {
         // Use repository - automatically invalidates cache
-        const result = await perimetroRepository.delete(Number(id));
+        const result = await perimetroRepository.delete(numId);
 
         if (!result.success) {
             // Check if it's a "not found" error

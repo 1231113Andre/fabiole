@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { db } from '../lib/db/client';
+import { hashPassword } from '../lib/security/password';
 import { Logger } from '../lib/utils/logger';
 
 // Users extracted from infoData sheet
@@ -132,6 +133,7 @@ async function main() {
     for (const u of users) {
         try {
             const birthDate = new Date(u.birthDate);
+            const hashedPassword = await hashPassword(u.password);
 
             await db.user.create({
                 data: {
@@ -139,7 +141,7 @@ async function main() {
                     email: u.email.toLowerCase(),
                     name: u.name,
                     surname: u.surname,
-                    password: u.password,
+                    password: hashedPassword,
                     birth: birthDate,
                     phone: null,
                     trainingCredit: 0,

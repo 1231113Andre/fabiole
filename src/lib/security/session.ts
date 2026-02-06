@@ -1,3 +1,4 @@
+import 'server-only';
 /**
  * @fileoverview Session signing and validation utilities
  * @description Secure session management using JWT (jose library)

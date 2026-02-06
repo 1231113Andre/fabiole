@@ -12,15 +12,15 @@ export const SidebarToggle = memo(function SidebarToggle({
     onToggle
 }: SidebarToggleProps) {
     return (
-        <div className="mt-auto px-4 pb-3 hidden lg:block">
+        <div className="mt-auto px-3 pb-2 hidden lg:block">
             <button
                 onClick={onToggle}
                 type="button"
-                className="flex items-center justify-center w-full h-10 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 hover:border-gray-400 transition-all cursor-pointer"
+                className="flex items-center justify-center w-full h-9 border border-gray-200 rounded-lg bg-white text-gray-500 hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all cursor-pointer shadow-sm active:scale-95"
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
                 <i
-                    className={`fa-duotone ${isCollapsed ? "fa-chevrons-right" : "fa-chevrons-left"}`}
+                    className={`fa-duotone ${isCollapsed ? "fa-chevrons-right" : "fa-chevrons-left"} text-sm`}
                     aria-hidden="true"
                 />
             </button>

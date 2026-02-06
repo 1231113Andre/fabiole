@@ -1,3 +1,4 @@
+import 'server-only';
 /**
  * @fileoverview Authentication helper functions
  * @description Reusable utilities for authentication operations
@@ -8,7 +9,6 @@ import { verifySession, SessionPayload } from '@/lib/security/session';
 import { comparePassword } from '@/lib/security/password';
 import { db } from '@/lib/db/client';
 import { NextResponse } from 'next/server';
-import { Logger } from '@/lib/utils/logger';
 
 /**
  * Normalize email (lowercase + trim)
@@ -54,29 +54,15 @@ export async function getAuthenticatedSession(): Promise<
 }
 
 /**
- * Verify password with fallback for legacy plain text passwords
- * Returns true if password matches, false otherwise
- * Logs warning if legacy password is used
+ * Verify password using bcrypt comparison only.
+ * Plain-text passwords in DB are no longer supported - users must reset password.
  */
 export async function verifyPasswordWithFallback(
   plainPassword: string,
   hashedPassword: string,
-  userEmail?: string
+  _userEmail?: string
 ): Promise<boolean> {
-  let isValid = await comparePassword(plainPassword, hashedPassword);
-
-  // Fallback for legacy plain text passwords from migration
-  if (!isValid) {
-    isValid = hashedPassword === plainPassword;
-    if (isValid && userEmail) {
-      Logger.warn(
-        'Auth',
-        `Security Warning: User ${userEmail} authenticated using legacy plain-text password. Migration recommended.`
-      );
-    }
-  }
-
-  return isValid;
+  return comparePassword(plainPassword, hashedPassword);
 }
 
 /**

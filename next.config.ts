@@ -69,9 +69,10 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Security headers (additional layer - middleware also handles this)
+  // Security headers - includes CSP, HSTS, Permissions-Policy (OWASP best practices)
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
+    const isProd = process.env.NODE_ENV === 'production';
     const htmlCacheHeader = {
       key: 'Cache-Control',
       value: 'no-cache, no-store, must-revalidate, max-age=0',
@@ -81,30 +82,44 @@ const nextConfig: NextConfig = {
       { key: 'Expires', value: '0' },
     ];
 
+    // CSP, HSTS, Permissions-Policy from lib/security/headers
+    const cspGoogleApis = process.env.CSP_GOOGLE_APIS || 'https://sheets.googleapis.com https://www.googleapis.com https://*.googleapis.com';
+    const r2Domains = ['https://*.r2.cloudflarestorage.com', 'https://*.r2.dev'];
+    const extraDomains = process.env.CSP_ADDITIONAL_DOMAINS
+      ? process.env.CSP_ADDITIONAL_DOMAINS.split(',').map(d => d.trim()).filter(Boolean)
+      : [];
+    const connectSrc = ["'self'", cspGoogleApis, "https://cdn.jsdelivr.net", ...r2Domains, ...extraDomains, ...(isDev ? ["http://localhost:*", "http://127.0.0.1:*"] : [])].join(' ');
+    const scriptSrc = ["'self'", "'unsafe-inline'", ...(isDev ? ["'unsafe-eval'"] : []), "https://cdn.jsdelivr.net"].join(' ');
+    const csp = [
+      "default-src 'self'",
+      `script-src ${scriptSrc}`,
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+      "img-src 'self' data: https: blob:",
+      "font-src 'self' data: https://fonts.gstatic.com",
+      `connect-src ${connectSrc}`,
+      "media-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "frame-src 'none'",
+      ...(isProd ? ["upgrade-insecure-requests"] : []),
+    ].join('; ');
+    const permissionsPolicy = 'accelerometer=(),autoplay=(),camera=(),cross-origin-isolated=(),display-capture=(),encrypted-media=(),fullscreen=(self),geolocation=(),gyroscope=(),microphone=(),payment=(),usb=(),web-share=()';
+    const hstsMaxAge = parseInt(process.env.HSTS_MAX_AGE || '31536000', 10);
+
     return [
       {
         source: '/:path*',
         headers: [
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Content-Security-Policy', value: csp },
+          { key: 'Permissions-Policy', value: permissionsPolicy },
+          ...(isProd ? [{ key: 'Strict-Transport-Security', value: `max-age=${hstsMaxAge}; includeSubDomains; preload` }] : []),
           ...(isDev ? [htmlCacheHeader, ...htmlExpiresPragma] : [htmlCacheHeader]),
         ],
       },
@@ -151,13 +166,21 @@ const nextConfig: NextConfig = {
   // Experimental features
   experimental: {
     serverActions: {
-      allowedOrigins: ["57.128.218.55", "localhost:3000"],
+      allowedOrigins: [
+        "fabiole.com",
+        "www.fabiole.com",
+        "fabio-le-pt.com",
+        "www.fabio-le-pt.com",
+        "localhost:3000",
+        "127.0.0.1:3000",
+        "57.128.218.55", // VPS IP - prefer domain in production
+      ],
     },
   },
 
   // Explicitly allowing cross-origin requests for development
   // @ts-ignore - Check if property exists on type, if not ignore
-  allowedDevOrigins: ["57.128.218.55"],
+  allowedDevOrigins: ["localhost:3000", "127.0.0.1:3000", "57.128.218.55"],
 
   // Transpile recharts to fix HMR issues with Turbopack
   transpilePackages: ['recharts'],

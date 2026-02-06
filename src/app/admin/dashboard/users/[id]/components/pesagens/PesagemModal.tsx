@@ -61,37 +61,32 @@ function FormInput({
     const showManualMode = isAutoField && isManuallyOverridden;
 
     return (
-        <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                <i className={`fa-duotone ${icon} ${showAutoMode ? 'text-violet-500/70' : 'text-primary/70'} text-[10px]`}></i>
-                {label} {required && <span className="text-red-500">*</span>}
+        <div className="space-y-1">
+            <label className="flex items-center justify-between text-[11px] font-semibold text-gray-700">
+                <span className="flex items-center gap-1.5">
+                    <i className={`fa-duotone ${icon} ${showAutoMode ? 'text-violet-500' : showManualMode ? 'text-amber-500' : 'text-primary'} text-[10px]`}></i>
+                    {label} {required && <span className="text-red-500 text-xs">*</span>}
+                </span>
                 {isAutoField && (
-                    <span className="ml-auto flex items-center gap-1">
+                    <span className="flex items-center">
                         {showManualMode ? (
                             <button
                                 type="button"
                                 onClick={onClearOverride}
-                                className="text-[9px] text-amber-600 font-bold bg-amber-100 hover:bg-amber-200 px-1.5 py-0.5 rounded transition-colors flex items-center gap-1 cursor-pointer"
+                                className="text-[9px] font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded flex items-center gap-1 transition-all"
                                 title="Clique para restaurar cálculo automático"
                             >
-                                <i className="fa-duotone fa-pen-to-square text-[8px]"></i>
+                                <i className="fa-solid fa-pen text-[7px]"></i>
                                 Manual
-                                <i className="fa-duotone fa-rotate-right text-[8px] opacity-70"></i>
                             </button>
                         ) : canAutoCalculate ? (
-                            <button
-                                type="button"
-                                onClick={onClearOverride}
-                                className="text-[9px] text-violet-600 font-bold bg-violet-100 hover:bg-violet-200 px-1.5 py-0.5 rounded flex items-center gap-1 cursor-pointer transition-colors"
-                                title="Valor calculado automaticamente. Clique para recalcular."
-                            >
-                                <i className="fa-duotone fa-robot text-[8px]"></i>
+                            <span className="text-[9px] font-bold text-violet-600 bg-violet-50 border border-violet-200 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                <i className="fa-solid fa-robot text-[7px]"></i>
                                 Auto
-                                <i className="fa-duotone fa-rotate text-[7px] opacity-70"></i>
-                            </button>
+                            </span>
                         ) : (
-                            <span className="text-[9px] text-gray-400 font-medium bg-gray-100 px-1.5 py-0.5 rounded">
-                                Aguarda dados
+                            <span className="text-[9px] font-medium text-gray-400 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded">
+                                Aguarda
                             </span>
                         )}
                     </span>
@@ -105,9 +100,11 @@ function FormInput({
                 onChange={(e) => onChange(type === 'number' ? parseFloat(e.target.value) : e.target.value)}
                 placeholder={placeholder}
                 required={required}
-                className={`w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all text-gray-900 ${showAutoMode ? 'bg-violet-50 border-violet-200 font-bold text-violet-700' :
-                    showManualMode ? 'bg-amber-50 border-amber-200 font-bold text-amber-700' :
-                        'border-gray-200 bg-white'
+                className={`w-full px-2.5 py-1.5 text-sm border rounded-md outline-none focus:ring-2 transition-all ${showAutoMode
+                    ? 'bg-violet-50/50 border-violet-300 focus:border-violet-400 focus:ring-violet-200 text-violet-900 font-semibold'
+                    : showManualMode
+                        ? 'bg-amber-50/50 border-amber-300 focus:border-amber-400 focus:ring-amber-200 text-amber-900 font-semibold'
+                        : 'bg-white border-gray-300 focus:border-primary focus:ring-primary/20 text-gray-900'
                     }`}
             />
         </div>
@@ -139,20 +136,18 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
             <Modal.Body>
                 <form id="pesagem-form" onSubmit={onSubmit} className="h-full">
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200 flex items-center gap-2 shadow-sm">
-                            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                                <i className="fa-duotone fa-circle-exclamation text-red-600 text-xs"></i>
-                            </div>
+                        <div className="mb-3 p-2.5 bg-red-50 text-red-700 text-xs rounded-md border border-red-200 flex items-center gap-2">
+                            <i className="fa-solid fa-circle-exclamation text-red-600 text-sm"></i>
                             <span className="font-semibold">{error}</span>
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Basic Info */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 pb-1.5 border-b border-gray-200">
-                                <i className="fa-duotone fa-keyboard text-primary text-xs"></i>
-                                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Entrada Manual</h4>
+                        <div className="space-y-2.5">
+                            <div className="flex items-center gap-2 pb-1 border-b border-gray-200">
+                                <i className="fa-solid fa-keyboard text-primary text-xs"></i>
+                                <h4 className="text-[11px] font-bold text-gray-700 uppercase tracking-wide">Entrada Manual</h4>
                             </div>
                             <FormInput
                                 label="Data"
@@ -193,10 +188,10 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                         </div>
 
                         {/* Detailed Stats */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 pb-1.5 border-b border-gray-200">
-                                <i className="fa-duotone fa-chart-pie text-primary text-xs"></i>
-                                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Composição</h4>
+                        <div className="space-y-2.5">
+                            <div className="flex items-center gap-2 pb-1 border-b border-gray-200">
+                                <i className="fa-solid fa-chart-pie text-primary text-xs"></i>
+                                <h4 className="text-[11px] font-bold text-gray-700 uppercase tracking-wide">Composição</h4>
                             </div>
                             <FormInput
                                 label="MM (kg)"
@@ -249,10 +244,10 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                         </div>
 
                         {/* Results (Auto) */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 pb-1.5 border-b border-gray-200">
-                                <i className="fa-duotone fa-robot text-violet-500 text-xs"></i>
-                                <h4 className="text-xs font-bold text-violet-600 uppercase tracking-wider">Automático</h4>
+                        <div className="space-y-2.5">
+                            <div className="flex items-center gap-2 pb-1 border-b border-violet-200">
+                                <i className="fa-solid fa-robot text-violet-500 text-xs"></i>
+                                <h4 className="text-[11px] font-bold text-violet-600 uppercase tracking-wide">Automático</h4>
                             </div>
                             <FormInput
                                 label="IMC"
@@ -302,24 +297,21 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                 canAutoCalculate={!!(formData.mm != null && formData.height != null)}
                                 onClearOverride={() => onClearOverride?.('smi')}
                             />
-                            <div className="pt-1">
-                                <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                                    <i className="fa-duotone fa-chart-line text-violet-500/70 text-[10px]"></i>
-                                    SMI Res.
+                            <div className="space-y-1">
+                                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-700">
+                                    <i className="fa-solid fa-chart-line text-violet-500 text-[10px]"></i>
+                                    SMI Resultado
                                 </label>
-                                <div
-                                    className="w-full px-3 py-2 text-sm border rounded-lg bg-violet-50 border-violet-200 font-bold text-violet-700"
-                                    aria-readonly
-                                >
+                                <div className="w-full px-2.5 py-1.5 text-sm border rounded-md bg-violet-50/50 border-violet-300 font-semibold text-violet-900">
                                     {formData.smi != null && gender
                                         ? classifySMI(formData.smi as number, gender)
                                         : '-'}
                                 </div>
-                                <p className="text-[10px] text-gray-500 mt-1">Calculado automaticamente a partir de SMI e género.</p>
+                                <p className="text-[10px] text-gray-500">Auto-calculado de SMI e género</p>
                             </div>
-                            <div className="pt-1">
-                                <label className="block text-xs font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
-                                    <i className="fa-duotone fa-note-sticky text-primary/70 text-[10px]"></i>
+                            <div className="space-y-1">
+                                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-700">
+                                    <i className="fa-solid fa-note-sticky text-primary text-[10px]"></i>
                                     Notas
                                 </label>
                                 <textarea
@@ -327,8 +319,8 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                     rows={2}
                                     value={formData.notas || ''}
                                     onChange={(e) => onFieldChange('notas', e.target.value)}
-                                    placeholder="Adicione observações ou notas sobre esta pesagem..."
-                                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+                                    placeholder="Observações..."
+                                    className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
                                 />
                             </div>
                         </div>
