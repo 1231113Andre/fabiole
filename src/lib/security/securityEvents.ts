@@ -22,7 +22,8 @@ export interface SecurityEventPayload {
 }
 
 function defaultHandler(payload: SecurityEventPayload): void {
-    Logger.warn('Security', `Security event: ${payload.type}`, payload.identifier ?? payload.context);
+    const extra = payload.identifier ?? (payload.context ? JSON.stringify(payload.context) : '');
+    Logger.warn('Security', `Security event: ${payload.type}${extra ? ` | ${extra}` : ''}`);
 }
 
 /** Set this to plug in external alerting (Sentry, Datadog, etc.). Default: log only. */
