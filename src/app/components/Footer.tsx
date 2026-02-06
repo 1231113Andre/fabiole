@@ -7,7 +7,7 @@ import SocialIcons from "./SocialIcons";
 const Footer = memo(function Footer() {
   return (
     <footer className="bg-primary">
-      <div className="container mx-auto px-4 py-5">
+      <div className="ui-container py-5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-1">
             <h3 className="text-white font-semibold mb-3">Fábio Lé</h3>
@@ -47,7 +47,7 @@ const Footer = memo(function Footer() {
         </div>
       </div>
       <div className="border-t border-primary/50">
-        <div className="container mx-auto px-4 py-3 text-center">
+        <div className="ui-container py-3 text-center">
           <small className="text-white/70">© 2024 Fábio Lé. Todos os direitos reservados.</small>
         </div>
       </div>

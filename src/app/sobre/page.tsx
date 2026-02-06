@@ -10,7 +10,7 @@ export default function SobrePage() {
   return (
     <main className="min-h-screen overflow-hidden bg-white">
       {/* Hero Section with Banner Image - Extends behind Navbar */}
-      <section className="relative h-[40vh] w-full flex items-center justify-center overflow-hidden">
+      <section className="relative ui-hero-subpage w-full flex items-center justify-center overflow-hidden">
         <Image
           key="sobre-banner"
           src="/images/banners/banner-01.png"
@@ -35,7 +35,7 @@ export default function SobrePage() {
       </section>
 
       {/* Main Content Grid */}
-      <div className="py-24 container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="ui-container ui-section">
         <div className="grid lg:grid-cols-12 gap-16 items-start">
 
           {/* Left Column: Image & Stats (Visuals) */}

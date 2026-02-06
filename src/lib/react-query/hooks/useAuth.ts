@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { getCsrfToken, waitForCsrfToken } from "./useCsrfToken";
+import { getCsrfToken, waitForCsrfToken, fetchCsrfToken } from "./useCsrfToken";
 import { useNotification } from "@/components/NotificationContext";
 import { queryKeys } from "../queryKeys";
 
@@ -170,9 +170,11 @@ export function useRegister() {
 
   return useMutation<RegisterResponse, Error, RegisterData>({
     mutationFn: async (registerData: RegisterData) => {
-      // Get CSRF token - wait up to 2000ms if not immediately available
-      // (should already be loaded by the time user fills the form)
+      // Ensure CSRF token is available (e.g. after verification step it may not have been fetched yet)
       let csrfToken = getCsrfToken();
+      if (!csrfToken) {
+        csrfToken = await fetchCsrfToken();
+      }
       if (!csrfToken) {
         csrfToken = await waitForCsrfToken(2000);
       }

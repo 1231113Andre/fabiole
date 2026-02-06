@@ -1,6 +1,7 @@
 # Raport audytu bezpieczeństwa – FabioLe
 
 **Data audytu:** luty 2025  
+**Ostatnia aktualizacja:** luty 2025 (po wdrożeniu poprawek)  
 **Zakres:** pełny skan projektu + porównanie z OWASP Top 10:2025, Next.js Data Security, Next.js Authentication Best Practices 2025
 
 ---
@@ -136,43 +137,43 @@ Domena R2 (`*.r2.cloudflarestorage.com`, `*.r2.dev`) jest uwzględniona w `conne
 
 **Zaimplementowane:** Moduły `db/client.ts`, `session.ts`, `password.ts`, `redis.ts`, `auth/validate.ts`, `auth/helpers.ts` używają `import 'server-only'`.
 
-### 3.5. `serverActions.allowedOrigins` – użycie IP
+### 3.5. `serverActions.allowedOrigins`
 
 **Plik:** `next.config.ts`
 
-```typescript
-serverActions: {
-  allowedOrigins: ["57.128.218.55", "localhost:3000"],
-}
-```
-
-Preferowane jest użycie domen (np. fabiole.com), aby uniknąć problemów przy zmianie adresów IP.
+Domeny produkcyjne oraz IP `57.128.218.55` są zachowane w `allowedOrigins` i `allowedDevOrigins`.
 
 ---
 
 ## 4. Mocne strony
 
 - Autentykacja: rate limiting, lockout, CSRF, walidacja siły hasła.
-- Sesje: JWT, cookies HttpOnly, Secure, SameSite.
+- Sesje: JWT, cookies HttpOnly, Secure, SameSite (bez legacy JSON).
 - Prisma: brak raw SQL, brak typowych zagrożeń injection.
 - Next.js i React: wersje załatałe pod kątem React2Shell.
 - Autoryzacja admin: `withAdminAuth`, `requireAdmin`.
-- Podstawowe nagłówki: X-Frame-Options, X-Content-Type-Options.
-- Walidacja: Zod na auth, sanitizacja inputów.
+- Nagłówki: CSP, HSTS, Permissions-Policy, X-Frame-Options, X-Content-Type-Options.
+- Walidacja: Zod na auth, sanitizacja inputów, UUID i ID numeryczne.
+- Upload: walidacja UUID, whitelist rozszerzeń, walidacja avatarUrl.
+- Moduły serwerowe: `server-only` w db, session, auth, password, redis.
 
 ---
 
-## 5. Plan naprawczy (priorytety)
+## 5. Plan naprawczy – stan
 
-| Priorytet | Zadanie | Plik(i) |
-|-----------|---------|---------|
-| P0 | Włączenie nagłówków CSP/HSTS – np. przez middleware lub wrapper odpowiedzi | `middleware.ts` (nowy) lub `BaseRouteHandler` |
-| P1 | Walidacja UUID dla `id` i `targetUserId` | `admin/users/[id]`, `upload-url`, ewentualnie helper |
-| P1 | Walidacja `targetUserId` w upload-url (UUID + brak path traversal) | `upload-url/route.ts` |
-| P2 | Dodanie `server-only` do modułów serwerowych | `db/client`, `session`, `auth` |
-| P2 | Zamiana IP na domeny w `serverActions.allowedOrigins` | `next.config.ts` |
-| P3 | Uruchamianie `npm audit` w CI | GitHub Actions / CI |
-| P3 | Monitoring/alerting przy wielu nieudanych logowaniach | np. Slack/email przy lockoutach |
+| Priorytet | Zadanie | Status |
+|-----------|---------|--------|
+| P0 | Włączenie nagłówków CSP/HSTS | ✅ Zastosowane w `next.config.ts` |
+| P1 | Walidacja UUID dla `id` i `targetUserId` | ✅ Wszystkie trasy admin users, upload-url, avatar/update |
+| P1 | Walidacja `targetUserId` (path traversal) | ✅ `isValidUuid()` |
+| P2 | `server-only` w modułach serwerowych | ✅ db, session, password, redis, auth |
+| P2 | Sanityzacja pól tekstowych w admin users PUT | ✅ `sanitizeString`, `sanitizeEmail` |
+| P2 | Walidacja `avatarUrl` | ✅ `isSafeAvatarUrl()` |
+| P2 | Whitelist rozszerzeń w upload/avatar | ✅ jpg, jpeg, png, webp, gif |
+| P2 | Walidacja numerycznych ID (avaliacoes, perimetros, pesagens) | ✅ `isValidNumericId()` |
+| P2 | R2 w CSP `connect-src` | ✅ Domyślnie `*.r2.cloudflarestorage.com`, `*.r2.dev` |
+| P3 | Uruchamianie `npm audit` w CI | Do rozważenia |
+| P3 | Monitoring/alerting przy lockoutach | Do rozważenia |
 
 ---
 

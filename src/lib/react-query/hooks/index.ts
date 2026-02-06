@@ -27,7 +27,7 @@ export { apiGet, apiPost, apiPut, apiDelete, apiMutate, ApiError } from '../apiC
 export { useSession, useLogin, useRegister, useLogout } from './useAuth';
 
 // CSRF Token
-export { useCsrfToken, getCsrfToken, waitForCsrfToken } from './useCsrfToken';
+export { useCsrfToken, getCsrfToken, waitForCsrfToken, fetchCsrfToken } from './useCsrfToken';
 
 // User Data (Client Dashboard)
 export { useUserData, useRefreshData } from './useUserData';

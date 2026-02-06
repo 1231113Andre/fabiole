@@ -31,10 +31,11 @@ function getCookie(name: string): string | null {
 }
 
 /**
- * Fetch CSRF token from API endpoint
+ * Fetch CSRF token from API endpoint and set cookie
  * This replaces middleware-based token generation for Next.js 16 compatibility
+ * Exported so callers can ensure token is available before mutations (e.g. register after verification).
  */
-async function fetchCsrfToken(): Promise<string | null> {
+export async function fetchCsrfToken(): Promise<string | null> {
   try {
     const response = await fetch('/api/csrf', {
       method: 'GET',

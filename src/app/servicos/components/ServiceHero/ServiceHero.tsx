@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function ServiceHero() {
     return (
-        <section className="relative h-[50vh] sm:h-[40vh] w-full flex items-center justify-center overflow-hidden">
+        <section className="relative ui-hero-subpage w-full flex items-center justify-center overflow-hidden">
             <Image
                 key="servicos-banner"
                 src="/images/banners/banner-01.png"

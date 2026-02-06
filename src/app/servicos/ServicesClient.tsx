@@ -78,7 +78,7 @@ export function ServicesClient({ initialSettings = {} }: ServicesClientProps) {
             <ServiceHero />
 
             {/* Main Content Grid */}
-            <div className="py-24 container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="ui-container ui-section">
                 <div className="grid w-full gap-10 md:grid-cols-2 lg:grid-cols-3 lg:max-w-screen-2xl">
                     {dynamicServices.map((service, index) => (
                         <ServiceCard

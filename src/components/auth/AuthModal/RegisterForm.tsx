@@ -7,7 +7,7 @@ import { Input } from './Input';
 import NewButton from '@/app/components/newButton';
 import { LoadingSpinner } from '@/components/ui/spinner';
 import { useNotification } from '@/components/NotificationContext';
-import { getCsrfToken } from '@/lib/react-query/hooks/useCsrfToken';
+import { useCsrfToken, getCsrfToken } from '@/lib/react-query/hooks/useCsrfToken';
 
 // Import schemas
 import { registerSchema, type RegisterSchema } from './RegisterForm/schemas/registerSchema';
@@ -49,6 +49,8 @@ function createHeaders(): HeadersInit {
  */
 export const RegisterForm = ({ onClose }: RegisterFormProps) => {
     const { notify } = useNotification();
+    // Ensure CSRF token is fetched when modal opens (so it's ready for verify step and register call)
+    useCsrfToken();
     const [step, setStep] = useState<Step>('form');
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);

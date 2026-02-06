@@ -49,7 +49,7 @@ function ContactoPageInner() {
     return (
         <main className="min-h-screen overflow-hidden bg-white">
             {/* Hero Section */}
-            <section className="relative h-[40vh] w-full flex items-center justify-center overflow-hidden">
+            <section className="relative ui-hero-subpage w-full flex items-center justify-center overflow-hidden">
                 <Image
                     key="contact-banner"
                     src="/images/banners/banner-01.png"
@@ -74,7 +74,7 @@ function ContactoPageInner() {
             </section>
 
             {/* Main Content Grid */}
-            <div className="py-24 container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="ui-container ui-section">
                 <div className="grid lg:grid-cols-2 gap-10">
                     {/* Contact Form */}
                     <div className="lg:col-span-1">
@@ -312,7 +312,7 @@ function ContactoPageInner() {
 
             {/* CTA Section */}
             <section className="py-5 bg-gradient-to-r from-primary to-primary" style={{ background: 'linear-gradient(to right, #1E90FF, #0066cc)' }}>
-                <div className="container mx-auto px-4 text-center">
+                <div className="ui-container text-center">
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Não Esperes Mais!</h2>
                     <p className="text-xl text-white/70 mb-4 max-w-2xl mx-auto">
                         A tua transformação começa hoje. Marca já a tua primeira sessão!

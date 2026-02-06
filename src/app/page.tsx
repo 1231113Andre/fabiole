@@ -90,8 +90,8 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section className="relative z-10 w-full bg-slate-50 py-20 lg:py-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative z-10 w-full bg-slate-50 py-20 lg:py-24 ui-offset-md">
+        <div className="ui-container">
           <div className="flex flex-col items-center">
 
             {/* Title */}
@@ -218,7 +218,7 @@ export default function Home() {
 
       {/* About Section - Same background as Services */}
       <section className="relative z-10 w-full bg-slate-50 pt-4 pb-12 lg:pt-8 lg:pb-16" aria-label="Sobre o Treinador">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="ui-container">
 
           {/* Section Header - Matching Transforme-se Connosco style */}
           <div className="mb-14 flex flex-col items-center text-center">

@@ -115,6 +115,9 @@
   --status-paused-border: #f59e0b;
   --status-paused-bg: #fffbeb;
   --status-paused-text: #b45309;
+
+  /* Layout – used by Navbar/StaticNavbar */
+  --navbar-height: 80px;
 }
 
 /* Dark mode palette (if needed later) */
@@ -522,6 +525,42 @@ a:focus-visible {
   .ui-margin-xl {
     margin-top: 12rem;
   }
+}
+
+/* Section vertical rhythm – responsive padding (mobile / tablet / desktop) */
+.ui-section {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+@media (min-width: 640px) {
+  .ui-section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ui-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+}
+
+/* Hero height for subpages (Sobre, Contacto, Servicos) – 40vh with safe min on small screens */
+.ui-hero-subpage {
+  min-height: 40vh;
+}
+
+@media (max-width: 480px) {
+  .ui-hero-subpage {
+    min-height: 260px;
+  }
+}
+
+/* Narrow content width for readable text blocks (e.g. intro paragraphs) */
+.ui-content-narrow {
+  max-width: 65ch;
 }
 
 /* ========================================================= */
