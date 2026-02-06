@@ -3,9 +3,18 @@ import { db } from '@/lib/db/client';
 import { Logger } from '@/lib/utils/logger';
 import { getAuthenticatedUser, verifyPasswordWithFallback } from '@/lib/auth/helpers';
 import { clearUserData, clearCachedAuthUser } from '@/lib/cache/userCache';
+import { validateCsrfToken } from '@/lib/csrf/validate';
 
 export async function DELETE(request: NextRequest) {
     try {
+        const csrf = await validateCsrfToken(request);
+        if (!csrf.valid) {
+            return NextResponse.json(
+                { success: false, error: 'Erro de segurança. Recarrega a página e tenta novamente.' },
+                { status: 403 }
+            );
+        }
+
         // Get authenticated user
         const userResult = await getAuthenticatedUser();
         if (userResult.response) {

@@ -1,7 +1,7 @@
 # Raport audytu bezpieczeństwa – FabioLe
 
 **Data audytu:** luty 2025  
-**Ostatnia aktualizacja:** luty 2025 (po wdrożeniu poprawek)  
+**Ostatnia aktualizacja:** luty 2025 (po wdrożeniu planu bezpieczeństwa: getErrorMessageSafe, blokada skryptów, rate limit admin, CSRF na zmianie hasła/email/usunięciu konta, npm audit w CI, hook zdarzeń bezpieczeństwa)  
 **Zakres:** pełny skan projektu + porównanie z OWASP Top 10:2025, Next.js Data Security, Next.js Authentication Best Practices 2025
 
 ---
@@ -53,7 +53,7 @@
 |--------|--------|-----------|
 | Next.js 16.0.10 | ✅ | Wersja ≥ 16.0.7 – załatana dla CVE-2025-66478 |
 | React 19.2.3 | ✅ | Wersja załatana dla React2Shell |
-| Zależności | ⚠️ | Warto regularnie uruchamiać `npm audit` |
+| Zależności | ✅ | `npm audit --audit-level=high` w CI (job `audit` przed deployem) |
 
 ### A04:2025 – Cryptographic Failures
 
@@ -75,7 +75,7 @@
 
 | Obszar | Status | Szczegóły |
 |--------|--------|-----------|
-| Auth flow | ✅ | Rate limiting, lockout, CSRF na rejestracji |
+| Auth flow | ✅ | Rate limiting, lockout, CSRF na rejestracji oraz na change-password, delete-account, change-email (request/verify) |
 | Separacja ról | ✅ | Admin vs User, sprawdzanie roli przy wrażliwych operacjach |
 
 ### A07:2025 – Authentication Failures
@@ -93,22 +93,22 @@
 |--------|--------|-----------|
 | JWT | ✅ | Podpis, weryfikacja |
 | CSRF | ✅ | Double Submit Cookie, Origin/Referer |
-| Skrypty migracyjne | ⚠️ | `createUsers.ts` – teraz hashowanie włączone; skrypty powinny być wyłączone w produkcji |
+| Skrypty migracyjne | ✅ | Skrypty w `src/scripts` blokowane w produkcji (chyba że `ALLOW_DANGEROUS_SCRIPTS=1`); hashowanie włączone |
 
 ### A09:2025 – Security Logging & Alerting Failures
 
 | Obszar | Status | Szczegóły |
 |--------|--------|-----------|
 | Logger | ✅ | Logowanie błędów, lockoutów, nieudanych logowań |
-| Alerting | ⚠️ | Brak widocznego systemu alertów (np. na wiele błędów auth) |
+| Alerting | ✅ | Hook `emitSecurityEvent` (ACCOUNT_LOCKOUT, IP_RATE_LIMIT, CSRF_VIOLATION, REDIS_*_FAIL_OPEN); domyślnie logowanie, możliwość podłączenia Sentry/Datadog przez `setSecurityEventHook` |
 
 ### A10:2025 – Mishandling of Exceptional Conditions
 
 | Obszar | Status | Szczegóły |
 |--------|--------|-----------|
 | Błędy API | ✅ | `ApiResponse.error` ukrywa szczegóły w produkcji |
-| `getErrorMessage` | ⚠️ | Zwraca `error.message` – może ujawniać informacje wewnętrzne, jeśli przekazane do odpowiedzi klienta |
-| Redis / lockout | ⚠️ | W razie błędu Redis – „fail open” (dostęp dozwolony) – celowe, ale warto monitorować |
+| Komunikaty błędów w API | ✅ | W odpowiedziach do klienta używane jest `getErrorMessageSafe()` – w produkcji tylko generyczny komunikat |
+| Redis / lockout | ✅ | „Fail open" celowe (awaria Redis nie blokuje logowania). Zalecany monitoring: logi „Failed to check account lockout", „Failed to record IP attempt" oraz zdarzenie REDIS_LOCKOUT_FAIL_OPEN / REDIS_IP_RATE_LIMIT_FAIL_OPEN z hooka |
 
 ---
 
@@ -147,11 +147,11 @@ Domeny produkcyjne oraz IP `57.128.218.55` są zachowane w `allowedOrigins` i `a
 
 ## 4. Mocne strony
 
-- Autentykacja: rate limiting, lockout, CSRF, walidacja siły hasła.
+- Autentykacja: rate limiting, lockout, CSRF (rejestracja, change-password, delete-account, change-email), walidacja siły hasła.
 - Sesje: JWT, cookies HttpOnly, Secure, SameSite (bez legacy JSON).
 - Prisma: brak raw SQL, brak typowych zagrożeń injection.
 - Next.js i React: wersje załatałe pod kątem React2Shell.
-- Autoryzacja admin: `withAdminAuth`, `requireAdmin`.
+- Autoryzacja admin: `withAdminAuth` (z rate limitem), `requireAdmin`.
 - Nagłówki: CSP, HSTS, Permissions-Policy, X-Frame-Options, X-Content-Type-Options.
 - Walidacja: Zod na auth, sanitizacja inputów, UUID i ID numeryczne.
 - Upload: walidacja UUID, whitelist rozszerzeń, walidacja avatarUrl.
@@ -172,12 +172,24 @@ Domeny produkcyjne oraz IP `57.128.218.55` są zachowane w `allowedOrigins` i `a
 | P2 | Whitelist rozszerzeń w upload/avatar | ✅ jpg, jpeg, png, webp, gif |
 | P2 | Walidacja numerycznych ID (avaliacoes, perimetros, pesagens) | ✅ `isValidNumericId()` |
 | P2 | R2 w CSP `connect-src` | ✅ Domyślnie `*.r2.cloudflarestorage.com`, `*.r2.dev` |
-| P3 | Uruchamianie `npm audit` w CI | Do rozważenia |
-| P3 | Monitoring/alerting przy lockoutach | Do rozważenia |
+| P3 | Uruchamianie `npm audit` w CI | ✅ Wykonane – job `audit` w `.github/workflows/deploy.yml` (`npm audit --audit-level=high`) |
+| P3 | Monitoring/alerting przy lockoutach | ✅ Hook `emitSecurityEvent` w `src/lib/security/securityEvents.ts`; wywołania przy lockout, IP rate limit, CSRF, Redis fail-open |
 
 ---
 
-## 6. Zależności – do weryfikacji
+## 6. Monitoring zdarzeń bezpieczeństwa
+
+Przeszukiwanie logów po słowach kluczowych:
+- **Account Lockout:** „Account Lockout Triggered”
+- **IP rate limit:** „IP Rate Limit Triggered”
+- **CSRF:** „CSRF Violation” lub „CSRF Validation Failure”
+- **Redis fail-open:** „Failed to check account lockout”, „Failed to record IP attempt”
+
+Opcjonalnie: w kodzie ustaw `setSecurityEventHook()` (moduł `@/lib/security/securityEvents`) i przekieruj zdarzenia do zewnętrznego systemu (Sentry, Datadog, e-mail). Typy zdarzeń: `ACCOUNT_LOCKOUT`, `IP_RATE_LIMIT`, `CSRF_VIOLATION`, `REDIS_LOCKOUT_FAIL_OPEN`, `REDIS_IP_RATE_LIMIT_FAIL_OPEN`.
+
+---
+
+## 7. Zależności – do weryfikacji
 
 Zalecane okresowe uruchamianie:
 

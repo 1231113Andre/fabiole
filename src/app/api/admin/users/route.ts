@@ -6,7 +6,7 @@ import { VerificationCodeService } from "@/lib/email";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
 import { invalidateAdminUsers, invalidateAdminStats } from "@/lib/cache/adminCache";
-import { getErrorMessage } from "@/lib/utils/sanitizers";
+import { getErrorMessageSafe } from "@/lib/utils/sanitizers";
 
 export const POST = withAdminAuth(async (req, session) => {
     try {
@@ -106,6 +106,6 @@ export const POST = withAdminAuth(async (req, session) => {
 
     } catch (error: unknown) {
         Logger.error('AdminService', 'Manual Provisioning Failure: A critical exception occurred during the administrative user creation sequence.', error);
-        return NextResponse.json({ error: 'Erro interno ao criar utilizador', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Erro interno ao criar utilizador', message: getErrorMessageSafe(error, 'Erro interno') }, { status: 500 });
     }
 });

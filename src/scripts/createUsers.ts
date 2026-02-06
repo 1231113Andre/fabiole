@@ -1,7 +1,10 @@
 import 'dotenv/config';
+import { ensureNotProduction } from './guardProduction';
 import { db } from '../lib/db/client';
 import { hashPassword } from '../lib/security/password';
 import { Logger } from '../lib/utils/logger';
+
+ensureNotProduction();
 
 // Users extracted from infoData sheet
 const users = [

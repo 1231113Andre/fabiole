@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeInt, sanitizeStringValue, getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
+import { sanitizeInt, sanitizeStringValue, getErrorMessageSafe, isValidUuid } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { avaliacaoRepository } from "@/lib/db/repositories/AvaliacaoRepository";
 import type { CreateAvaliacaoDTO } from "@/lib/db/repositories/AvaliacaoRepository";
@@ -52,7 +52,7 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
 
         if (!result.success) {
             Logger.error('Admin', `Failed to bulk create avaliacoes for user ${user_uuid}`, result.error);
-            return NextResponse.json({ error: 'Internal error', details: getErrorMessage(result.error) }, { status: 500 });
+            return NextResponse.json({ error: 'Internal error', details: getErrorMessageSafe(result.error) }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -62,6 +62,6 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
         });
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to bulk create avaliacoes for user ${user_uuid}`, error);
-        return NextResponse.json({ error: 'Internal error', details: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', details: getErrorMessageSafe(error) }, { status: 500 });
     }
 });

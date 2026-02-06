@@ -6,9 +6,18 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Logger } from "@/lib/utils/logger";
 import { isValidUuid } from "@/lib/utils/sanitizers";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
 
 export async function GET(req: NextRequest) {
     try {
+        const rateLimitResult = await checkRateLimit(req, RATE_LIMITS.API);
+        if (!rateLimitResult.allowed) {
+            return NextResponse.json(
+                { error: rateLimitResult.message ?? "Too many requests", retryAfter: rateLimitResult.retryAfter },
+                { status: 429, headers: rateLimitResult.retryAfter ? { "Retry-After": String(rateLimitResult.retryAfter) } : {} }
+            );
+        }
+
         const session = await getSession();
         if (!session || !session.uuid) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -9,6 +9,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/react-query/queryKeys";
 import { useRouter } from "next/navigation";
 import NewButton from "@/app/components/newButton";
+import { apiPost } from "@/lib/react-query/apiClient";
+import { useCsrfToken } from "@/lib/react-query/hooks/useCsrfToken";
 
 // Inline button spinner
 const ButtonSpinner = () => (
@@ -33,6 +35,7 @@ interface Props {
 }
 
 export function ChangeEmailSection({ currentEmail, isOpen, onToggle }: Props) {
+    useCsrfToken(); // Ensure CSRF token is available for mutations
     const { notify } = useNotification();
     const queryClient = useQueryClient();
     const router = useRouter();
@@ -118,41 +121,21 @@ export function ChangeEmailSection({ currentEmail, isOpen, onToggle }: Props) {
         try {
             if (step === 1) {
                 // Step 1: Request Code
-                const response = await fetch("/api/auth/change-email/request", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        currentPassword: data.password,
-                        newEmail: data.newEmail,
-                    }),
+                await apiPost("/api/auth/change-email/request", {
+                    currentPassword: data.password,
+                    newEmail: data.newEmail,
                 });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || "Erro ao solicitar código");
-                }
 
                 notify("Código enviado para o teu email atual!", "success");
                 setStep(2);
             } else {
                 // Step 2: Verify Code
-                const response = await fetch("/api/auth/change-email/verify", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        code: data.code,
-                        newEmail: data.newEmail,
-                    }),
+                const result = await apiPost<{ data?: { newEmail?: string } }>("/api/auth/change-email/verify", {
+                    code: data.code,
+                    newEmail: data.newEmail,
                 });
 
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || "Erro ao verificar código");
-                }
-
-                const newEmail = result.data?.newEmail || data.newEmail;
+                const newEmail = result?.data?.newEmail || data.newEmail;
 
                 // Update React Query cache for session with new email
                 // This ensures immediate UI update without race conditions
@@ -180,7 +163,7 @@ export function ChangeEmailSection({ currentEmail, isOpen, onToggle }: Props) {
                 }, 500);
             }
         } catch (error: any) {
-            notify(error.message, "error");
+            notify(error?.message ?? "Erro ao processar", "error");
         } finally {
             setIsSubmitting(false);
         }

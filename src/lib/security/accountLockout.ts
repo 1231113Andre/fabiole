@@ -1,5 +1,6 @@
 import { Logger } from '../utils/logger';
 import { getRedisClient, isRedisEnabled } from '@/lib/cache/redis';
+import { emitSecurityEvent } from '@/lib/security/securityEvents';
 import type Redis from 'ioredis';
 
 /**
@@ -187,6 +188,7 @@ export async function checkIpRateLimit(ip: string): Promise<{ isBlocked: boolean
   } catch (error) {
     // Fail open on Redis errors
     Logger.error('Security', 'Failed to check IP rate limit, allowing access.', error);
+    emitSecurityEvent({ type: 'REDIS_IP_RATE_LIMIT_FAIL_OPEN' });
     return { isBlocked: false, attempts: 0 };
   }
 }
@@ -215,12 +217,14 @@ export async function recordIpAttempt(ip: string): Promise<{ isBlocked: boolean;
 
     if (parsed.blocked) {
       Logger.warn('Security', `IP Rate Limit Triggered: IP ${ip} has exceeded ${IP_MAX_ATTEMPTS} attempts in ${IP_WINDOW_SECONDS}s window.`);
+      emitSecurityEvent({ type: 'IP_RATE_LIMIT', identifier: ip, context: { attempts: parsed.attempts } });
     }
 
     return { isBlocked: parsed.blocked, attempts: parsed.attempts };
   } catch (error) {
     // Fail open on Redis errors
     Logger.error('Security', 'Failed to record IP attempt.', error);
+    emitSecurityEvent({ type: 'REDIS_IP_RATE_LIMIT_FAIL_OPEN' });
     return { isBlocked: false, attempts: 0 };
   }
 }
@@ -262,6 +266,7 @@ export async function checkAccountLockout(
     // If Redis is unavailable, allow access (fail open)
     // This prevents Redis outages from blocking all logins
     Logger.error('Security', 'Failed to check account lockout status, allowing access.', error);
+    emitSecurityEvent({ type: 'REDIS_LOCKOUT_FAIL_OPEN' });
     return { isLocked: false };
   }
 }
@@ -306,6 +311,7 @@ export async function recordFailedAttempt(
       const lockoutDuration = calculateLockoutDuration(entry.lockoutCount);
       const lockoutMinutes = Math.ceil(lockoutDuration / 60000);
       Logger.warn('Security', `Account Lockout Triggered: Identity ${email} has reached the maximum failed attempt threshold (${entry.attempts}). Access restricted for ${lockoutMinutes} minutes (lockout #${entry.lockoutCount}).`);
+      emitSecurityEvent({ type: 'ACCOUNT_LOCKOUT', identifier: email, context: { attempts: entry.attempts, lockoutCount: entry.lockoutCount } });
     }
 
     return {
@@ -319,6 +325,7 @@ export async function recordFailedAttempt(
     // If Redis is unavailable, log error but don't block the login attempt
     // This prevents Redis outages from breaking authentication flow
     Logger.error('Security', 'Failed to record failed login attempt.', error);
+    emitSecurityEvent({ type: 'REDIS_LOCKOUT_FAIL_OPEN' });
 
     // Return unlocked state so login can proceed
     return {

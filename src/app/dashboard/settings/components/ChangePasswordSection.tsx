@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNotification } from "@/components/NotificationContext";
 import NewButton from "@/app/components/newButton";
+import { apiPost } from "@/lib/react-query/apiClient";
+import { useCsrfToken } from "@/lib/react-query/hooks/useCsrfToken";
 
 // Inline button spinner component
 const ButtonSpinner = () => (
@@ -48,6 +50,7 @@ interface Props {
 }
 
 export function ChangePasswordSection({ isOpen, onToggle }: Props) {
+    useCsrfToken(); // Ensure CSRF token is available for mutations
     const { notify } = useNotification();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -63,29 +66,16 @@ export function ChangePasswordSection({ isOpen, onToggle }: Props) {
         setIsSubmitting(true);
         setSuccessMessage(null); // Clear previous message
         try {
-            const response = await fetch("/api/auth/change-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    currentPassword: data.currentPassword,
-                    newPassword: data.newPassword,
-                }),
+            await apiPost<{ success: boolean; message?: string }>("/api/auth/change-password", {
+                currentPassword: data.currentPassword,
+                newPassword: data.newPassword,
             });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || "Erro ao alterar password");
-            }
 
             setSuccessMessage("Password alterada com sucesso!");
             notify("Password alterada com sucesso!", "success");
             reset();
-            // Optional: Close section after a delay or keep open to show success? 
-            // Requests says "display message", so keeping it open to show the alert is better.
-            // onToggle(); 
         } catch (error: any) {
-            notify(error.message, "error");
+            notify(error?.message ?? "Erro ao alterar password", "error");
         } finally {
             setIsSubmitting(false);
         }

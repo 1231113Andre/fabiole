@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeValueForUpdate, sanitizeStringForUpdate, getErrorMessage, isValidNumericId } from "@/lib/utils/sanitizers";
+import { sanitizeValueForUpdate, sanitizeStringForUpdate, getErrorMessageSafe, isValidNumericId } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { pesagemRepository } from "@/lib/db/repositories/PesagemRepository";
 import type { UpdatePesagemDTO } from "@/lib/db/repositories/PesagemRepository";
@@ -41,14 +41,14 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
 
         if (!result.success) {
             Logger.error('Admin', `Failed to update pesagem ${id}`, result.error);
-            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(result.error) }, { status: 500 });
         }
 
         // Return fresh data (not from cache - repository already invalidated cache)
         return NextResponse.json(result.data);
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to update pesagem ${id}`, error);
-        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });
 
@@ -70,12 +70,12 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
                 return NextResponse.json({ error: 'Pesagem not found' }, { status: 404 });
             }
             Logger.error('Admin', `Failed to delete pesagem ${id}`, result.error);
-            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(result.error) }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to delete pesagem ${id}`, error);
-        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });

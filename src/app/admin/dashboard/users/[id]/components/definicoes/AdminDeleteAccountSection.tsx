@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNotification } from "@/components/NotificationContext";
 import NewButton from "@/app/components/newButton";
-import { LoadingSpinner } from "@/components/ui/spinner";
 
 interface Props {
     userId: string;
@@ -120,7 +119,12 @@ export function AdminDeleteAccountSection({ userId, userName, userEmail, isOpen,
                                         disabled={isSubmitting}
                                         className="w-full sm:w-auto"
                                     >
-                                        {isSubmitting ? <LoadingSpinner size="h-5 w-5" /> : (
+                                        {isSubmitting ? (
+                                            <>
+                                                <i className="fa-solid fa-spinner fa-spin mr-2" aria-hidden />
+                                                Eliminar Conta Permanentemente
+                                            </>
+                                        ) : (
                                             <>
                                                 <i className="fa-duotone fa-trash-can mr-2 ml-2"></i>
                                                 Eliminar Conta Permanentemente

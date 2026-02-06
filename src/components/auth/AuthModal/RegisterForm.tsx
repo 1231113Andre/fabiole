@@ -5,7 +5,6 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from './Input';
 import NewButton from '@/app/components/newButton';
-import { LoadingSpinner } from '@/components/ui/spinner';
 import { useNotification } from '@/components/NotificationContext';
 import { useCsrfToken, getCsrfToken } from '@/lib/react-query/hooks/useCsrfToken';
 
@@ -198,7 +197,10 @@ export const RegisterForm = ({ onClose }: RegisterFormProps) => {
                 disabled={isFormLoading}
             >
                 {isFormLoading ? (
-                    <LoadingSpinner size="h-6 w-6" color="text-primary-foreground" />
+                    <>
+                        <i className="fa-solid fa-spinner fa-spin mr-2" aria-hidden />
+                        Criar conta
+                    </>
                 ) : (
                     <>
                         <i className="fa-duotone fa-user-plus mr-2" />

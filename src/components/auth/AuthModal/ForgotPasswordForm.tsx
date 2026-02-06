@@ -10,7 +10,6 @@ import NewButton from '@/app/components/newButton';
 import { cn } from '@/lib/utils';
 import { Input } from './Input';
 import { VerificationCodeInput } from './VerificationCodeInput';
-import { LoadingSpinner } from '@/components/ui/spinner';
 
 // Cooldown time in seconds for resending code
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -348,7 +347,10 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                             disabled={isSendDisabled}
                         >
                             {sendCodeMutation.isPending ? (
-                                <LoadingSpinner size="h-5 w-5" color="text-primary-foreground" />
+                                <>
+                                    <i className="fa-solid fa-spinner fa-spin mr-2" aria-hidden />
+                                    Enviar Código
+                                </>
                             ) : resendCooldown > 0 ? (
                                 <>
                                     <i className="fa-duotone fa-clock mr-2"></i>
@@ -412,7 +414,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
 
                 {verifyCodeMutation.isPending && (
                     <div className="flex justify-center">
-                        <LoadingSpinner size="h-8 w-8" color="text-primary" />
+                        <i className="fa-solid fa-spinner fa-spin text-2xl text-[var(--primary)]" aria-hidden />
                     </div>
                 )}
 
@@ -448,7 +450,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                     >
                         {sendCodeMutation.isPending ? (
                             <>
-                                <i className="fa-duotone fa-spinner-third fa-spin mr-2"></i>
+                                <i className="fa-solid fa-spinner fa-spin mr-2" aria-hidden />
                                 A enviar...
                             </>
                         ) : resendCooldown > 0 ? (
@@ -567,7 +569,10 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                             disabled={resetPasswordMutation.isPending}
                         >
                             {resetPasswordMutation.isPending ? (
-                                <LoadingSpinner size="h-5 w-5" color="text-primary-foreground" />
+                                <>
+                                    <i className="fa-solid fa-spinner fa-spin mr-2" aria-hidden />
+                                    Alterar Password
+                                </>
                             ) : (
                                 <>
                                     <i className="fa-duotone fa-lock-keyhole mr-2"></i>

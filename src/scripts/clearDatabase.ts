@@ -1,6 +1,9 @@
 import 'dotenv/config';
+import { ensureNotProduction } from './guardProduction';
 import { db } from '../lib/db/client';
 import { Logger } from '../lib/utils/logger';
+
+ensureNotProduction();
 
 async function main() {
     Logger.warn('System', 'Data Purge Initiated: Commencing complete deletion of all records from the database storage.');

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeValueForUpdate, getErrorMessage, isValidNumericId } from "@/lib/utils/sanitizers";
+import { sanitizeValueForUpdate, getErrorMessageSafe, isValidNumericId } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { perimetroRepository } from "@/lib/db/repositories/PerimetroRepository";
 import type { UpdatePerimetroDTO } from "@/lib/db/repositories/PerimetroRepository";
@@ -38,14 +38,14 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
 
         if (!result.success) {
             Logger.error('Admin', `Failed to update perimetro ${id}`, result.error);
-            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(result.error) }, { status: 500 });
         }
 
         // Return fresh data (not from cache - repository already invalidated cache)
         return NextResponse.json(result.data);
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to update perimetro ${id}`, error);
-        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });
 
@@ -67,12 +67,12 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
                 return NextResponse.json({ error: 'Perimetro not found' }, { status: 404 });
             }
             Logger.error('Admin', `Failed to delete perimetro ${id}`, result.error);
-            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(result.error) }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to delete perimetro ${id}`, error);
-        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useNotification } from "@/components/NotificationContext";
-import { LoadingSpinner } from "@/components/ui/spinner";
 
 interface LoginSession {
     id: string;
@@ -100,8 +99,9 @@ export function LoginHistorySection({ isOpen, onToggle }: Props) {
                 <div className="overflow-hidden">
                     <div className="px-6 pb-6 border-t border-stroke">
                         {isLoading ? (
-                            <div className="flex justify-center py-8">
-                                <LoadingSpinner />
+                            <div className="flex flex-col items-center justify-center gap-2 py-8">
+                                <i className="fa-solid fa-spinner fa-spin text-2xl text-[var(--primary)]" aria-hidden />
+                                <span className="text-sm text-muted-foreground">A carregar...</span>
                             </div>
                         ) : sessions.length === 0 ? (
                             <div className="text-center py-8 text-muted-foreground">

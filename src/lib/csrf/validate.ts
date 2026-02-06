@@ -8,6 +8,7 @@ import { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 import { compareTokens, isValidTokenFormat } from './csrf';
 import { Logger } from '../utils/logger';
+import { emitSecurityEvent } from '@/lib/security/securityEvents';
 
 const CSRF_TOKEN_COOKIE_NAME = 'csrf-token';
 const CSRF_TOKEN_HEADER_NAME = 'X-CSRF-Token';
@@ -52,6 +53,7 @@ function validateOrigin(request: NextRequest): boolean {
           origin,
           host,
         });
+        emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'origin_mismatch' } });
         return false;
       }
       return true;
@@ -70,6 +72,7 @@ function validateOrigin(request: NextRequest): boolean {
           referer,
           host,
         });
+        emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'referer_mismatch' } });
         return false;
       }
       return true;
@@ -102,6 +105,7 @@ export async function validateCsrfToken(
     const headerToken = request.headers.get(CSRF_TOKEN_HEADER_NAME);
 
     if (!headerToken) {
+      emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'token_missing_header' } });
       return {
         valid: false,
         error: 'CSRF token missing in header',
@@ -110,6 +114,7 @@ export async function validateCsrfToken(
 
     // Step 2: Validate token format
     if (!isValidTokenFormat(headerToken)) {
+      emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'invalid_token_format' } });
       return {
         valid: false,
         error: 'Invalid CSRF token format',
@@ -121,6 +126,7 @@ export async function validateCsrfToken(
     const cookieToken = cookieStore.get(CSRF_TOKEN_COOKIE_NAME);
 
     if (!cookieToken || !cookieToken.value) {
+      emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'token_missing_cookie' } });
       return {
         valid: false,
         error: 'CSRF token missing in cookie',
@@ -129,6 +135,7 @@ export async function validateCsrfToken(
 
     // Step 4: Validate cookie token format
     if (!isValidTokenFormat(cookieToken.value)) {
+      emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'invalid_cookie_token_format' } });
       return {
         valid: false,
         error: 'Invalid CSRF token format in cookie',
@@ -137,6 +144,7 @@ export async function validateCsrfToken(
 
     // Step 5: Compare tokens using constant-time comparison (prevents timing attacks)
     if (!compareTokens(headerToken, cookieToken.value)) {
+      emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'token_mismatch' } });
       return {
         valid: false,
         error: 'CSRF token mismatch',
@@ -147,6 +155,7 @@ export async function validateCsrfToken(
     // This is optional but recommended as additional security layer
     // SameSite cookie protection + origin validation provides strong CSRF protection
     if (!validateOrigin(request)) {
+      emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'origin_validation_failed' } });
       return {
         valid: false,
         error: 'Origin validation failed',
@@ -156,6 +165,7 @@ export async function validateCsrfToken(
     return { valid: true };
   } catch (error) {
     Logger.error('Security', 'CSRF Validation Failure: Internal error encountered in the double-submit token verification pipeline.', error);
+    emitSecurityEvent({ type: 'CSRF_VIOLATION', context: { reason: 'validation_error' } });
     return {
       valid: false,
       error: 'CSRF validation failed',

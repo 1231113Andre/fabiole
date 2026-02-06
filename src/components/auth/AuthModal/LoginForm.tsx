@@ -6,7 +6,6 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from './Input';
 import NewButton from '@/app/components/newButton';
-import { LoadingSpinner } from '@/components/ui/spinner';
 import { useLogin } from '@/lib/react-query/hooks/useAuth';
 import { useNotification } from '@/components/NotificationContext';
 import { cn } from '@/lib/utils';
@@ -146,7 +145,10 @@ export const LoginForm = ({ onClose, onForgotPassword }: LoginFormProps) => {
                 disabled={isSubmitting || isLocked}
             >
                 {isSubmitting ? (
-                    <LoadingSpinner size="h-6 w-6" color="text-primary-foreground" />
+                    <>
+                        <i className="fa-solid fa-spinner fa-spin mr-2" aria-hidden />
+                        Sign In
+                    </>
                 ) : isLocked ? (
                     <>
                         <i className="fa-duotone fa-lock mr-2" />

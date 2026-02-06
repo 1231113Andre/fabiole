@@ -2,7 +2,6 @@
 
 import React, { useCallback } from 'react';
 import { VerificationCodeInput } from '../../VerificationCodeInput';
-import { LoadingSpinner } from '@/components/ui/spinner';
 import NewButton from '@/app/components/newButton';
 import type { RegisterSchema } from '../schemas/registerSchema';
 
@@ -59,7 +58,7 @@ export const VerificationStep = React.memo<VerificationStepProps>(({
             {/* Loading indicator */}
             {isLoading && (
                 <div className="flex justify-center">
-                    <LoadingSpinner size="h-6 w-6" color="text-primary" />
+                    <i className="fa-solid fa-spinner fa-spin text-2xl text-[var(--primary)]" aria-hidden />
                 </div>
             )}
 

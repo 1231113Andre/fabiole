@@ -188,6 +188,20 @@ export function getErrorMessage(error: unknown): string {
     return String(error);
 }
 
+/** Default safe message for API responses in production */
+const SAFE_ERROR_MESSAGE_PROD_EN = 'Internal error';
+
+/**
+ * Get error message safe for sending to client (no internal details in production)
+ * Use in API route responses. In production returns a generic message; in development returns the real message.
+ */
+export function getErrorMessageSafe(error: unknown, messageEn: string = SAFE_ERROR_MESSAGE_PROD_EN): string {
+    if (process.env.NODE_ENV === 'production') {
+        return messageEn;
+    }
+    return getErrorMessage(error);
+}
+
 /**
  * Convert Prisma Decimal to number or null
  * Used for formatting Prisma Decimal fields in API responses

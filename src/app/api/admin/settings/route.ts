@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { SettingsService } from "@/lib/api/services/SettingsService";
 import { Logger } from "@/lib/utils/logger";
-import { getErrorMessage } from "@/lib/utils/sanitizers";
+import { getErrorMessageSafe } from "@/lib/utils/sanitizers";
 
 export const GET = withAdminAuth(async () => {
     try {
@@ -13,7 +13,7 @@ export const GET = withAdminAuth(async () => {
         return NextResponse.json({ config, env, status });
     } catch (error: unknown) {
         Logger.error('System', "Master configuration retrieval failed: Could not compile system settings for administrative panel.", error);
-        return NextResponse.json({ error: "Failed to fetch settings", message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: "Failed to fetch settings", message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });
 
@@ -42,6 +42,6 @@ export const POST = withAdminAuth(async (req) => {
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
         Logger.error('System', "Configuration update failed: Critical error encountered while committing system setting changes to database.", error);
-        return NextResponse.json({ error: "Failed to update settings", message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: "Failed to update settings", message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });

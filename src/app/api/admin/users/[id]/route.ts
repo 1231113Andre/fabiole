@@ -4,7 +4,7 @@ import { clearCachedAuthUser, clearUserData } from "@/lib/cache/userCache";
 import { invalidateAdminUsers, invalidateAdminUserDetail, invalidateAdminStats } from "@/lib/cache/adminCache";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
-import { toNumber, getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
+import { toNumber, getErrorMessageSafe, isValidUuid } from "@/lib/utils/sanitizers";
 import { sanitizeString, sanitizeEmail } from "@/lib/api/utils/sanitize";
 import { isSafeAvatarUrl } from "@/lib/utils/sanitizers";
 import { AdminUserService } from "@/lib/api/services/admin/AdminUserService";
@@ -89,7 +89,7 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
         });
     } catch (error: unknown) {
         Logger.error('AdminService', `Profile Retrieval Failure: A critical exception occurred while fetching the full data set for User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });
 
@@ -165,7 +165,7 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         return NextResponse.json({ success: true, user: { id: user.id, name: user.name } });
     } catch (error: unknown) {
         Logger.error('AdminService', `Profile Update Failure: A critical exception occurred while committing changes to User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });
 
@@ -200,6 +200,6 @@ export const DELETE = withAdminAuth(async (req, session, { params }: { params: P
         return NextResponse.json({ success: true });
     } catch (error: unknown) {
         Logger.error('AdminService', `Account Termination Failure: A critical exception occurred during the administrative deletion of User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });

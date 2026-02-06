@@ -3,7 +3,7 @@ import { db } from "@/lib/db/client";
 import { hashPassword, validatePasswordStrength } from "@/lib/security/password";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
-import { getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
+import { getErrorMessageSafe, isValidUuid } from "@/lib/utils/sanitizers";
 import { clearCachedAuthUser } from '@/lib/cache/userCache';
 
 export const POST = withAdminAuth(async (req, session, { params }: { params: Promise<{ id: string }> }) => {
@@ -45,6 +45,6 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
         return NextResponse.json({ success: true, message: 'Password alterada com sucesso' });
     } catch (error: unknown) {
         Logger.error('Security', `Administrative Credential Update Failure: Error changing password for User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Erro interno', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Erro interno', message: getErrorMessageSafe(error, 'Erro interno') }, { status: 500 });
     }
 });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
 import { Logger } from "@/lib/utils/logger";
-import { getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
+import { getErrorMessageSafe, isValidUuid } from "@/lib/utils/sanitizers";
 import { clearUserData, clearCachedAuthUser } from "@/lib/cache/userCache";
 import { invalidateAdminUsers, invalidateAdminUserDetail } from "@/lib/cache/adminCache";
 
@@ -63,6 +63,6 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
         return NextResponse.json({ success: true, message: 'Email alterado com sucesso' });
     } catch (error: unknown) {
         Logger.error('Security', `Administrative Identity Update Failure: A critical exception occurred while Admin [${session.email}] attempted to update the email for User ID [${id}].`, error);
-        return NextResponse.json({ error: 'Erro interno', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Erro interno', message: getErrorMessageSafe(error, 'Erro interno') }, { status: 500 });
     }
 });

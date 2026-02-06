@@ -56,7 +56,7 @@ const TOAST_CONFIG: Readonly<Record<NotificationType, ToastConfigItem>> = {
         title: "AVISO",
     },
     loading: {
-        icon: "fa-duotone fa-spinner-third fa-spin",
+        icon: "fa-solid fa-spinner fa-spin",
         iconColor: "text-purple-300",
         borderColor: "border-purple-500/30",
         bgClass: "bg-purple-950/95 shadow-purple-900/20",

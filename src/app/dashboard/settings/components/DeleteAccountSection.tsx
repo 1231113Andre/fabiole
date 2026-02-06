@@ -7,7 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNotification } from "@/components/NotificationContext";
 import NewButton from "@/app/components/newButton";
-import { LoadingSpinner } from "@/components/ui/spinner";
+import { apiMutate } from "@/lib/react-query/apiClient";
+import { useCsrfToken } from "@/lib/react-query/hooks/useCsrfToken";
 
 const deleteAccountSchema = z.object({
     password: z.string().min(1, "Password é obrigatória"),
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export function DeleteAccountSection({ isOpen, onToggle }: Props) {
+    useCsrfToken(); // Ensure CSRF token is available for mutations
     const router = useRouter();
     const { notify } = useNotification();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,24 +38,16 @@ export function DeleteAccountSection({ isOpen, onToggle }: Props) {
     const onSubmit = async (data: DeleteAccountForm) => {
         setIsSubmitting(true);
         try {
-            const response = await fetch("/api/auth/delete-account", {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    password: data.password,
-                }),
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || "Erro ao eliminar conta");
-            }
+            await apiMutate<{ success: boolean; message?: string }>(
+                "/api/auth/delete-account",
+                "DELETE",
+                { password: data.password }
+            );
 
             notify("Conta eliminada com sucesso. Adeus!", "success");
             router.push("/");
         } catch (error: any) {
-            notify(error.message, "error");
+            notify(error?.message ?? "Erro ao eliminar conta", "error");
         } finally {
             setIsSubmitting(false);
         }
@@ -144,7 +138,12 @@ export function DeleteAccountSection({ isOpen, onToggle }: Props) {
                                     variant="destructive"
                                     disabled={isSubmitting}
                                 >
-                                    {isSubmitting ? <LoadingSpinner size="h-5 w-5" /> : (
+                                    {isSubmitting ? (
+                                        <>
+                                            <i className="fa-solid fa-spinner fa-spin mr-2" aria-hidden />
+                                            Eliminar Conta
+                                        </>
+                                    ) : (
                                         <>
                                             <i className="fa-duotone fa-trash-can mr-2"></i>
                                             Eliminar Conta

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/lib/api/wrappers/withAdminAuth";
-import { sanitizeValue, sanitizeStringValue, getErrorMessage, isValidUuid } from "@/lib/utils/sanitizers";
+import { sanitizeValue, sanitizeStringValue, getErrorMessageSafe, isValidUuid } from "@/lib/utils/sanitizers";
 import { Logger } from "@/lib/utils/logger";
 import { pesagemRepository } from "@/lib/db/repositories/PesagemRepository";
 import type { CreatePesagemDTO } from "@/lib/db/repositories/PesagemRepository";
@@ -41,13 +41,13 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
 
         if (!result.success) {
             Logger.error('Admin', `Failed to create pesagem for user ${user_uuid}`, result.error);
-            return NextResponse.json({ error: 'Internal error', message: getErrorMessage(result.error) }, { status: 500 });
+            return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(result.error) }, { status: 500 });
         }
 
         // Return fresh data (not from cache - repository already invalidated cache)
         return NextResponse.json(result.data);
     } catch (error: unknown) {
         Logger.error('Admin', `Failed to create pesagem for user ${user_uuid}`, error);
-        return NextResponse.json({ error: 'Internal error', message: getErrorMessage(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal error', message: getErrorMessageSafe(error) }, { status: 500 });
     }
 });
