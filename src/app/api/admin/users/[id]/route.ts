@@ -61,7 +61,13 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
                 smi: toNumber(p.smi),
                 resultadoIMC: p.resultadoIMC,
                 resultadoPercentMG: p.resultadoPercentMG,
-                notas: p.notas
+                notas: p.notas,
+                massaMuscularSuperior: toNumber(p.massaMuscularSuperior),
+                massaMuscularInferior: toNumber(p.massaMuscularInferior),
+                msRight: toNumber(p.msRight),
+                msLeft: toNumber(p.msLeft),
+                miRight: toNumber(p.miRight),
+                miLeft: toNumber(p.miLeft),
             })),
             perimetros: user.perimetros.map(p => ({
                 id: p.id,
@@ -84,6 +90,7 @@ export const GET = withAdminAuth(async (req, session, { params }: { params: Prom
                 sitUps: a.sitUps,
                 mile: a.mile,
                 mileResult: a.mileResult,
+                pushUpsResult: a.pushUpsResult,
                 notes: a.notes
             }))
         });

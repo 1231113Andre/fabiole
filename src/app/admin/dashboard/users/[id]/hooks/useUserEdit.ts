@@ -12,11 +12,10 @@ export function useUserEdit(userId: string, initialUser: UserData) {
     // Local state synced with React Query data
     const [user, setLocalUser] = useState<UserData>(initialUser);
 
-    // Sync local state when React Query data updates
+    // Sync local state when React Query data updates (AdminUserData is compatible with UserData)
     useEffect(() => {
         if (data) {
-            console.log('[useUserEdit] Syncing from React Query data, dataUpdatedAt:', dataUpdatedAt);
-            setLocalUser(data as UserData);
+            setLocalUser(data as unknown as UserData);
         }
     }, [data, dataUpdatedAt]);
 
@@ -47,7 +46,7 @@ export function useUserEdit(userId: string, initialUser: UserData) {
 
         // 4. Manually update local state with new data
         if (result.data) {
-            setLocalUser(result.data as UserData);
+            setLocalUser(result.data as unknown as UserData);
         }
     }, [queryClient, userId, refetch]);
 

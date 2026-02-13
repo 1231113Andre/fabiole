@@ -22,7 +22,7 @@ export interface AdminUserData {
     trainingCredit: number;
     trainingsScheduled: number;
     debtValue: number;
-    paid: boolean;
+    paid: string;
     notes: string;
     q1: string;
     q2: string;
@@ -50,6 +50,12 @@ export interface AdminUserData {
         resultadoIMC: string | null;
         resultadoPercentMG: string | null;
         notas: string | null;
+        massaMuscularSuperior: number | null;
+        massaMuscularInferior: number | null;
+        msRight: number | null;
+        msLeft: number | null;
+        miRight: number | null;
+        miLeft: number | null;
     }>;
     perimetros: Array<{
         id: number;

@@ -48,6 +48,12 @@ export interface AdminUserDetail {
         resultadoIMC: string | null;
         resultadoPercentMG: string | null;
         notas: string | null;
+        massaMuscularSuperior: number | null;
+        massaMuscularInferior: number | null;
+        msRight: number | null;
+        msLeft: number | null;
+        miRight: number | null;
+        miLeft: number | null;
     }>;
     perimetros: Array<{
         id: number;
@@ -249,7 +255,13 @@ export class AdminUserService {
                 smi: p.smi != null ? Number(p.smi) : null,
                 resultadoIMC: p.resultadoIMC,
                 resultadoPercentMG: p.resultadoPercentMG,
-                notas: p.notas
+                notas: p.notas,
+                massaMuscularSuperior: p.massaMuscularSuperior ? Number(p.massaMuscularSuperior) : null,
+                massaMuscularInferior: p.massaMuscularInferior ? Number(p.massaMuscularInferior) : null,
+                msRight: p.msRight ? Number(p.msRight) : null,
+                msLeft: p.msLeft ? Number(p.msLeft) : null,
+                miRight: p.miRight ? Number(p.miRight) : null,
+                miLeft: p.miLeft ? Number(p.miLeft) : null,
             })),
             perimetros: user.perimetros.map(p => ({
                 id: p.id,

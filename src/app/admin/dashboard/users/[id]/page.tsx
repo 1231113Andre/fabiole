@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAdminUserById } from "@/lib/api/services/AdminService";
 import { UserEditClient } from "./UserEditClient";
+import type { UserData } from "./types";
 
 // Force dynamic rendering - always fresh data
 export const dynamic = 'force-dynamic';
@@ -36,6 +37,6 @@ export default async function UserEditPage({ params }: PageProps) {
         notFound();
     }
 
-    // Pass pre-fetched data to client component
-    return <UserEditClient initialUser={user} />;
+    // Pass pre-fetched data to client component (AdminUserDetail matches UserData shape)
+    return <UserEditClient initialUser={user as UserData} />;
 }
