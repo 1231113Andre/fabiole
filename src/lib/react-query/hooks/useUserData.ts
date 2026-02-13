@@ -112,7 +112,7 @@ export function useUserData(forceRefresh: boolean = false, initialData?: UserShe
       return response.json();
     },
     initialData: initialData, // Hydrate with server data
-    staleTime: 0, // Always consider stale to allow refetch on window focus
+    staleTime: 30 * 1000, // 30s – reduce refetches when switching tabs; refetchOnWindowFocus still refreshes when stale
     gcTime: 10 * 60 * 1000, // 10 minutes cache retention
     refetchOnMount: false, // Don't refetch immediately if we have initialData
     refetchOnWindowFocus: true,

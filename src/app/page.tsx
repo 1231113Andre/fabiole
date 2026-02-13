@@ -162,7 +162,7 @@ export default function Home() {
             </div>
 
             {/* Service Cards Grid */}
-            <div className="grid w-full gap-10 md:grid-cols-2 lg:max-w-4xl px-4 mx-auto">
+            <div className="grid w-full gap-10 md:grid-cols-2 lg:max-w-4xl px-4 mr-auto">
               {[
                 {
                   title: "Treinos Presenciais",

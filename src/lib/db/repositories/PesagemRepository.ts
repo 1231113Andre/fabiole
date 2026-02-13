@@ -33,6 +33,12 @@ export interface CreatePesagemDTO {
     resultadoIMC?: string;
     resultadoPercentMG?: string;
     notas?: string;
+    massaMuscularSuperior?: number;
+    massaMuscularInferior?: number;
+    msRight?: number;
+    msLeft?: number;
+    miRight?: number;
+    miLeft?: number;
 }
 
 /**
@@ -79,6 +85,12 @@ export class PesagemRepository extends BaseRepository {
                     resultadoIMC: data.resultadoIMC,
                     resultadoPercentMG: data.resultadoPercentMG,
                     notas: data.notas,
+                    massaMuscularSuperior: data.massaMuscularSuperior,
+                    massaMuscularInferior: data.massaMuscularInferior,
+                    msRight: data.msRight,
+                    msLeft: data.msLeft,
+                    miRight: data.miRight,
+                    miLeft: data.miLeft,
                 },
             });
 

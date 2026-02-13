@@ -19,6 +19,8 @@ interface DashboardSidebarProps {
     activeTab: string;
     onTabChange?: (tab: string) => void;
     menuItems: MenuItem[];
+    /** Called when user hovers a sidebar link (e.g. to prefetch data) */
+    onLinkHover?: () => void;
     brandName?: string;
     brandIcon?: string;
     brandLogo?: string;
@@ -46,6 +48,7 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
     onClose,
     activeTab,
     menuItems,
+    onLinkHover,
     brandName = "Dashboard",
     brandLogo,
     userName,
@@ -86,10 +89,11 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
                     isActive={activeTab === item.id}
                     isCollapsed={isCollapsed}
                     onNavigate={handleNavigate}
+                    onLinkHover={onLinkHover}
                 />
             </React.Fragment>
         ));
-    }, [menuItems, activeTab, isCollapsed, handleNavigate]);
+    }, [menuItems, activeTab, isCollapsed, handleNavigate, onLinkHover]);
 
     // Render
     return (

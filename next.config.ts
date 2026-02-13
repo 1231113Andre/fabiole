@@ -21,7 +21,7 @@ const getVersion = (): string => {
 };
 
 const nextConfig: NextConfig = {
-  // Inject version info at build time
+  // SECURITY: Only NEXT_PUBLIC_* are exposed to the client. Never add SESSION_SECRET, DATABASE_URL, etc.
   env: {
     NEXT_PUBLIC_VERSION: getVersion(),
     NEXT_PUBLIC_COMMIT_ID: getGitCommitHash(),
@@ -69,7 +69,7 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Security headers - includes CSP, HSTS, Permissions-Policy (OWASP best practices)
+  // Security headers - CSP, HSTS, Permissions-Policy (OWASP). Future: tighten CSP with nonce/hash to remove unsafe-inline.
   async headers() {
     const isDev = process.env.NODE_ENV === 'development';
     const isProd = process.env.NODE_ENV === 'production';
@@ -108,20 +108,25 @@ const nextConfig: NextConfig = {
     const permissionsPolicy = 'accelerometer=(),autoplay=(),camera=(),cross-origin-isolated=(),display-capture=(),encrypted-media=(),fullscreen=(self),geolocation=(),gyroscope=(),microphone=(),payment=(),usb=(),web-share=()';
     const hstsMaxAge = parseInt(process.env.HSTS_MAX_AGE || '31536000', 10);
 
+    const commonSecurityHeaders = [
+      { key: 'X-DNS-Prefetch-Control', value: 'on' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-XSS-Protection', value: '1; mode=block' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Content-Security-Policy', value: csp },
+      { key: 'Permissions-Policy', value: permissionsPolicy },
+      { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
+      { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+      { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+      ...(isProd ? [{ key: 'Strict-Transport-Security', value: `max-age=${hstsMaxAge}; includeSubDomains; preload` }] : []),
+      ...(isDev ? [htmlCacheHeader, ...htmlExpiresPragma] : [htmlCacheHeader]),
+    ];
+
     return [
       {
         source: '/:path*',
-        headers: [
-          { key: 'X-DNS-Prefetch-Control', value: 'on' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Content-Security-Policy', value: csp },
-          { key: 'Permissions-Policy', value: permissionsPolicy },
-          ...(isProd ? [{ key: 'Strict-Transport-Security', value: `max-age=${hstsMaxAge}; includeSubDomains; preload` }] : []),
-          ...(isDev ? [htmlCacheHeader, ...htmlExpiresPragma] : [htmlCacheHeader]),
-        ],
+        headers: commonSecurityHeaders,
       },
       // Performance headers for static assets
       {
@@ -163,7 +168,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Experimental features
+  // Experimental features. SECURITY: In production prefer domain-only allowedOrigins; VPS IP only if needed.
   experimental: {
     serverActions: {
       allowedOrigins: [

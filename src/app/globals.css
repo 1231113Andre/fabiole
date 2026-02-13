@@ -255,7 +255,101 @@ body::-webkit-scrollbar-thumb:hover {
   background-color: var(--primary-hover);
 }
 
+/* Horizontal scroll container – no page overflow; smooth touch scroll on mobile */
+.touch-pan-x {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain; /* prevent pull-to-refresh / back when scrolling table */
+}
 
+/* Sticky first column for horizontal-scroll tables (mobile & desktop) – keeps "Data" visible when scrolling */
+.pesagens-table-sticky-th {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: #f9fafb; /* gray-50 */
+  box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.06);
+}
+.pesagens-table-sticky-td {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: #ffffff;
+  box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.06);
+}
+tr:hover .pesagens-table-sticky-td {
+  background: #f9fafb; /* match row hover */
+}
+
+/* References tab – centered, stretches with viewport; sizes in globals */
+.references-center {
+  width: 100%;
+  max-width: 28rem;   /* mobile: narrow, centered */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+@media (min-width: 640px) {
+  .references-center {
+    max-width: 42rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+@media (min-width: 768px) {
+  .references-center {
+    max-width: 48rem;
+  }
+}
+@media (min-width: 1024px) {
+  .references-center {
+    max-width: 56rem;
+  }
+}
+@media (min-width: 1200px) {
+  .references-center {
+    max-width: 72rem;  /* PC: wider, stretches automatically */
+  }
+}
+@media (min-width: 1536px) {
+  .references-center {
+    max-width: 80rem;  /* large desktop */
+  }
+}
+
+.references-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+}
+.references-table-scroll table {
+  min-width: 320px;
+}
+
+.references-th,
+.references-td {
+  padding: 0.5rem 0.75rem;
+}
+@media (min-width: 640px) {
+  .references-th,
+  .references-td {
+    padding: 0.75rem 1rem;
+  }
+}
+@media (min-width: 1024px) {
+  .references-th,
+  .references-td {
+    padding: 0.875rem 1.25rem;
+  }
+}
+@media (min-width: 1200px) {
+  .references-th,
+  .references-td {
+    padding: 1rem 1.5rem;
+  }
+}
 
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out forwards;
@@ -314,27 +408,51 @@ body::-webkit-scrollbar-thumb:hover {
   color: white !important;
 }
 
-/* Container utility */
+/* Container utility – left-aligned, responsive padding */
 .ui-container {
   width: 100%;
   max-width: 1280px;
-  margin-left: auto;
+  margin-left: 0;
   margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: clamp(1rem, 4vw, 2rem);
+  padding-right: clamp(1rem, 4vw, 2rem);
 }
 
 @media (min-width: 640px) {
   .ui-container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    padding-left: clamp(1.25rem, 5vw, 2rem);
+    padding-right: clamp(1.25rem, 5vw, 2rem);
   }
 }
 
 @media (min-width: 1024px) {
   .ui-container {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: clamp(1.5rem, 6vw, 2.5rem);
+    padding-right: clamp(1.5rem, 6vw, 2.5rem);
+  }
+}
+
+/* Full-width container – same responsive padding as .ui-container, no max-width (e.g. dashboard overview, weighings) */
+.ui-container-full {
+  width: 100%;
+  min-width: 0;
+  margin-left: 0;
+  margin-right: auto;
+  padding-left: clamp(1rem, 4vw, 2rem);
+  padding-right: clamp(1rem, 4vw, 2rem);
+}
+
+@media (min-width: 640px) {
+  .ui-container-full {
+    padding-left: clamp(1.25rem, 5vw, 2rem);
+    padding-right: clamp(1.25rem, 5vw, 2rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ui-container-full {
+    padding-left: clamp(1.5rem, 6vw, 2.5rem);
+    padding-right: clamp(1.5rem, 6vw, 2.5rem);
   }
 }
 

@@ -8,6 +8,7 @@ import { useNotification } from "@/components/NotificationContext";
 import { ButtonSpinner } from "@/app/admin/components/LoadingStates";
 import { useInvalidateAdminUsers } from "@/lib/react-query/hooks/useAdminUsers";
 import { getStatusConfig } from "@/app/admin/constants/statusConfig";
+import { calculateAge } from "@/lib/body-metrics";
 
 import NewButton from "@/app/components/newButton";
 
@@ -218,7 +219,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                 <i className="fa-duotone fa-envelope text-sm"></i>
                                 <span className="font-bold">{user.email}</span>
                             </p>
-                            <div className="flex items-center gap-4 mt-4 pt-2 border-t border-gray-100">
+                            <div className="flex items-center gap-4 mt-2 pt-2 border-t border-gray-100">
                                 <div className="flex items-center gap-1.5 text-xs text-gray-500" title="User ID">
                                     <i className="fa-duotone fa-fingerprint text-primary/80"></i>
                                     <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 font-semibold select-all">{user.id}</span>
@@ -242,6 +243,27 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                         </div>
                                     ) : (
                                         <span className="text-gray-400">Data de registo indisponível</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4 mt-2 pt-2 border-t border-gray-100">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium" title="Data de nascimento">
+                                    <i className="fa-duotone fa-calendar-day text-primary/80" />
+                                    {user.birth ? (
+                                        <div className="flex items-center gap-1.5 font-semibold text-gray-800">
+                                            <span>Data de nascimento: {new Date(user.birth).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                            {calculateAge(user.birth) != null && (
+                                                <>
+                                                    <span className="text-gray-300 mx-1 font-normal opacity-50">|</span>
+                                                    <span className="flex items-center gap-1">
+                                                        <i className="fa-duotone fa-cake-candles text-primary/80 text-xs" />
+                                                        <span>({calculateAge(user.birth)} anos)</span>
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <span className="text-gray-400">Data de nascimento indisponível</span>
                                     )}
                                 </div>
                             </div>

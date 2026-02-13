@@ -15,8 +15,8 @@ export function WeighingsClient({ initialData }: WeighingsClientProps) {
 
     return (
         <>
-            {/* Page Header */}
-            <div className="mb-6 sm:mb-8">
+            {/* Page Header – same margins as Perímetros so title sits at same height */}
+            <div className="mb-6 sm:mb-8 w-full min-w-0">
                 <div className="mb-6 flex flex-wrap gap-4">
                     <NewButton
                         href="/dashboard"
@@ -29,10 +29,10 @@ export function WeighingsClient({ initialData }: WeighingsClientProps) {
                     </NewButton>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                    <div>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                    <div className="min-w-0">
                         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black mb-2 flex items-center gap-3">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center shadow-lg">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center shadow-lg flex-shrink-0">
                                 <i className="fa-duotone fa-weight text-white text-lg sm:text-xl" />
                             </div>
                             <span>Pesagens</span>
@@ -41,12 +41,16 @@ export function WeighingsClient({ initialData }: WeighingsClientProps) {
                             Histórico e evolução do teu peso
                         </p>
                     </div>
-                    <PesagensInfoCards />
+                    <div className="w-full min-w-0 flex-1">
+                        <PesagensInfoCards />
+                    </div>
                 </div>
             </div>
 
-            {/* Content */}
-            <PesagensTab pesagens={pesagens} chartData={chartData} gender={personalInfo?.gender} birth={personalInfo?.birth} />
+            {/* Content – full width; overflow contained on mobile */}
+            <div className="w-full min-w-0 overflow-hidden">
+                <PesagensTab pesagens={pesagens} chartData={chartData} gender={personalInfo?.gender} birth={personalInfo?.birth} />
+            </div>
         </>
     );
 }

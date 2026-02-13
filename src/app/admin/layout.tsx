@@ -124,9 +124,9 @@ export default function AdminLayout({
                 isCollapsed={isCollapsed}
             />
 
-            {/* Main Content - Updated for compact header */}
-            <main className={`flex-1 ml-0 ${sidebarMargin} mt-14 p-3 sm:p-4 lg:p-6 min-h-[calc(100vh-3.5rem)] bg-gray-50 transition-[margin-left] duration-300 overflow-x-hidden`}>
-                <div className="max-w-screen-2xl mx-auto w-full">
+            {/* Main Content – left-aligned, responsive padding */}
+            <main className={`flex-1 ml-0 ${sidebarMargin} mt-14 min-h-[calc(100vh-3.5rem)] bg-gray-50 transition-[margin-left] duration-300 overflow-x-hidden px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6`}>
+                <div className="max-w-screen-2xl w-full mr-auto">
                     {children}
                 </div>
             </main>

@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/react-query/queryKeys";
+import { getCsrfToken } from "@/lib/react-query/hooks/useCsrfToken";
 import { Avatar } from "./Avatar";
 import NewButton from "@/app/components/newButton";
 
@@ -73,16 +74,18 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 
             if (!uploadRes.ok) throw new Error("Falha no upload para R2");
 
-            // 3. Update database
+            // 3. Update database (CSRF required for state-changing request)
+            const headers: HeadersInit = { "Content-Type": "application/json" };
+            const csrfToken = getCsrfToken();
+            if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+
             const updateRes = await fetch("/api/user/avatar/update", {
                 method: "POST",
                 body: JSON.stringify({
                     avatarUrl: publicUrl,
                     userId: userId
                 }),
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers,
             });
 
             if (!updateRes.ok) throw new Error("Falha ao atualizar base de dados");

@@ -79,7 +79,7 @@ export function ServicesClient({ initialSettings = {} }: ServicesClientProps) {
 
             {/* Main Content Grid */}
             <div className="ui-container ui-section">
-                <div className="grid w-full gap-10 md:grid-cols-2 lg:grid-cols-3 lg:max-w-screen-2xl">
+                <div className="grid w-full gap-10 md:grid-cols-2 lg:grid-cols-3 lg:max-w-screen-2xl mr-auto">
                     {dynamicServices.map((service, index) => (
                         <ServiceCard
                             key={service.title}

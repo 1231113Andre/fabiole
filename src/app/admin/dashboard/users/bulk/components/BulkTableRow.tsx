@@ -62,39 +62,39 @@ const OverridableField = memo(function OverridableField({
     secondaryValue?: React.ReactNode;
 }) {
     return (
-        <div className="flex flex-col items-center justify-center relative group w-full min-w-[3.5rem]">
+        <div className="flex flex-col items-center justify-center relative group w-full min-w-[2.25rem]">
             <div className="w-full relative">
                 {isOverride ? (
-                    <div className={`flex flex-col items-center justify-center bg-white border border-gray-200 hover:border-emerald-400 rounded-md shadow-sm px-1 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all relative z-10 w-full ${secondaryValue ? 'h-10 py-0.5' : 'h-8'}`}>
+                    <div className={`flex flex-col items-center justify-center bg-white border border-gray-200 hover:border-emerald-400 rounded shadow-sm px-0.5 focus-within:ring-1 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all relative z-10 w-full ${secondaryValue ? 'h-7 py-0.5' : 'h-6'}`}>
                         <div className="flex items-center justify-center w-full">
-                            {prefixIcon && <i className={`fa-duotone ${prefixIcon} ${iconColor} mr-1.5 text-[10px]`} />}
+                            {prefixIcon && <i className={`fa-duotone ${prefixIcon} ${iconColor} mr-1 text-[9px]`} />}
                             <input
                                 type="number"
                                 step="0.01"
                                 value={value}
                                 onChange={(e) => onChange(e.target.value)}
-                                className="w-full text-center text-xs font-bold text-emerald-700 bg-transparent focus:outline-none p-0 leading-none"
+                                className="w-full text-center text-[10px] font-bold text-emerald-700 bg-transparent focus:outline-none p-0 leading-none"
                             />
                             {/* Show suffix in input mode if provided */}
-                            {suffix && <span className="text-[10px] text-emerald-600 ml-px shrink-0 leading-none">{suffix}</span>}
+                            {suffix && <span className="text-[9px] text-emerald-600 ml-px shrink-0 leading-none">{suffix}</span>}
                         </div>
                         {/* Secondary Value inside input container */}
                         {secondaryValue && (
-                            <div className="text-[9px] text-gray-400 leading-none mt-0.5 font-medium whitespace-nowrap">
+                            <div className="text-[8px] text-gray-400 leading-none mt-0.5 font-medium whitespace-nowrap">
                                 {secondaryValue}
                             </div>
                         )}
                     </div>
                 ) : (
-                    <div className={`flex flex-col items-center justify-center w-full px-1 bg-white border border-gray-200 rounded-md shadow-sm text-xs font-medium text-gray-700 relative ${secondaryValue ? 'h-10 py-1' : 'h-8'}`}>
+                    <div className={`flex flex-col items-center justify-center w-full px-0.5 bg-white border border-gray-200 rounded shadow-sm text-[10px] font-medium text-gray-700 relative ${secondaryValue ? 'h-7 py-0.5' : 'h-6'}`}>
                         <div className="flex items-center justify-center w-full leading-none">
-                            {prefixIcon && <i className={`fa-duotone ${prefixIcon} ${iconColor} mr-1.5 text-[10px]`} />}
+                            {prefixIcon && <i className={`fa-duotone ${prefixIcon} ${iconColor} mr-1 text-[9px]`} />}
                             <span className="truncate text-center">{value || '-'}</span>
-                            {value && suffix && <span className="text-[10px] text-gray-500 ml-0.5">{suffix}</span>}
+                            {value && suffix && <span className="text-[9px] text-gray-500 ml-0.5">{suffix}</span>}
                         </div>
                         {/* Secondary Value inside display container */}
                         {secondaryValue && value && (
-                            <div className="text-[9px] text-gray-400 leading-none mt-0.5 font-medium whitespace-nowrap">
+                            <div className="text-[8px] text-gray-400 leading-none mt-0.5 font-medium whitespace-nowrap">
                                 {secondaryValue}
                             </div>
                         )}
@@ -103,7 +103,7 @@ const OverridableField = memo(function OverridableField({
 
                 <button
                     onClick={onToggle}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] transition-all cursor-pointer absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 z-20 shadow-sm border border-white ${isOverride
+                    className={`w-4 h-4 rounded-full flex items-center justify-center text-[8px] transition-all cursor-pointer absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 z-20 shadow-sm border border-white ${isOverride
                         ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                         : 'bg-violet-500 text-white hover:bg-violet-600'
                         }`}
@@ -126,8 +126,8 @@ const ClassBadge = memo(function ClassBadge({
 }) {
     if (!value) {
         return (
-            <div className="flex items-center justify-center w-full px-1">
-                <span className="text-[10px] text-gray-400 font-medium">-</span>
+            <div className="flex items-center justify-center w-full px-0.5">
+                <span className="text-[9px] text-gray-400 font-medium">-</span>
             </div>
         );
     }
@@ -135,8 +135,8 @@ const ClassBadge = memo(function ClassBadge({
     const colorClass = colorFn(value);
 
     return (
-        <div className="flex items-center justify-center w-full min-w-0 px-1">
-            <span className={colorClass}>{value}</span>
+        <div className="flex items-center justify-center w-full min-w-0 px-0.5">
+            <span className={`text-[9px] ${colorClass}`}>{value}</span>
         </div>
     );
 });
@@ -152,15 +152,15 @@ const DeleteButton = memo(function DeleteButton({
     return (
         <button
             onClick={onClick}
-            className="p-1.5 text-gray-300 hover:text-red-500 rounded-lg group transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1 text-gray-300 hover:text-red-500 rounded group transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             disabled={disabled}
         >
-            <i className="fa-duotone fa-trash-can group-hover:scale-110"></i>
+            <i className="fa-duotone fa-trash-can text-[10px] group-hover:scale-110"></i>
         </button>
     );
 });
 
-// Pesagens row cells
+// Pesagens row cells – ordem: Massa muscular membros (esq.) | Peso | resto
 const PesagensRow = memo(function PesagensRow({
     row,
     evolution,
@@ -174,21 +174,33 @@ const PesagensRow = memo(function PesagensRow({
 }) {
     return (
         <>
-            <td className="py-3 px-1 font-bold text-center">
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="0.01" value={row.msRight || ''} onChange={(v) => onUpdate('msRight', v)} className="text-center !text-violet-700 w-10 max-w-[2.5rem]" placeholder="—" />
+            </td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="0.01" value={row.msLeft || ''} onChange={(v) => onUpdate('msLeft', v)} className="text-center !text-violet-700 w-10 max-w-[2.5rem]" placeholder="—" />
+            </td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="0.01" value={row.miRight || ''} onChange={(v) => onUpdate('miRight', v)} className="text-center !text-violet-700 w-10 max-w-[2.5rem]" placeholder="—" />
+            </td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="0.01" value={row.miLeft || ''} onChange={(v) => onUpdate('miLeft', v)} className="text-center !text-violet-700 w-10 max-w-[2.5rem]" placeholder="—" />
+            </td>
+            <td className="py-1.5 px-0.5 font-bold text-center min-w-[2.5rem]">
                 <div className="flex items-center justify-center">
-                    <RowInput type="number" step="0.01" value={row.peso || ''} onChange={(v) => onUpdate('peso', v)} className="text-center font-bold !text-gray-900 w-16" />
+                    <RowInput type="number" step="0.01" value={row.peso || ''} onChange={(v) => onUpdate('peso', v)} className="text-center font-bold !text-gray-900 w-11 max-w-[3rem]" />
                 </div>
             </td>
-            <td className={`py-3 px-1 text-center font-semibold text-xs ${getDeltaPesoColor(evolution)}`}>
+            <td className={`py-1.5 px-0.5 text-center font-semibold text-[10px] ${getDeltaPesoColor(evolution)}`}>
                 {formatDelta(evolution)}
             </td>
-            <td className="py-3 px-1">
-                <RowInput type="number" step="0.1" value={row.height || ''} onChange={(v) => onUpdate('height', v)} className="text-center !text-gray-600" />
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="0.1" value={row.height || ''} onChange={(v) => onUpdate('height', v)} className="text-center !text-gray-600 w-10 max-w-[2.5rem]" />
             </td>
-            <td className="py-3 px-1">
-                <RowInput type="number" step="0.1" value={row.percentualMG || ''} onChange={(v) => onUpdate('percentualMG', v)} className="text-center font-semibold !text-gray-900" />
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="0.1" value={row.percentualMG || ''} onChange={(v) => onUpdate('percentualMG', v)} className="text-center font-semibold !text-gray-900 w-10 max-w-[2.5rem]" />
             </td>
-            <td className="py-3 px-1 text-center">
+            <td className="py-1.5 px-0.5 text-center min-w-[2.25rem]">
                 <div className="flex flex-col items-center justify-center">
                     <OverridableField
                         value={row.mm || ''}
@@ -198,7 +210,7 @@ const PesagensRow = memo(function PesagensRow({
                     />
                 </div>
             </td>
-            <td className="py-3 px-1 text-center">
+            <td className="py-1.5 px-0.5 text-center min-w-[2.25rem]">
                 <div className="flex flex-col items-center justify-center gap-0.5">
                     <div className="flex items-center justify-center gap-1 w-full">
                         <OverridableField
@@ -224,7 +236,7 @@ const PesagensRow = memo(function PesagensRow({
                     </div>
                 </div>
             </td>
-            <td className="py-3 px-1 text-center">
+            <td className="py-1.5 px-0.5 text-center min-w-[2.25rem]">
                 <OverridableField
                     value={row.imc || ''}
                     isOverride={row.overrides?.imc}
@@ -232,19 +244,19 @@ const PesagensRow = memo(function PesagensRow({
                     onChange={(v) => onUpdate('imc', v)}
                 />
             </td>
-            <td className="py-3 px-1">
-                <RowInput type="number" step="1" value={row.gordVisceral || ''} onChange={(v) => onUpdate('gordVisceral', v)} className={`text-center !text-gray-600 ${BOX_CLASS}`} />
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="1" value={row.gordVisceral || ''} onChange={(v) => onUpdate('gordVisceral', v)} className={`text-center !text-gray-600 w-10 max-w-[2.5rem] ${BOX_CLASS}`} />
             </td>
-            <td className="py-3 px-1">
-                <RowInput type="number" step="0.1" value={row.idMetabolica || ''} onChange={(v) => onUpdate('idMetabolica', v)} className={`text-center !text-gray-600 ${BOX_CLASS}`} />
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="0.1" value={row.idMetabolica || ''} onChange={(v) => onUpdate('idMetabolica', v)} className={`text-center !text-gray-600 w-10 max-w-[2.5rem] ${BOX_CLASS}`} />
             </td>
-            <td className="py-3 px-1">
-                <RowInput type="number" step="0.01" value={row.massaOssea || ''} onChange={(v) => onUpdate('massaOssea', v)} className={`text-center !text-gray-600 ${BOX_CLASS}`} />
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]">
+                <RowInput type="number" step="0.01" value={row.massaOssea || ''} onChange={(v) => onUpdate('massaOssea', v)} className={`text-center !text-gray-600 w-10 max-w-[2.5rem] ${BOX_CLASS}`} />
             </td>
-            <td className="py-3 px-1 text-center">
+            <td className="py-1.5 px-0.5 text-center min-w-[2rem]">
                 <ClassBadge value={row.resultadoIMC} colorFn={getBmiClassColor} />
             </td>
-            <td className="py-3 px-1 text-center">
+            <td className="py-1.5 px-0.5 text-center min-w-[2rem]">
                 <ClassBadge value={row.resultadoPercentMG} colorFn={getFatClassColor} />
             </td>
         </>
@@ -261,14 +273,14 @@ const PerimetrosRow = memo(function PerimetrosRow({
 }) {
     return (
         <>
-            <td className="py-3 px-1"><RowInput type="number" step="0.1" value={row.msRight || ''} onChange={(v) => onUpdate('msRight', v)} className="text-center !text-gray-600" /></td>
-            <td className="py-3 px-1"><RowInput type="number" step="0.1" value={row.msLeft || ''} onChange={(v) => onUpdate('msLeft', v)} className="text-center !text-gray-600" /></td>
-            <td className="py-3 px-1"><RowInput type="number" step="0.1" value={row.chest || ''} onChange={(v) => onUpdate('chest', v)} className="text-center !text-gray-600" /></td>
-            <td className="py-3 px-1"><RowInput type="number" step="0.1" value={row.waist || ''} onChange={(v) => onUpdate('waist', v)} className="text-center font-bold !text-gray-800" /></td>
-            <td className="py-3 px-1"><RowInput type="number" step="0.1" value={row.abdomen || ''} onChange={(v) => onUpdate('abdomen', v)} className="text-center font-bold !text-gray-800" /></td>
-            <td className="py-3 px-1"><RowInput type="number" step="0.1" value={row.hips || ''} onChange={(v) => onUpdate('hips', v)} className="text-center !text-gray-600" /></td>
-            <td className="py-3 px-1"><RowInput type="number" step="0.1" value={row.thighR || ''} onChange={(v) => onUpdate('thighR', v)} className="text-center !text-gray-600" /></td>
-            <td className="py-3 px-1"><RowInput type="number" step="0.1" value={row.thighL || ''} onChange={(v) => onUpdate('thighL', v)} className="text-center !text-gray-600" /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]"><RowInput type="number" step="0.1" value={row.msRight || ''} onChange={(v) => onUpdate('msRight', v)} className="text-center !text-gray-600 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]"><RowInput type="number" step="0.1" value={row.msLeft || ''} onChange={(v) => onUpdate('msLeft', v)} className="text-center !text-gray-600 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]"><RowInput type="number" step="0.1" value={row.chest || ''} onChange={(v) => onUpdate('chest', v)} className="text-center !text-gray-600 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]"><RowInput type="number" step="0.1" value={row.waist || ''} onChange={(v) => onUpdate('waist', v)} className="text-center font-bold !text-gray-800 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]"><RowInput type="number" step="0.1" value={row.abdomen || ''} onChange={(v) => onUpdate('abdomen', v)} className="text-center font-bold !text-gray-800 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]"><RowInput type="number" step="0.1" value={row.hips || ''} onChange={(v) => onUpdate('hips', v)} className="text-center !text-gray-600 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]"><RowInput type="number" step="0.1" value={row.thighR || ''} onChange={(v) => onUpdate('thighR', v)} className="text-center !text-gray-600 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.25rem]"><RowInput type="number" step="0.1" value={row.thighL || ''} onChange={(v) => onUpdate('thighL', v)} className="text-center !text-gray-600 w-10 max-w-[2.5rem]" /></td>
         </>
     );
 });
@@ -283,16 +295,16 @@ const AvaliacoesRow = memo(function AvaliacoesRow({
 }) {
     return (
         <>
-            <td className="py-3 px-1 font-bold text-center"><RowInput type="number" value={row.pushUps || ''} onChange={(v) => onUpdate('pushUps', v)} className="text-center font-bold !text-gray-800" /></td>
-            <td className="py-3 px-1 text-center">
+            <td className="py-1.5 px-0.5 font-bold text-center min-w-[2.25rem]"><RowInput type="number" value={row.pushUps || ''} onChange={(v) => onUpdate('pushUps', v)} className="text-center font-bold !text-gray-800 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 text-center min-w-[2rem]">
                 <ClassBadge value={row.pushUpsResult} colorFn={getMileResultStyle} />
             </td>
-            <td className="py-3 px-1 font-bold text-center"><RowInput type="number" value={row.sitUps || ''} onChange={(v) => onUpdate('sitUps', v)} className="text-center font-bold !text-gray-800" /></td>
-            <td className="py-3 px-1 text-center"><RowInput type="text" value={row.mile || ''} onChange={(v) => onUpdate('mile', v)} className="text-center !text-gray-600" /></td>
-            <td className="py-3 px-1 text-center">
+            <td className="py-1.5 px-0.5 font-bold text-center min-w-[2.25rem]"><RowInput type="number" value={row.sitUps || ''} onChange={(v) => onUpdate('sitUps', v)} className="text-center font-bold !text-gray-800 w-10 max-w-[2.5rem]" /></td>
+            <td className="py-1.5 px-0.5 min-w-[3rem]"><RowInput type="text" value={row.mile || ''} onChange={(v) => onUpdate('mile', v)} className="text-center !text-gray-600 text-[10px] w-14 max-w-[3.5rem]" /></td>
+            <td className="py-1.5 px-0.5 text-center min-w-[2rem]">
                 <ClassBadge value={row.mileResult} colorFn={getMileResultStyle} />
             </td>
-            <td className="py-3 px-1"><RowInput type="text" value={row.notes || ''} onChange={(v) => onUpdate('notes', v)} className="!text-gray-600" placeholder="..." /></td>
+            <td className="py-1.5 px-0.5 min-w-[2.5rem]"><RowInput type="text" value={row.notes || ''} onChange={(v) => onUpdate('notes', v)} className="!text-gray-600 text-[10px] max-w-[4rem]" placeholder="..." /></td>
         </>
     );
 });
@@ -317,12 +329,12 @@ export const BulkTableRow = memo(function BulkTableRow({
 
     return (
         <tr className="border-b border-gray-300 hover:bg-gray-50 transition-colors items-center even:bg-gray-50/30">
-            <td className="sticky left-0 z-10 bg-white group-hover:bg-gray-50 group-even:bg-gray-50/30 py-3 px-2 whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+            <td className="sticky left-0 z-10 bg-white group-hover:bg-gray-50 group-even:bg-gray-50/30 py-1.5 px-1.5 whitespace-nowrap shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                 <RowInput
                     type="date"
                     value={row.date || ''}
                     onChange={(v) => handleFieldUpdate('date', v)}
-                    className="font-bold bg-transparent !w-[105px] px-0 text-right cursor-pointer"
+                    className="font-bold bg-transparent !w-[90px] !min-h-0 text-[10px] px-0 text-right cursor-pointer"
                 />
             </td>
 
@@ -337,8 +349,8 @@ export const BulkTableRow = memo(function BulkTableRow({
             {type === 'perimetros' && <PerimetrosRow row={row} onUpdate={handleFieldUpdate} />}
             {type === 'avaliacoes' && <AvaliacoesRow row={row} onUpdate={handleFieldUpdate} />}
 
-            <td className="py-3 px-2 text-right">
-                <div className="flex justify-end pr-1">
+            <td className="py-1.5 px-1 text-right">
+                <div className="flex justify-end pr-0.5">
                     <DeleteButton disabled={!canDelete} onClick={handleDelete} />
                 </div>
             </td>

@@ -48,6 +48,8 @@ export const FIELD_LABELS: Record<string, string> = {
     percentualMG: '% MG',
     msRight: 'MS Direito',
     msLeft: 'MS Esquerdo',
+    miRight: 'MI Direito',
+    miLeft: 'MI Esquerdo',
     chest: 'Peito',
     waist: 'Cintura',
     abdomen: 'Abdómen',

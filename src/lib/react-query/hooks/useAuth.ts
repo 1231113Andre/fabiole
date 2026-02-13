@@ -79,9 +79,8 @@ export function useSession(options: UseSessionOptions = {}) {
     // placeholderData allows SSR render but doesn't block cache updates
     placeholderData: initialData,
     enabled,
-    // Keep data fresh for 5 seconds - this prevents refetch from overriding setQueryData
-    // immediately after login/register before navbar has time to update
-    staleTime: 5000,
+    // 15s – fewer /api/auth/session calls when switching tabs; login/register still invalidate
+    staleTime: 15 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnMount: true,
     refetchOnWindowFocus: true,

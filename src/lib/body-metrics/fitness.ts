@@ -1,6 +1,7 @@
 import { Gender } from "./types";
 import { MILE_THRESHOLDS, ABDOMINAIS_THRESHOLDS, FLEXOES_THRESHOLDS, SMI_REFERENCES } from "./references";
 import type { CountThresholds } from "./references";
+import { parseNumber } from "./utils";
 
 /** Map age to array index: 0=18-29, 1=30-39, 2=40-49, 3=50-59, 4=60+ */
 function ageBandIdx(age: number): number {
@@ -192,6 +193,36 @@ export function calculateSMI(
     if (muscleMassKg == null || heightCm == null || heightCm <= 0 || muscleMassKg <= 0) return null;
     const heightM = heightCm / 100;
     const smi = muscleMassKg / (heightM * heightM);
+    return Math.round(smi * 100) / 100;
+}
+
+/**
+ * Calculate SMI from limb muscle masses (appendicular skeletal muscle).
+ * Formula: SMI = (MS right + MS left + MI right + MI left) / Height (m)²
+ *
+ * @param msRight - MS direito (kg)
+ * @param msLeft - MS esquerdo (kg)
+ * @param miRight - MI direito (kg)
+ * @param miLeft - MI esquerdo (kg)
+ * @param heightCm - Height in cm
+ * @returns SMI in kg/m² or null if any value missing/invalid
+ */
+export function calculateSMIFromLimbs(
+    msRight: number | null | undefined,
+    msLeft: number | null | undefined,
+    miRight: number | null | undefined,
+    miLeft: number | null | undefined,
+    heightCm: number | null | undefined
+): number | null {
+    const a = parseNumber(msRight);
+    const b = parseNumber(msLeft);
+    const c = parseNumber(miRight);
+    const d = parseNumber(miLeft);
+    if (a == null || b == null || c == null || d == null || heightCm == null || heightCm <= 0) return null;
+    const sum = a + b + c + d;
+    if (sum <= 0) return null;
+    const heightM = heightCm / 100;
+    const smi = sum / (heightM * heightM);
     return Math.round(smi * 100) / 100;
 }
 

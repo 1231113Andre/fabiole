@@ -30,6 +30,12 @@ export const PUT = withAdminAuth(async (req, session, { params }: { params: Prom
         if (body.resultadoIMC !== undefined) updateData.resultadoIMC = sanitizeStringForUpdate(body.resultadoIMC);
         if (body.resultadoPercentMG !== undefined) updateData.resultadoPercentMG = sanitizeStringForUpdate(body.resultadoPercentMG);
         if (body.notas !== undefined) updateData.notas = sanitizeStringForUpdate(body.notas);
+        if (body.massaMuscularSuperior !== undefined) updateData.massaMuscularSuperior = sanitizeValueForUpdate(body.massaMuscularSuperior);
+        if (body.massaMuscularInferior !== undefined) updateData.massaMuscularInferior = sanitizeValueForUpdate(body.massaMuscularInferior);
+        if (body.msRight !== undefined) updateData.msRight = sanitizeValueForUpdate(body.msRight);
+        if (body.msLeft !== undefined) updateData.msLeft = sanitizeValueForUpdate(body.msLeft);
+        if (body.miRight !== undefined) updateData.miRight = sanitizeValueForUpdate(body.miRight);
+        if (body.miLeft !== undefined) updateData.miLeft = sanitizeValueForUpdate(body.miLeft);
 
         // Validate that at least one field is being updated
         if (Object.keys(updateData).length === 0) {

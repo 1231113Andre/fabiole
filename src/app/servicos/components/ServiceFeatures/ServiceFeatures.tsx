@@ -1,7 +1,7 @@
 export function ServiceFeatures() {
     return (
         <section className="py-20 bg-gradient-to-br from-orange-50 to-white">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="ui-container w-full max-w-6xl">
                 <div className="text-center mb-16">
                     <h2 className="mb-4 font-fugazone text-4xl uppercase text-gray-900 md:text-5xl lg:text-6xl animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                         Porque Escolher os <span className="ui-text-accent">Meus Serviços</span>
@@ -11,7 +11,7 @@ export function ServiceFeatures() {
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div className="grid md:grid-cols-3 gap-8 max-w-6xl w-full mr-auto">
                     <div className="text-center p-8 bg-white rounded-2xl border border-gray-100 shadow-default hover:shadow-lg transition-all duration-300 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                         <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-hover rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
                             <i className="fa-duotone fa-user-check text-2xl text-white"></i>

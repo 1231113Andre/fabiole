@@ -54,7 +54,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
 
     // Resend cooldown state
     const [resendCooldown, setResendCooldown] = useState(0);
-    const [resendMessage, setResendMessage] = useState<{ type: 'info' | 'success'; text: string } | null>(null);
+    const [resendMessage, setResendMessage] = useState<{ type: 'info' | 'success'; text: string; cooldownSeconds?: number } | null>(null);
     const cooldownTimerRef = useRef<NodeJS.Timeout | null>(null);
     const resendMessageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -77,7 +77,8 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                     const seconds = prev - 1;
                     setResendMessage({
                         type: 'info',
-                        text: `Podes reenviar o código em <strong>${seconds}</strong> segundo${seconds !== 1 ? 's' : ''}.`
+                        text: '',
+                        cooldownSeconds: seconds,
                     });
                     return prev - 1;
                 });
@@ -155,7 +156,8 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                     setEmailStepMessage({ type: 'success', text: message });
                     setResendMessage({
                         type: 'info',
-                        text: `Podes reenviar o código em <strong>${RESEND_COOLDOWN_SECONDS}</strong> segundos.`
+                        text: '',
+                        cooldownSeconds: RESEND_COOLDOWN_SECONDS,
                     });
                     return 'code';
                 } else {
@@ -175,7 +177,8 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                         const remaining = RESEND_COOLDOWN_SECONDS - 3;
                         setResendMessage({
                             type: 'info',
-                            text: `Podes reenviar o código em <strong>${remaining}</strong> segundo${remaining !== 1 ? 's' : ''}.`
+                            text: '',
+                            cooldownSeconds: remaining,
                         });
                         resendMessageTimeoutRef.current = null;
                     }, 3000);
@@ -318,7 +321,7 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                     {emailStepMessage && emailStepMessage.type === 'info' && (
                         <div className="text-sm text-center p-3 rounded-lg border font-semibold bg-boxdark text-bodydark2 border-strokedark">
                             <i className="fa-duotone fa-clock mr-2"></i>
-                            <span dangerouslySetInnerHTML={{ __html: emailStepMessage.text }} />
+                            <span>{emailStepMessage.text}</span>
                         </div>
                     )}
 
@@ -432,7 +435,11 @@ export const ForgotPasswordForm = ({ onBack, onClose }: ForgotPasswordFormProps)
                         {resendMessage.type === 'info' && (
                             <i className="fa-duotone fa-clock mr-2"></i>
                         )}
-                        <span dangerouslySetInnerHTML={{ __html: resendMessage.text }} />
+                        {resendMessage.cooldownSeconds != null ? (
+                            <span>Podes reenviar o código em <strong>{resendMessage.cooldownSeconds}</strong> segundo{resendMessage.cooldownSeconds !== 1 ? 's' : ''}.</span>
+                        ) : (
+                            <span>{resendMessage.text}</span>
+                        )}
                     </div>
                 )}
 

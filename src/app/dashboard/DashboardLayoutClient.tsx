@@ -2,11 +2,13 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useLogout } from "@/lib/react-query/hooks/useAuth";
+import { useRefreshData } from "@/lib/react-query/hooks/useUserData";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useDashboardData } from "./hooks/useDashboardData";
-import { useRefreshData } from "@/lib/react-query/hooks/useUserData";
 import { useNotification } from "@/components/NotificationContext";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 
@@ -46,6 +48,7 @@ export default function DashboardLayoutClient({
 }: DashboardLayoutClientProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const queryClient = useQueryClient();
     const { notify } = useNotification();
     const logoutMutation = useLogout();
 
@@ -70,27 +73,50 @@ export default function DashboardLayoutClient({
         isAuthenticated,
     } = useDashboardData();
 
-    // Handle responsive layout behavior
+    // Handle responsive layout (throttled to avoid excessive re-renders during resize)
     useEffect(() => {
+        let rafId: number | null = null;
+        let lastWidth = -1;
+
         const handleResize = () => {
             const width = window.innerWidth;
-            const mobile = width < 1024;
-            setIsMobile(mobile);
-
-            // Auto-collapse sidebar on laptop screens (1024px - 1400px) if not manually set
-            if (!mobile && width < 1400) {
-                setIsCollapsed(true);
-            } else if (width >= 1400) {
-                setIsCollapsed(false);
-            }
+            if (rafId !== null) cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(() => {
+                rafId = null;
+                if (width === lastWidth) return;
+                lastWidth = width;
+                const mobile = width < 1024;
+                setIsMobile(mobile);
+                if (!mobile && width < 1400) {
+                    setIsCollapsed(true);
+                } else if (width >= 1400) {
+                    setIsCollapsed(false);
+                }
+            });
         };
 
-        // Initial check
         handleResize();
-
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            if (rafId !== null) cancelAnimationFrame(rafId);
+        };
     }, []);
+
+    // Prefetch user data when hovering sidebar links so navigation feels instant
+    const prefetchUserData = useCallback(() => {
+        const email = user?.email;
+        if (!email) return;
+        queryClient.prefetchQuery({
+            queryKey: queryKeys.userData(email, "default"),
+            queryFn: async () => {
+                const res = await fetch("/api/user/data");
+                if (!res.ok) throw new Error("Failed to fetch");
+                return res.json();
+            },
+            staleTime: 30 * 1000,
+        });
+    }, [queryClient, user?.email]);
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -166,6 +192,7 @@ export default function DashboardLayoutClient({
                 onClose={handleCloseSidebar}
                 activeTab={activeTab}
                 menuItems={MENU_ITEMS}
+                onLinkHover={prefetchUserData}
                 brandName="Fabiole"
                 brandIcon="fa-dumbbell"
                 userName={user?.name}
@@ -191,9 +218,9 @@ export default function DashboardLayoutClient({
                 isCollapsed={isCollapsed}
             />
 
-            {/* Main Content - Updated for compact header */}
-            <main className={`flex-1 transition-[margin-left] duration-300 ease-in-out ${sidebarMargin} mt-14 p-3 sm:p-4 lg:p-6 min-h-[calc(100vh-3.5rem)] bg-whiten overflow-x-hidden`}>
-                <div className="max-w-screen-xl mx-auto w-full">
+            {/* Main Content – same compact padding for all subpages, no horizontal overflow */}
+            <main className={`flex-1 transition-[margin-left] duration-300 ease-in-out ${sidebarMargin} mt-14 min-h-[calc(100vh-3.5rem)] bg-whiten overflow-x-hidden px-2 py-3 sm:px-3 sm:py-4 lg:px-4 lg:py-5`}>
+                <div className={pathname === "/dashboard" || pathname?.includes("weighings") ? "w-full min-w-0 mr-auto" : "max-w-screen-xl w-full mr-auto"}>
                     {children}
                 </div>
             </main>

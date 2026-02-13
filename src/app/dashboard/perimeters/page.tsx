@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { getSession } from "@/lib/security/session";
+import { redirect } from "next/navigation";
 import { PerimetersClient } from "./PerimetersClient";
 
 export const metadata: Metadata = {
@@ -6,6 +8,10 @@ export const metadata: Metadata = {
     description: "Medidas corporais e evolução"
 };
 
-export default function PerimetersPage() {
+export default async function PerimetersPage() {
+    const session = await getSession();
+    if (!session || !session.email) {
+        redirect("/");
+    }
     return <PerimetersClient />;
 }

@@ -1,66 +1,75 @@
 /**
- * Compact info cards displayed on the Pesagens tab
+ * Info cards with formulas, examples and short descriptions.
  */
+
+const cardBase =
+    "flex flex-col min-h-0 bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-200/80 rounded-lg px-3 py-2.5 min-w-0 w-full overflow-hidden shadow-sm";
+
+const iconWrap = "flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-violet-100 text-base";
+
+const titleClass = "font-semibold text-violet-800 text-sm leading-tight mb-1";
+const lineClass = "text-[11px] sm:text-xs text-violet-700/90 leading-snug";
+const hintClass = "text-[10px] sm:text-[11px] text-violet-600/80 leading-snug mt-0.5";
 
 export function PesagensInfoCards() {
     return (
-        <div className="flex flex-wrap gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 w-full min-w-0 overflow-hidden">
             {/* IMC */}
-            <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-200 rounded-xl px-4 py-3 max-w-xs">
-                <div className="flex items-start gap-3">
-                    <span className="text-xl">🤖</span>
-                    <div>
-                        <h4 className="font-bold text-violet-700 text-sm mb-1">IMC (AUTO)</h4>
-                        <p className="text-xs text-violet-600 leading-relaxed">
-                            <strong>Fórmula:</strong> Peso (kg) ÷ Altura² (m)
-                            <br />
-                            <span className="text-violet-500">Ex: 80kg ÷ (1.75m)² = 26.1</span>
+            <div className={cardBase}>
+                <div className="flex items-start gap-2.5">
+                    <div className={iconWrap}>🤖</div>
+                    <div className="min-w-0 flex-1">
+                        <h4 className={titleClass}>IMC (AUTO)</h4>
+                        <p className={lineClass}>
+                            <span className="font-semibold text-violet-700">Fórmula:</span> Peso (kg) ÷ Altura² (m). Índice de massa corporal.
                         </p>
+                        <p className={lineClass}><span className="font-medium text-violet-600">Ex: 80 kg ÷ (1,75 m)² = 26,1 kg/m²</span></p>
+                        <p className={hintClass}>Classificação automática: baixo peso, normal, pré-obesidade, obesidade.</p>
                     </div>
                 </div>
             </div>
 
-            {/* Delta Peso */}
-            <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-200 rounded-xl px-4 py-3 max-w-xs">
-                <div className="flex items-start gap-3">
-                    <span className="text-xl">✨</span>
-                    <div>
-                        <h4 className="font-bold text-violet-700 text-sm mb-1">Δ Peso (AUTO)</h4>
-                        <p className="text-xs text-violet-600 leading-relaxed">
-                            <strong>Fórmula:</strong> Peso atual − Peso anterior
-                            <br />
-                            <span className="text-violet-500">Ex: 80kg − 82kg = -2kg</span>
+            {/* Δ Peso */}
+            <div className={cardBase}>
+                <div className="flex items-start gap-2.5">
+                    <div className={iconWrap}>✨</div>
+                    <div className="min-w-0 flex-1">
+                        <h4 className={titleClass}>Δ Peso (AUTO)</h4>
+                        <p className={lineClass}>
+                            <span className="font-semibold text-violet-700">Fórmula:</span> Peso da pesagem atual − peso da pesagem anterior.
                         </p>
+                        <p className={lineClass}><span className="font-medium text-violet-600">Ex: 80 kg − 82 kg = −2 kg</span></p>
+                        <p className={hintClass}>Valor positivo = ganho; negativo = perda. Útil para acompanhar tendência.</p>
                     </div>
                 </div>
             </div>
 
-            {/* %MG Result */}
-            <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-200 rounded-xl px-4 py-3 max-w-xs">
-                <div className="flex items-start gap-3">
-                    <span className="text-xl">🎯</span>
-                    <div>
-                        <h4 className="font-bold text-violet-700 text-sm mb-1">%MG (AUTO)</h4>
-                        <p className="text-xs text-violet-600 leading-relaxed">
-                            <strong>Classificação:</strong> Por género e idade
-                            <br />
-                            <span className="text-violet-500">Ex: Homem 25% → Médio (Aceitável)</span>
+            {/* %MG */}
+            <div className={cardBase}>
+                <div className="flex items-start gap-2.5">
+                    <div className={iconWrap}>🎯</div>
+                    <div className="min-w-0 flex-1">
+                        <h4 className={titleClass}>%MG (AUTO)</h4>
+                        <p className={lineClass}>
+                            <span className="font-semibold text-violet-700">Classificação:</span> Percentagem de massa gorda. Critérios por género e idade.
                         </p>
+                        <p className={lineClass}><span className="font-medium text-violet-600">Ex: Homem 25% → Médio (Aceitável)</span></p>
+                        <p className={hintClass}>Escalas: muito baixo, baixo, excelente, bom, médio, elevado, muito elevado.</p>
                     </div>
                 </div>
             </div>
 
-            {/* Refresh Info */}
-            <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-200 rounded-xl px-4 py-3 max-w-xs">
-                <div className="flex items-start gap-3">
-                    <span className="text-xl">🔄</span>
-                    <div>
-                        <h4 className="font-bold text-blue-700 text-sm mb-1">Atualização</h4>
-                        <p className="text-xs text-blue-600 leading-relaxed">
-                            Dados atualizados automaticamente.
-                            <br />
-                            <span className="text-blue-500">Clique no <strong>⟳</strong> no header para forçar.</span>
+            {/* SMI */}
+            <div className={cardBase}>
+                <div className="flex items-start gap-2.5">
+                    <div className={iconWrap}>💪</div>
+                    <div className="min-w-0 flex-1">
+                        <h4 className={titleClass}>SMI (AUTO)</h4>
+                        <p className={lineClass}>
+                            <span className="font-semibold text-violet-700">Fórmula (membros):</span> (MS dir. + MS esq. + MI dir. + MI esq.) ÷ Altura² (m).
                         </p>
+                        <p className={lineClass}><span className="font-medium text-violet-600">Ex: (3,2 + 3,1 + 9,5 + 9,4) ÷ (1,75 m)² ≈ 8,2 kg/m²</span></p>
+                        <p className={hintClass}>Soma dos quatro membros (kg) a dividir pela altura ao quadrado. Alternativa: MM ÷ Altura². Classificação por género.</p>
                     </div>
                 </div>
             </div>

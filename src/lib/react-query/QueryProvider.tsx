@@ -13,17 +13,15 @@ export function QueryProvider({ children }: QueryProviderProps) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // Always stale to force refetch unless explicitly overridden
-            staleTime: 0,
-            // Keep cache short-lived
-            gcTime: 60 * 1000, // 1 minute
+            // Default: consider data fresh for 20s to reduce refetches; hooks can override
+            staleTime: 20 * 1000,
+            gcTime: 5 * 60 * 1000, // 5 minutes
             retry: 2,
             refetchOnWindowFocus: true,
             refetchOnReconnect: true,
             refetchOnMount: true,
           },
           mutations: {
-            // Retry failed mutations
             retry: 1,
           },
         },

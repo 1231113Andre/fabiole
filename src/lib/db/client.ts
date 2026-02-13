@@ -32,9 +32,13 @@ const requireSSL = connectionString.includes('sslmode=require') ||
 
 function getPool(): Pool {
     if (!globalStore[POOL_KEY]) {
-        // Serverless (Vercel): 1 connection per instance to avoid exhausting DB connection limit.
-        // Each serverless isolate has its own pool; many instances × large pool = P2037.
-        const isServerless = typeof process.env.VERCEL !== 'undefined' || typeof process.env.AWS_LAMBDA_FUNCTION_NAME !== 'undefined';
+        // Serverless: 1 connection per instance to avoid exhausting DB connection limit (P2037).
+        // Vercel sets VERCEL=1 automatically at runtime; no need to add it in dashboard.
+        // You can force small pool elsewhere by setting DATABASE_POOL_SERVERLESS=1.
+        const isServerless =
+            process.env.DATABASE_POOL_SERVERLESS === '1' ||
+            typeof process.env.VERCEL !== 'undefined' ||
+            typeof process.env.AWS_LAMBDA_FUNCTION_NAME !== 'undefined';
         const maxConnections = isServerless ? 1 : (isProduction ? 10 : 5);
         const minConnections = isServerless ? 0 : (isProduction ? 2 : 1);
 

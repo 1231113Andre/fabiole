@@ -7,6 +7,7 @@ import {
     calculateMM,
     calculateH2O,
     calculateSMI,
+    calculateSMIFromLimbs,
     calculateAge,
     parseNumber
 } from "@/lib/body-metrics";
@@ -46,7 +47,11 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
             smi: null,
             resultadoIMC: null,
             resultadoPercentMG: null,
-            notas: null
+            notas: null,
+            msRight: null,
+            msLeft: null,
+            miRight: null,
+            miLeft: null
         };
 
         const overrides = new Set<keyof Pesagem>();
@@ -92,15 +97,14 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
                 }
             }
 
-            // Check SMI override – compare stored vs calculated from MM and height
-            if (record.mm != null && record.height != null) {
-                const calculatedSMI = calculateSMI(record.mm, record.height);
-                if (record.smi != null && calculatedSMI != null && Math.abs(record.smi - calculatedSMI) > 0.01) {
-                    overrides.add('smi');
-                }
-                // Ensure SMI is always set for display when opening edit (use stored or calculated)
-                initialData.smi = record.smi ?? calculatedSMI ?? initialData.smi;
+            // Check SMI override – compare stored vs calculated (limbs or MM/height)
+            const limbSMI = calculateSMIFromLimbs(record.msRight, record.msLeft, record.miRight, record.miLeft, record.height);
+            const mmSMI = (record.mm != null && record.height != null) ? calculateSMI(record.mm, record.height) : null;
+            const calculatedSMI = limbSMI ?? mmSMI;
+            if (record.smi != null && calculatedSMI != null && Math.abs(record.smi - calculatedSMI) > 0.01) {
+                overrides.add('smi');
             }
+            initialData.smi = record.smi ?? calculatedSMI ?? initialData.smi;
         } else {
             // New record logic (keep existing)
             if (initialData.peso) {
@@ -113,7 +117,9 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
                 if (mm) initialData.mm = mm;
                 const h2o = calculateH2O(initialData.peso, initialData.height ?? null, userAge, gender);
                 if (h2o) initialData.h2o = h2o;
-                const smi = calculateSMI(initialData.mm, initialData.height);
+                const limbSMI = calculateSMIFromLimbs(initialData.msRight, initialData.msLeft, initialData.miRight, initialData.miLeft, initialData.height);
+                const mmSMI = (initialData.mm != null && initialData.height != null) ? calculateSMI(initialData.mm, initialData.height) : null;
+                const smi = limbSMI ?? mmSMI;
                 if (smi != null) initialData.smi = smi;
             }
             if (initialData.percentualMG) {
@@ -164,10 +170,16 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
             const mm = calculateMM(p, mg);
             if (mm) {
                 newFormData.mm = mm;
-                // SMI depends on MM and height – recalc if not overridden
-                if (!newOverrides.has('smi') && formData.height != null) {
-                    const smi = calculateSMI(mm, parseNumber(formData.height));
-                    if (smi != null) newFormData.smi = smi;
+                // SMI: prefer limb formula when all four + height set, else MM/height²
+                if (!newOverrides.has('smi')) {
+                    const h = parseNumber(newFormData.height);
+                    const smiFromLimbs = calculateSMIFromLimbs(newFormData.msRight, newFormData.msLeft, newFormData.miRight, newFormData.miLeft, h);
+                    if (smiFromLimbs != null) {
+                        newFormData.smi = smiFromLimbs;
+                    } else if (h != null) {
+                        const smi = calculateSMI(mm, h);
+                        if (smi != null) newFormData.smi = smi;
+                    }
                 }
             }
         }
@@ -182,13 +194,23 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
             }
         }
 
-        // Auto-calculate SMI (MM / height²) - only if not manually overridden
-        if ((field === 'mm' || field === 'height') && !newOverrides.has('smi')) {
-            const mm = field === 'mm' ? parseNumber(value) : parseNumber(formData.mm);
-            const h = field === 'height' ? parseNumber(value) : parseNumber(formData.height);
-            const smi = calculateSMI(mm, h);
-            if (smi != null) {
-                newFormData.smi = smi;
+        // Auto-calculate SMI: prefer limb formula (MS+MI dir+esq) / height² when all four limbs + height set; else MM / height²
+        const limbFields = ['msRight', 'msLeft', 'miRight', 'miLeft', 'height'] as const;
+        if (limbFields.includes(field as any) || field === 'mm') {
+            if (!newOverrides.has('smi')) {
+                const h = field === 'height' ? parseNumber(value) : parseNumber(newFormData.height);
+                const msR = field === 'msRight' ? parseNumber(value) : parseNumber(newFormData.msRight);
+                const msL = field === 'msLeft' ? parseNumber(value) : parseNumber(newFormData.msLeft);
+                const miR = field === 'miRight' ? parseNumber(value) : parseNumber(newFormData.miRight);
+                const miL = field === 'miLeft' ? parseNumber(value) : parseNumber(newFormData.miLeft);
+                const smiFromLimbs = calculateSMIFromLimbs(msR, msL, miR, miL, h);
+                if (smiFromLimbs != null) {
+                    newFormData.smi = smiFromLimbs;
+                } else {
+                    const mm = field === 'mm' ? parseNumber(value) : parseNumber(newFormData.mm);
+                    const smi = calculateSMI(mm, h);
+                    if (smi != null) newFormData.smi = smi;
+                }
             }
         }
 
@@ -227,9 +249,20 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
             const h2o = calculateH2O(parseNumber(formData.peso), parseNumber(formData.height), userAge, gender);
             if (h2o) newFormData.h2o = h2o;
         }
-        if (field === 'smi' && formData.mm != null && formData.height != null) {
-            const smi = calculateSMI(parseNumber(formData.mm), parseNumber(formData.height));
-            if (smi != null) newFormData.smi = smi;
+        if (field === 'smi') {
+            const smiFromLimbs = calculateSMIFromLimbs(
+                parseNumber(formData.msRight),
+                parseNumber(formData.msLeft),
+                parseNumber(formData.miRight),
+                parseNumber(formData.miLeft),
+                parseNumber(formData.height)
+            );
+            if (smiFromLimbs != null) {
+                newFormData.smi = smiFromLimbs;
+            } else if (formData.mm != null && formData.height != null) {
+                const smi = calculateSMI(parseNumber(formData.mm), parseNumber(formData.height));
+                if (smi != null) newFormData.smi = smi;
+            }
         }
         setFormData(newFormData);
     };

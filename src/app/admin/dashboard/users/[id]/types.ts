@@ -43,6 +43,12 @@ export interface Pesagem {
     resultadoIMC: string | null;
     resultadoPercentMG: string | null;
     notas: string | null;
+    massaMuscularSuperior: number | null;
+    massaMuscularInferior: number | null;
+    msRight: number | null;
+    msLeft: number | null;
+    miRight: number | null;
+    miLeft: number | null;
 }
 
 export interface Perimetro {

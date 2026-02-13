@@ -3,7 +3,7 @@ import NewButton from "@/app/components/newButton";
 export function ServiceCTA() {
     return (
         <section className="py-20 bg-gradient-to-r from-primary via-primary-hover to-primary">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="ui-container text-center max-w-4xl mr-auto">
                 <h2 className="mb-4 font-fugazone text-4xl uppercase text-white md:text-5xl lg:text-6xl drop-shadow-lg animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                     Pronto para Começar?
                 </h2>

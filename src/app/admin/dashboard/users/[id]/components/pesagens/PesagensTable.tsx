@@ -44,7 +44,7 @@ export const PesagensTable: React.FC<PesagensTableProps> = ({
                             <TooltipHeader label="MM" description="Peso × (1 - %MG). Massa magra (LBM)." isAuto={true} />
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[3.2rem]">
-                            <TooltipHeader label="H2O" description="Fórmula Watson. % e kg." isAuto={true} />
+                            <TooltipHeader label="H2O" description="Fórmula Watson: água corporal a partir de peso, altura, género e idade (homens). % e kg." isAuto={true} />
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[2.8rem]">
                             <TooltipHeader label="IMC" description="Peso ÷ Altura²." isAuto={true} />
@@ -53,13 +53,13 @@ export const PesagensTable: React.FC<PesagensTableProps> = ({
                         <th className="py-3 px-2 text-center font-semibold text-gray-700 w-[2.6rem]">ID M.</th>
                         <th className="py-3 px-2 text-center font-semibold text-gray-700 w-[2.8rem]">M.Óssea</th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[5rem]">
-                            <TooltipHeader label="Res. IMC" description="Classificação automática IMC." isAuto={true} />
+                            <TooltipHeader label="Res. IMC" description="Classificação automática: baixo peso, normal, pré-obesidade, obesidade (graus I–III)." isAuto={true} />
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[5rem]">
-                            <TooltipHeader label="Res. %MG" description="Classificação por género e % gordura." isAuto={true} />
+                            <TooltipHeader label="Res. %MG" description="Classificação por género, idade e % gordura (escalas por faixa etária)." isAuto={true} />
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[3.5rem]">
-                            <TooltipHeader label="SMI" description="MM ÷ Altura² (kg/m²)." isAuto={true} />
+                            <TooltipHeader label="SMI" description="Novo cálculo: se MS+MI (4 membros) preenchidos → soma ÷ Altura². Caso contrário → MM ÷ Altura². Resultado em kg/m²." isAuto={true} />
                         </th>
                         <th className="py-3 px-2 text-center font-semibold text-violet-700 w-[4.5rem]">
                             <TooltipHeader label="SMI Res." description="Classificação por género." isAuto={true} />

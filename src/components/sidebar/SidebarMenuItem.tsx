@@ -18,6 +18,7 @@ interface SidebarMenuItemProps {
     isActive: boolean;
     isCollapsed: boolean;
     onNavigate?: () => void;
+    onLinkHover?: () => void;
 }
 
 export const SidebarMenuItem = memo(function SidebarMenuItem({
@@ -25,6 +26,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
     isActive,
     isCollapsed,
     onNavigate,
+    onLinkHover,
 }: SidebarMenuItemProps) {
     // Process icon class (handle 'fas ' legacy format if present)
     const iconClass = item.icon.includes("fa-duotone")
@@ -69,6 +71,7 @@ export const SidebarMenuItem = memo(function SidebarMenuItem({
                 className={className}
                 title={isCollapsed ? item.label : ""}
                 onClick={onNavigate}
+                onMouseEnter={onLinkHover}
             >
                 {Icon}
                 {Label}

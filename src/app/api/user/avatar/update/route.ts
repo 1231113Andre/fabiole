@@ -7,9 +7,18 @@ import { cookies } from "next/headers";
 import { AuthService } from "@/lib/api/services/AuthService";
 import { Logger } from "@/lib/utils/logger";
 import { isValidUuid, isSafeAvatarUrl } from "@/lib/utils/sanitizers";
+import { validateCsrfToken } from "@/lib/csrf/validate";
 
 export async function POST(req: NextRequest) {
     try {
+        const csrf = await validateCsrfToken(req);
+        if (!csrf.valid) {
+            return NextResponse.json(
+                { error: csrf.error || "CSRF validation failed" },
+                { status: 403 }
+            );
+        }
+
         const session = await getSession();
         if (!session || !session.uuid) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -93,7 +93,11 @@ export function useRecordOperations({ userId, fetchUser, setSuccess, setError, s
                     leftThigh: { label: 'Coxa Esq.', icon: 'fa-ruler-horizontal' },
                     rightCalf: { label: 'Gémeo Dir.', icon: 'fa-ruler-horizontal' },
                     leftCalf: { label: 'Gémeo Esq.', icon: 'fa-ruler-horizontal' },
-                    date: { label: 'Data', icon: 'fa-calendar' }
+                    date: { label: 'Data', icon: 'fa-calendar' },
+                    msRight: { label: 'MS direito', icon: 'fa-hand-back-fist' },
+                    msLeft: { label: 'MS esquerdo', icon: 'fa-hand-back-fist' },
+                    miRight: { label: 'MI direito', icon: 'fa-shoe-prints' },
+                    miLeft: { label: 'MI esquerdo', icon: 'fa-shoe-prints' }
                 };
 
                 const formatDate = (val: string) => {

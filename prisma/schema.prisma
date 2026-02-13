@@ -52,24 +52,30 @@ model User {
 }
 
 model Pesagem {
-  id                 Int      @id @default(autoincrement())
-  date               DateTime @db.Date
-  peso               Decimal? @db.Decimal(5, 2)
-  percentualMG       Decimal? @db.Decimal(5, 2)
-  mm                 Decimal? @db.Decimal(5, 2)
-  h2o                Decimal? @db.Decimal(5, 2)
-  imc                Decimal? @db.Decimal(5, 2)
-  gordVisceral       Decimal? @db.Decimal(5, 2)
-  idMetabolica       Decimal? @db.Decimal(5, 2)
-  massaOssea         Decimal? @db.Decimal(5, 2)
-  height             Decimal? @db.Decimal(5, 2)
-  smi                Decimal? @db.Decimal(5, 2)
-  resultadoIMC       String?  @db.VarChar(50)
-  resultadoPercentMG String?  @db.VarChar(50)
-  notas              String?
-  createdAt          DateTime @default(now()) @db.Timestamptz(6)
-  user_uuid          String   @map("user_uuid") @db.Uuid
-  user               User     @relation(fields: [user_uuid], references: [id], onDelete: Cascade)
+  id                        Int      @id @default(autoincrement())
+  date                      DateTime @db.Date
+  peso                      Decimal? @db.Decimal(5, 2)
+  percentualMG              Decimal? @db.Decimal(5, 2)
+  mm                        Decimal? @db.Decimal(5, 2)
+  h2o                       Decimal? @db.Decimal(5, 2)
+  imc                       Decimal? @db.Decimal(5, 2)
+  gordVisceral              Decimal? @db.Decimal(5, 2)
+  idMetabolica              Decimal? @db.Decimal(5, 2)
+  massaOssea                Decimal? @db.Decimal(5, 2)
+  height                    Decimal? @db.Decimal(5, 2)
+  smi                       Decimal? @db.Decimal(5, 2)
+  resultadoIMC              String?  @db.VarChar(50)
+  resultadoPercentMG        String?  @db.VarChar(50)
+  notas                     String?
+  massaMuscularSuperior     Decimal? @db.Decimal(5, 2)
+  massaMuscularInferior     Decimal? @db.Decimal(5, 2)
+  msRight                   Decimal? @db.Decimal(5, 2)
+  msLeft                    Decimal? @db.Decimal(5, 2)
+  miRight                   Decimal? @db.Decimal(5, 2)
+  miLeft                    Decimal? @db.Decimal(5, 2)
+  createdAt                 DateTime @default(now()) @db.Timestamptz(6)
+  user_uuid                 String   @map("user_uuid") @db.Uuid
+  user                      User     @relation(fields: [user_uuid], references: [id], onDelete: Cascade)
 
   @@index([user_uuid])
   @@index([user_uuid, date])

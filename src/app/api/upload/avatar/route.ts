@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "../../../../lib/security/session";
+import { validateCsrfToken } from "@/lib/csrf/validate";
 import { r2Client, R2_BUCKET_NAME } from "../../../../lib/r2";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Logger } from "@/lib/utils/logger";
 
-// Note: I'll use native crypto.randomUUID()
 export async function POST(req: NextRequest) {
     try {
+        const csrf = await validateCsrfToken(req);
+        if (!csrf.valid) {
+            return NextResponse.json(
+                { error: csrf.error || "CSRF validation failed" },
+                { status: 403 }
+            );
+        }
+
         // 1. Auth check
         const token = req.cookies.get("auth_session")?.value;
         if (!token) {

@@ -142,9 +142,57 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* Basic Info */}
-                        <div className="space-y-2.5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Massa muscular membros – po lewej */}
+                        <div className="space-y-2.5 order-1">
+                            <div className="flex items-center gap-2 pb-1 border-b border-violet-200">
+                                <i className="fa-solid fa-person-arms-up text-violet-500 text-xs"></i>
+                                <h4 className="text-[11px] font-bold text-violet-600 uppercase tracking-wide">Massa muscular membros (kg)</h4>
+                            </div>
+                            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+                                <div className="space-y-2 rounded-lg bg-violet-50/50 border border-violet-200/70 p-2.5">
+                                    <div className="text-[10px] font-bold text-violet-700 uppercase tracking-wider text-center pb-0.5 border-b border-violet-200">Direito</div>
+                                    <FormInput
+                                        label="MS"
+                                        icon="fa-hand-back-fist"
+                                        name="msRight"
+                                        value={formData.msRight}
+                                        onChange={(v) => onFieldChange('msRight', v)}
+                                        step="0.01"
+                                    />
+                                    <FormInput
+                                        label="MI"
+                                        icon="fa-shoe-prints"
+                                        name="miRight"
+                                        value={formData.miRight}
+                                        onChange={(v) => onFieldChange('miRight', v)}
+                                        step="0.01"
+                                    />
+                                </div>
+                                <div className="space-y-2 rounded-lg bg-violet-50/50 border border-violet-200/70 p-2.5">
+                                    <div className="text-[10px] font-bold text-violet-700 uppercase tracking-wider text-center pb-0.5 border-b border-violet-200">Esquerdo</div>
+                                    <FormInput
+                                        label="MS"
+                                        icon="fa-hand-back-fist"
+                                        name="msLeft"
+                                        value={formData.msLeft}
+                                        onChange={(v) => onFieldChange('msLeft', v)}
+                                        step="0.01"
+                                    />
+                                    <FormInput
+                                        label="MI"
+                                        icon="fa-shoe-prints"
+                                        name="miLeft"
+                                        value={formData.miLeft}
+                                        onChange={(v) => onFieldChange('miLeft', v)}
+                                        step="0.01"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Entrada Manual */}
+                        <div className="space-y-2.5 order-2">
                             <div className="flex items-center gap-2 pb-1 border-b border-gray-200">
                                 <i className="fa-solid fa-keyboard text-primary text-xs"></i>
                                 <h4 className="text-[11px] font-bold text-gray-700 uppercase tracking-wide">Entrada Manual</h4>
@@ -187,8 +235,8 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                             />
                         </div>
 
-                        {/* Detailed Stats */}
-                        <div className="space-y-2.5">
+                        {/* Composição */}
+                        <div className="space-y-2.5 order-3">
                             <div className="flex items-center gap-2 pb-1 border-b border-gray-200">
                                 <i className="fa-solid fa-chart-pie text-primary text-xs"></i>
                                 <h4 className="text-[11px] font-bold text-gray-700 uppercase tracking-wide">Composição</h4>
@@ -243,8 +291,8 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                             />
                         </div>
 
-                        {/* Results (Auto) */}
-                        <div className="space-y-2.5">
+                        {/* Automático + Notas */}
+                        <div className="space-y-2.5 order-4">
                             <div className="flex items-center gap-2 pb-1 border-b border-violet-200">
                                 <i className="fa-solid fa-robot text-violet-500 text-xs"></i>
                                 <h4 className="text-[11px] font-bold text-violet-600 uppercase tracking-wide">Automático</h4>

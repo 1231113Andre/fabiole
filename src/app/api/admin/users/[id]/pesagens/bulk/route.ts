@@ -19,6 +19,12 @@ interface PesagemRecord {
     resultadoIMC?: string | null;
     resultadoPercentMG?: string | null;
     notas?: string | null;
+    massaMuscularSuperior?: unknown;
+    massaMuscularInferior?: unknown;
+    msRight?: unknown;
+    msLeft?: unknown;
+    miRight?: unknown;
+    miLeft?: unknown;
 }
 
 /**
@@ -61,6 +67,12 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
             resultadoIMC: sanitizeStringValue(record.resultadoIMC) ?? undefined,
             resultadoPercentMG: sanitizeStringValue(record.resultadoPercentMG) ?? undefined,
             notas: sanitizeStringValue(record.notas) ?? undefined,
+            massaMuscularSuperior: sanitizeValue(record.massaMuscularSuperior) ?? undefined,
+            massaMuscularInferior: sanitizeValue(record.massaMuscularInferior) ?? undefined,
+            msRight: sanitizeValue(record.msRight) ?? undefined,
+            msLeft: sanitizeValue(record.msLeft) ?? undefined,
+            miRight: sanitizeValue(record.miRight) ?? undefined,
+            miLeft: sanitizeValue(record.miLeft) ?? undefined,
         }));
 
         // Use repository - automatically invalidates cache for all affected users

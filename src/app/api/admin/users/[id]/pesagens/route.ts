@@ -35,6 +35,12 @@ export const POST = withAdminAuth(async (req, session, { params }: { params: Pro
             resultadoIMC: sanitizeStringValue(body.resultadoIMC) ?? undefined,
             resultadoPercentMG: sanitizeStringValue(body.resultadoPercentMG) ?? undefined,
             notas: sanitizeStringValue(body.notas) ?? undefined,
+            massaMuscularSuperior: sanitizeValue(body.massaMuscularSuperior) ?? undefined,
+            massaMuscularInferior: sanitizeValue(body.massaMuscularInferior) ?? undefined,
+            msRight: sanitizeValue(body.msRight) ?? undefined,
+            msLeft: sanitizeValue(body.msLeft) ?? undefined,
+            miRight: sanitizeValue(body.miRight) ?? undefined,
+            miLeft: sanitizeValue(body.miLeft) ?? undefined,
         };
 
         const result = await pesagemRepository.create(createData);

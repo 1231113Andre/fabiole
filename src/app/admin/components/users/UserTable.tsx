@@ -41,10 +41,10 @@ export const UserTable = memo<UserTableProps>(({ users, searchTerm, onSearchChan
         , [users, searchTerm]);
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="p-6 border-b border-gray-100 flex flex-wrap items-center justify-between gap-4">
-                <div>
+        <div className="bg-white rounded-xl sm:rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            {/* Header – stacks on mobile, search full width */}
+            <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div className="min-w-0 flex-1">
                     {renderTitle ? renderTitle(filteredUsers.length, filteredUsers) : (
                         <h3 className="font-bold text-lg text-gray-900 flex items-center gap-2">
                             <i className="fa-duotone fa-users text-primary" />
@@ -62,10 +62,12 @@ export const UserTable = memo<UserTableProps>(({ users, searchTerm, onSearchChan
                         </Link>
                     )}
                 </div>
-                <SearchInput value={searchTerm} onChange={onSearchChange} />
+                <div className="w-full sm:w-auto shrink-0">
+                    <SearchInput value={searchTerm} onChange={onSearchChange} />
+                </div>
             </div>
 
-            <div className="divide-y divide-gray-100 max-h-[calc(100vh-300px)] overflow-y-auto">
+            <div className="divide-y divide-gray-100 max-h-[calc(100vh-240px)] sm:max-h-[calc(100vh-300px)] overflow-y-auto overflow-x-hidden">
                 {filteredUsers.length === 0 ? (
                     <EmptyState />
                 ) : (
