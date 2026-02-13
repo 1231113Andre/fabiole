@@ -272,8 +272,8 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                                 <i className="fa-duotone fa-chart-line text-base sm:text-lg" />
                             </div>
                         </div>
-                        <div className="h-[220px] sm:h-[260px] lg:h-[280px] w-full min-h-0 flex-1">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-[220px] sm:h-[260px] lg:h-[280px] w-full min-h-[180px] flex-1">
+                            <ResponsiveContainer width="100%" height="100%" minHeight={180} minWidth={100}>
                                 <AreaChart data={chartData}>
                                     <defs>
                                         <linearGradient id="colorPeso" x1="0" y1="0" x2="0" y2="1">
