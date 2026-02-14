@@ -105,23 +105,33 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
         );
     }
 
+    const thMeasure = "py-3 px-2.5 text-center font-semibold text-gray-700 whitespace-nowrap min-w-[3.5rem] sm:min-w-[4rem]";
+    const tdMeasure = "py-3 px-2.5 text-center align-middle";
+
     return (
-        <div className="w-full overflow-x-auto premium-scrollbar shadow-inner pb-16">
-            <table className="w-full text-xs border-collapse min-w-max">
+        <div
+            className="w-full min-w-0 -mx-2 sm:mx-0 px-2 sm:px-0 overflow-x-auto overflow-y-hidden premium-scrollbar touch-pan-x rounded-xl border border-gray-200 bg-gray-50/50"
+            style={{ WebkitOverflowScrolling: "touch" }}
+            role="region"
+            aria-label="Tabela de avaliações – deslize para a esquerda ou direita para ver todas as colunas"
+        >
+            <table className="w-full text-xs sm:text-sm border-collapse min-w-max">
                 <thead>
-                    <tr className="bg-gray-50 border-b">
-                        <th className="py-3 px-2 text-left font-semibold text-gray-700 whitespace-nowrap">Data</th>
+                    <tr className="bg-gray-100 border-b border-gray-200">
+                        <th className="py-3 px-2.5 text-left font-semibold text-gray-700 whitespace-nowrap min-w-[5rem] sm:min-w-[5.5rem]">
+                            Data
+                        </th>
 
                         {columns.hasPushUps && (
                             <>
-                                <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
+                                <th className={`${thMeasure} hidden md:table-cell`}>
                                     <TooltipHeader
-                                        label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> Flexões</span>}
+                                        label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-dumbbell text-[10px] sm:text-xs" /> Flexões</span>}
                                         description="Número de flexões realizadas."
                                         isAuto={false}
                                     />
                                 </th>
-                                <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
+                                <th className={`${thMeasure} hidden md:table-cell min-w-[5rem]`}>
                                     <TooltipHeader
                                         label="Class. Flexões"
                                         description={`Classificação baseada em:\nGénero: ${gender === 'M' ? 'Masculino' : 'Feminino'}\nIdade: ${calculateAge(userBirth) ?? 'N/A'} anos`}
@@ -132,9 +142,9 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                         )}
 
                         {columns.hasSitUps && (
-                            <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
+                            <th className={`${thMeasure} hidden md:table-cell`}>
                                 <TooltipHeader
-                                    label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> Abdominais</span>}
+                                    label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-dumbbell text-[10px] sm:text-xs" /> Abdominais</span>}
                                     description="Número de abdominais realizados."
                                     isAuto={false}
                                 />
@@ -143,14 +153,14 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
 
                         {columns.hasMile && (
                             <>
-                                <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden md:table-cell">
+                                <th className={`${thMeasure} hidden md:table-cell`}>
                                     <TooltipHeader
-                                        label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-person-running"></i> Milha</span>}
+                                        label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-person-running text-[10px] sm:text-xs" /> Milha</span>}
                                         description="Tempo na milha (batimentos e tempo)."
                                         isAuto={false}
                                     />
                                 </th>
-                                <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                <th className={`${thMeasure} min-w-[5rem] sm:min-w-[5.5rem]`}>
                                     <TooltipHeader
                                         label="Resultado Milha"
                                         description={`Resultado calculado automaticamente (VO2max Rockport) baseado em:\nGénero, Idade, Peso, Tempo e Frequência Cardíaca.`}
@@ -161,16 +171,18 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                         )}
 
                         {columns.hasNotes && (
-                            <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap hidden lg:table-cell">
+                            <th className={`${thMeasure} hidden lg:table-cell min-w-[8rem] max-w-[280px]`}>
                                 <TooltipHeader
-                                    label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-note-sticky"></i> Notas</span>}
+                                    label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-note-sticky text-[10px] sm:text-xs" /> Notas</span>}
                                     description="Observações adicionais."
                                     isAuto={false}
                                 />
                             </th>
                         )}
 
-                        <th className="py-3 px-2 text-right font-semibold text-gray-700 whitespace-nowrap">Ações</th>
+                        <th className="py-3 px-2.5 text-right font-semibold text-gray-700 whitespace-nowrap min-w-[5rem] sm:min-w-[5.5rem]">
+                            Ações
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -229,21 +241,19 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                         // --- Logic Calculation End ---
 
                         return (
-                            <tr key={a.id} className="border-b border-gray-300 hover:bg-gray-50 transition-colors">
-                                <td className="py-3 px-2 whitespace-nowrap font-bold">{new Date(a.date).toLocaleDateString('pt-PT')}</td>
+                            <tr key={a.id} className="border-b border-gray-200 hover:bg-gray-100/80 transition-colors bg-white">
+                                <td className="py-3 px-2.5 whitespace-nowrap font-semibold text-gray-800">
+                                    {new Date(a.date).toLocaleDateString("pt-PT")}
+                                </td>
 
                                 {columns.hasPushUps && (
                                     <>
-                                        <td className="py-3 px-2 text-center hidden md:table-cell">
-                                            <span className={BADGE_STYLES.PURPLE}>
-                                                {a.pushUps || '-'}
-                                            </span>
+                                        <td className={`${tdMeasure} hidden md:table-cell`}>
+                                            <span className={BADGE_STYLES.PURPLE}>{a.pushUps ?? "-"}</span>
                                         </td>
-                                        <td className="py-3 px-2 text-center hidden md:table-cell">
+                                        <td className={`${tdMeasure} hidden md:table-cell`}>
                                             {pushRes ? (
-                                                <span className={getMileResultStyle(pushRes)}>
-                                                    {pushRes}
-                                                </span>
+                                                <span className={getMileResultStyle(pushRes)}>{pushRes}</span>
                                             ) : (
                                                 <span className="text-gray-400">-</span>
                                             )}
@@ -252,25 +262,19 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                                 )}
 
                                 {columns.hasSitUps && (
-                                    <td className="py-3 px-2 text-center hidden md:table-cell">
-                                        <span className={BADGE_STYLES.PURPLE}>
-                                            {a.sitUps || '-'}
-                                        </span>
+                                    <td className={`${tdMeasure} hidden md:table-cell`}>
+                                        <span className={BADGE_STYLES.PURPLE}>{a.sitUps ?? "-"}</span>
                                     </td>
                                 )}
 
                                 {columns.hasMile && (
                                     <>
-                                        <td className="py-3 px-2 text-center hidden md:table-cell">
-                                            <span className={BADGE_STYLES.INDIGO}>
-                                                {a.mile || '-'}
-                                            </span>
+                                        <td className={`${tdMeasure} hidden md:table-cell`}>
+                                            <span className={BADGE_STYLES.INDIGO}>{a.mile ?? "-"}</span>
                                         </td>
-                                        <td className="py-3 px-2 text-center">
-                                            {finalMileDisplay !== '-' ? (
-                                                <span className={mileBadgeColor}>
-                                                    {finalMileDisplay}
-                                                </span>
+                                        <td className={tdMeasure}>
+                                            {finalMileDisplay !== "-" ? (
+                                                <span className={mileBadgeColor}>{finalMileDisplay}</span>
                                             ) : (
                                                 <span className="text-gray-400">-</span>
                                             )}
@@ -279,9 +283,9 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                                 )}
 
                                 {columns.hasNotes && (
-                                    <td className="py-3 px-2 text-center hidden lg:table-cell">
+                                    <td className={`${tdMeasure} hidden lg:table-cell text-left`}>
                                         {a.notes ? (
-                                            <span className="inline-block px-2.5 py-1 bg-slate-50 border border-slate-200/60 rounded-lg text-gray-900 text-[10px] font-semibold leading-tight max-w-[280px] line-clamp-2 text-left" title={a.notes}>
+                                            <span className="inline-block px-2.5 py-1 bg-slate-50 border border-slate-200/60 rounded-lg text-gray-900 text-[10px] font-semibold leading-tight max-w-[280px] line-clamp-2" title={a.notes}>
                                                 {a.notes}
                                             </span>
                                         ) : (
@@ -290,21 +294,25 @@ export const AvaliacoesTable: React.FC<AvaliacoesTableProps> = ({
                                     </td>
                                 )}
 
-                                <td className="py-3 px-2 text-right">
-                                    <div className="flex justify-end gap-1">
+                                <td className="py-3 px-2.5 text-right align-middle">
+                                    <div className="flex justify-end gap-0.5 sm:gap-1">
                                         <button
+                                            type="button"
                                             onClick={() => onEdit(a)}
-                                            className="p-1.5 text-gray-400 hover:text-primary transition-colors cursor-pointer"
+                                            className="p-1.5 sm:p-2 text-gray-400 hover:text-primary transition-colors cursor-pointer rounded-lg hover:bg-primary/5"
                                             title="Editar"
+                                            aria-label="Editar"
                                         >
-                                            <i className="fa-duotone fa-pen-to-square"></i>
+                                            <i className="fa-duotone fa-pen-to-square text-sm" />
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={() => onDelete(a.id)}
-                                            className="p-1.5 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+                                            className="p-1.5 sm:p-2 text-gray-400 hover:text-red-600 transition-colors cursor-pointer rounded-lg hover:bg-red-50"
                                             title="Eliminar"
+                                            aria-label="Eliminar"
                                         >
-                                            <i className="fa-duotone fa-trash"></i>
+                                            <i className="fa-duotone fa-trash text-sm" />
                                         </button>
                                     </div>
                                 </td>

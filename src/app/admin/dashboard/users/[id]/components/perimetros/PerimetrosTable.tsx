@@ -23,130 +23,132 @@ export const PerimetrosTable: React.FC<PerimetrosTableProps> = ({
         );
     }
 
+    const thMeasure = "py-3 px-2.5 text-center font-semibold text-gray-700 whitespace-nowrap min-w-[3.5rem] sm:min-w-[4rem]";
+    const tdMeasure = "py-3 px-2.5 text-center align-middle";
+
     return (
-        <div className="w-full overflow-x-auto premium-scrollbar shadow-inner pb-16">
-            <table className="w-full text-xs border-collapse min-w-max">
+        <div
+            className="w-full min-w-0 -mx-2 sm:mx-0 px-2 sm:px-0 overflow-x-auto overflow-y-hidden premium-scrollbar touch-pan-x rounded-xl border border-gray-200 bg-gray-50/50"
+            style={{ WebkitOverflowScrolling: "touch" }}
+            role="region"
+            aria-label="Tabela de perímetros – deslize para a esquerda ou direita para ver todas as colunas"
+        >
+            <table className="w-full text-xs sm:text-sm border-collapse min-w-max">
                 <thead>
-                    <tr className="bg-gray-50 border-b">
-                        <th className="py-3 px-2 text-left font-semibold text-gray-700 whitespace-nowrap">Data</th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                    <tr className="bg-gray-100 border-b border-gray-200">
+                        <th className="py-3 px-2.5 text-left font-semibold text-gray-700 whitespace-nowrap min-w-[5rem] sm:min-w-[5.5rem]">
+                            Data
+                        </th>
+                        <th className={thMeasure}>
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> MS Dir.</span>}
+                                label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-dumbbell text-[10px] sm:text-xs" /> MS Dir.</span>}
                                 description="Medida da circunferência do braço direito."
                                 isAuto={false}
                             />
                         </th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                        <th className={thMeasure}>
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-dumbbell"></i> MS Esq.</span>}
+                                label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-dumbbell text-[10px] sm:text-xs" /> MS Esq.</span>}
                                 description="Medida da circunferência do braço esquerdo."
                                 isAuto={false}
                             />
                         </th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                        <th className={thMeasure}>
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-heart-pulse"></i> Peito</span>}
+                                label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-heart-pulse text-[10px] sm:text-xs" /> Peito</span>}
                                 description="Medida da circunferência do tórax."
                                 isAuto={false}
                             />
                         </th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                        <th className={thMeasure}>
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-ruler-horizontal"></i> Cintura</span>}
+                                label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-ruler-horizontal text-[10px] sm:text-xs" /> Cintura</span>}
                                 description="Medida da circunferência da cintura."
                                 isAuto={false}
                             />
                         </th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                        <th className={thMeasure}>
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-circle-dot"></i> Abdómen</span>}
+                                label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-circle-dot text-[10px] sm:text-xs" /> Abdómen</span>}
                                 description="Medida da circunferência abdominal."
                                 isAuto={false}
                             />
                         </th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                        <th className={thMeasure}>
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-person-dress"></i> Anca</span>}
+                                label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-person-dress text-[10px] sm:text-xs" /> Anca</span>}
                                 description="Medida da circunferência da anca."
                                 isAuto={false}
                             />
                         </th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                        <th className={thMeasure}>
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-person-running"></i> Coxa Dir.</span>}
+                                label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-person-running text-[10px] sm:text-xs" /> Coxa Dir.</span>}
                                 description="Medida da circunferência da coxa direita."
                                 isAuto={false}
                             />
                         </th>
-                        <th className="py-3 px-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                        <th className={thMeasure}>
                             <TooltipHeader
-                                label={<span className="flex items-center gap-1.5"><i className="fa-duotone fa-person-running"></i> Coxa Esq.</span>}
+                                label={<span className="flex items-center justify-center gap-1"><i className="fa-duotone fa-person-running text-[10px] sm:text-xs" /> Coxa Esq.</span>}
                                 description="Medida da circunferência da coxa esquerda."
                                 isAuto={false}
                             />
                         </th>
-                        <th className="py-3 px-2 text-right font-semibold text-gray-700 whitespace-nowrap">Ações</th>
+                        <th className="py-3 px-2.5 text-right font-semibold text-gray-700 whitespace-nowrap min-w-[5rem] sm:min-w-[5.5rem]">
+                            Ações
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
                     {perimetros.map((p) => (
-                        <tr key={p.id} className="border-b border-gray-300 hover:bg-gray-50 transition-colors">
-                            <td className="py-3 px-2 whitespace-nowrap font-bold">{new Date(p.date).toLocaleDateString('pt-PT')}</td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={BADGE_STYLES.BLUE}>
-                                    {p.msRight || '-'}
-                                </span>
+                        <tr key={p.id} className="border-b border-gray-200 hover:bg-gray-100/80 transition-colors bg-white">
+                            <td className="py-3 px-2.5 whitespace-nowrap font-semibold text-gray-800">
+                                {new Date(p.date).toLocaleDateString("pt-PT")}
                             </td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={BADGE_STYLES.BLUE}>
-                                    {p.msLeft || '-'}
-                                </span>
+                            <td className={tdMeasure}>
+                                <span className={BADGE_STYLES.BLUE}>{p.msRight ?? "-"}</span>
                             </td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={BADGE_STYLES.BLUE}>
-                                    {p.chest || '-'}
-                                </span>
+                            <td className={tdMeasure}>
+                                <span className={BADGE_STYLES.BLUE}>{p.msLeft ?? "-"}</span>
                             </td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={BADGE_STYLES.BLUE}>
-                                    {p.waist || '-'}
-                                </span>
+                            <td className={tdMeasure}>
+                                <span className={BADGE_STYLES.BLUE}>{p.chest ?? "-"}</span>
                             </td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={BADGE_STYLES.BLUE}>
-                                    {p.abdomen || '-'}
-                                </span>
+                            <td className={tdMeasure}>
+                                <span className={BADGE_STYLES.BLUE}>{p.waist ?? "-"}</span>
                             </td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={BADGE_STYLES.BLUE}>
-                                    {p.hips || '-'}
-                                </span>
+                            <td className={tdMeasure}>
+                                <span className={BADGE_STYLES.BLUE}>{p.abdomen ?? "-"}</span>
                             </td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={BADGE_STYLES.BLUE}>
-                                    {p.thighR || '-'}
-                                </span>
+                            <td className={tdMeasure}>
+                                <span className={BADGE_STYLES.BLUE}>{p.hips ?? "-"}</span>
                             </td>
-                            <td className="py-3 px-2 text-center">
-                                <span className={BADGE_STYLES.BLUE}>
-                                    {p.thighL || '-'}
-                                </span>
+                            <td className={tdMeasure}>
+                                <span className={BADGE_STYLES.BLUE}>{p.thighR ?? "-"}</span>
                             </td>
-                            <td className="py-3 px-2 text-right">
-                                <div className="flex justify-end gap-1">
+                            <td className={tdMeasure}>
+                                <span className={BADGE_STYLES.BLUE}>{p.thighL ?? "-"}</span>
+                            </td>
+                            <td className="py-3 px-2.5 text-right align-middle">
+                                <div className="flex justify-end gap-0.5 sm:gap-1">
                                     <button
+                                        type="button"
                                         onClick={() => onEdit(p)}
-                                        className="p-1.5 text-gray-400 hover:text-primary transition-colors cursor-pointer"
+                                        className="p-1.5 sm:p-2 text-gray-400 hover:text-primary transition-colors cursor-pointer rounded-lg hover:bg-primary/5"
                                         title="Editar"
+                                        aria-label="Editar"
                                     >
-                                        <i className="fa-duotone fa-pen-to-square"></i>
+                                        <i className="fa-duotone fa-pen-to-square text-sm" />
                                     </button>
                                     <button
+                                        type="button"
                                         onClick={() => onDelete(p.id)}
-                                        className="p-1.5 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+                                        className="p-1.5 sm:p-2 text-gray-400 hover:text-red-600 transition-colors cursor-pointer rounded-lg hover:bg-red-50"
                                         title="Eliminar"
+                                        aria-label="Eliminar"
                                     >
-                                        <i className="fa-duotone fa-trash"></i>
+                                        <i className="fa-duotone fa-trash text-sm" />
                                     </button>
                                 </div>
                             </td>

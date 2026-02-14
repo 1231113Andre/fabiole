@@ -29,7 +29,12 @@ export const PesagensTable: React.FC<PesagensTableProps> = ({
     }
 
     return (
-        <div className="w-full overflow-x-auto premium-scrollbar shadow-inner relative">
+        <div
+            className="w-full min-w-0 -mx-2 sm:mx-0 px-2 sm:px-0 overflow-x-auto overflow-y-hidden premium-scrollbar shadow-inner touch-pan-x relative rounded-xl border border-gray-200 bg-gray-50/50"
+            style={{ WebkitOverflowScrolling: "touch" }}
+            role="region"
+            aria-label="Tabela de pesagens – deslize para a esquerda ou direita para ver todas as colunas"
+        >
             <table className="w-full text-sm border-collapse min-w-max">
                 <thead>
                     <tr className="bg-gray-50 border-b">

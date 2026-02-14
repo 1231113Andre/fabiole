@@ -63,72 +63,28 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
 
     return (
         <>
-            <div className="mb-6">
+            <div className="mb-4 sm:mb-6">
                 <NewButton
                     href={backUrl || "/admin/dashboard/users"}
                     variant="new_primary_rounded"
                     icon={<i className="fa-duotone fa-arrow-left" />}
-                    className="shadow-lg font-bold uppercase tracking-widest text-sm h-12 px-6"
+                    className="shadow-lg font-bold uppercase tracking-widest text-xs sm:text-sm h-10 sm:h-12 px-4 sm:px-6"
                 >
                     {backLabel || "Visão Geral"}
                 </NewButton>
             </div>
 
-            <div className="relative mt-6 mb-8 p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
-                {/* Payment Status Buttons or Custom Info */}
-                <div className="absolute right-6 top-6 flex flex-col items-end gap-3">
+            <div className="user-profile-card relative mt-4 sm:mt-6 mb-6 sm:mb-8 flex flex-col bg-white rounded-xl sm:rounded-2xl border border-gray-200 shadow-sm">
+                {/* Payment Status Buttons or Custom Info – mobile: in-flow below user; md+: absolute top-right */}
+                <div className="order-2 md:order-none md:absolute md:right-4 md:top-4 lg:right-6 lg:top-6 flex flex-col items-stretch sm:items-end gap-3 pt-4 sm:pt-0 md:pt-0 md:w-auto border-t sm:border-t-0 md:border-t-0 border-gray-100">
                     {!hidePaymentButtons ? (
-                        <div className="flex items-center gap-3">
-                            {/* Info Tooltip */}
-                            <div className="relative group/tooltip z-10">
-                                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-primary hover:bg-primary/5 cursor-help transition-all duration-200">
-                                    <i className="fa-duotone fa-circle-info text-lg"></i>
-                                </div>
-
-                                {/* Tooltip Content - Dark Theme (Global Styles) */}
-                                <div className="absolute top-10 right-0 w-72 p-3 bg-[#1c2434]/95 backdrop-blur-sm rounded-xl shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 transform origin-top-right scale-95 group-hover/tooltip:scale-100 z-50 border border-[#2E3A47]">
-                                    {/* Arrow */}
-                                    <div className="absolute -top-1 right-3 transform rotate-45 w-2.5 h-2.5 bg-[#1c2434]/95 border-t border-l border-[#2E3A47]"></div>
-
-                                    <div className="relative">
-                                        <h4 className="flex items-center gap-1.5 text-[10px] font-bold text-white uppercase tracking-wider mb-2 pb-2 border-b border-[#2E3A47]">
-                                            <i className="fa-duotone fa-wallet text-primary"></i>
-                                            Gestão de Pagamentos
-                                        </h4>
-                                        <div className="space-y-2 text-[11px] text-[#DEE4EE] font-medium">
-                                            <p className="leading-snug opacity-90">Controla o status de pagamento visível no dashboard do cliente.</p>
-                                            <div className="flex items-start gap-2">
-                                                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                                <div>
-                                                    <span className="font-bold text-emerald-400">PAGO:</span>
-                                                    <span className="ml-1 opacity-70">Pagamento confirmado pelo Administrador.</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-2">
-                                                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-red-500 shrink-0 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
-                                                <div>
-                                                    <span className="font-bold text-red-400">PENDENTE:</span>
-                                                    <span className="ml-1 opacity-70">Aguarda regularização do pagamento.</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-start gap-2">
-                                                <div className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
-                                                <div>
-                                                    <span className="font-bold text-amber-400">EM ANÁLISE:</span>
-                                                    <span className="ml-1 opacity-70">Requer verificação manual.</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
+                        <div className="flex flex-nowrap items-stretch justify-start sm:justify-end gap-2 sm:gap-3 min-w-0 w-full sm:w-auto">
                             <NewButton
                                 variant="new_paid_rounded"
                                 onClick={() => handleStatusUpdate("PAGO")}
                                 disabled={user.paid === "PAGO" || updating !== null}
-                                icon={<i className="fa-duotone fa-check text-sm" />}
-                                className={`font-bold h-10 px-4 text-sm w-36 justify-center ${user.paid === "PAGO" ? "!opacity-100 cursor-not-allowed !text-emerald-600 !bg-transparent !border-emerald-600 shadow-none hover:!bg-transparent" : ""}`}
+                                icon={<i className="fa-duotone fa-check text-[10px] sm:text-sm shrink-0" />}
+                                className={`font-bold h-9 sm:h-10 px-2 sm:px-3 text-[10px] sm:text-sm min-w-0 flex-1 justify-center truncate ${user.paid === "PAGO" ? "!opacity-100 cursor-not-allowed !text-emerald-600 !bg-transparent !border-emerald-600 shadow-none hover:!bg-transparent" : ""}`}
                             >
                                 {updating === "PAGO" ? <ButtonSpinner color="primary" /> : "PAGO"}
                             </NewButton>
@@ -136,8 +92,8 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                 variant="new_pendente_rounded"
                                 onClick={() => handleStatusUpdate("PENDENTE")}
                                 disabled={user.paid === "PENDENTE" || updating !== null}
-                                icon={<i className="fa-duotone fa-exclamation text-sm" />}
-                                className={`font-bold h-10 px-4 text-sm w-36 justify-center ${user.paid === "PENDENTE" ? "!opacity-100 cursor-not-allowed !text-red-600 !bg-transparent !border-red-600 shadow-none hover:!bg-transparent" : ""}`}
+                                icon={<i className="fa-duotone fa-exclamation text-[10px] sm:text-sm shrink-0" />}
+                                className={`font-bold h-9 sm:h-10 px-2 sm:px-3 text-[10px] sm:text-sm min-w-0 flex-1 justify-center truncate ${user.paid === "PENDENTE" ? "!opacity-100 cursor-not-allowed !text-red-600 !bg-transparent !border-red-600 shadow-none hover:!bg-transparent" : ""}`}
                             >
                                 {updating === "PENDENTE" ? <ButtonSpinner color="primary" /> : "PENDENTE"}
                             </NewButton>
@@ -145,23 +101,23 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                 variant="new_analise_rounded"
                                 onClick={() => handleStatusUpdate("EM ANÁLISE")}
                                 disabled={user.paid === "EM ANÁLISE" || updating !== null}
-                                icon={<i className="fa-duotone fa-hourglass-half text-sm" />}
-                                className={`font-bold h-10 px-4 text-sm w-36 justify-center ${user.paid === "EM ANÁLISE" ? "!opacity-100 cursor-not-allowed !text-amber-600 !bg-transparent !border-amber-500 shadow-none hover:!bg-transparent" : ""}`}
+                                icon={<i className="fa-duotone fa-hourglass-half text-[10px] sm:text-sm shrink-0" />}
+                                className={`font-bold h-9 sm:h-10 px-2 sm:px-3 text-[10px] sm:text-sm min-w-0 flex-1 justify-center truncate ${user.paid === "EM ANÁLISE" ? "!opacity-100 cursor-not-allowed !text-amber-600 !bg-transparent !border-amber-500 shadow-none hover:!bg-transparent" : ""}`}
                             >
                                 {updating === "EM ANÁLISE" ? <ButtonSpinner color="primary" /> : "EM ANÁLISE"}
                             </NewButton>
                         </div>
                     ) : (
-                        <div className="flex flex-col gap-1.5 max-w-md">
-                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2 justify-end">
+                        <div className="flex flex-col gap-1.5 w-full sm:max-w-md">
+                            <h4 className="text-sm font-black text-gray-900 uppercase tracking-widest flex items-center gap-2 justify-start sm:justify-end">
                                 <i className={`fa-duotone ${customIcon || 'fa-shuffle'} text-primary`}></i>
                                 {customTitle || "BULK DATA SYSTEM"}
                             </h4>
-                            <div className="text-xs text-gray-600 font-medium leading-relaxed text-right">
+                            <div className="text-xs text-gray-600 font-medium leading-relaxed text-left sm:text-right">
                                 {customDescription}
                             </div>
                             {customDescriptionSecondary && (
-                                <div className="text-[10px] text-gray-500 font-medium leading-relaxed text-right mt-1 pt-1.5 border-t border-gray-200">
+                                <div className="text-[10px] text-gray-500 font-medium leading-relaxed text-left sm:text-right mt-1 pt-1.5 border-t border-gray-200">
                                     {customDescriptionSecondary}
                                 </div>
                             )}
@@ -170,7 +126,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
 
                     {/* Status Description */}
                     {!hidePaymentButtons && (
-                        <div className="max-w-lg text-right mt-1">
+                        <div className="max-w-full sm:max-w-lg text-left sm:text-right mt-1">
                             {user.paid === "PAGO" && (
                                 <p className="text-xs text-emerald-600 font-medium inline-flex items-start gap-1.5">
                                     <i className="fa-duotone fa-circle-check mt-0.5 flex-shrink-0"></i>
@@ -199,7 +155,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                     )}
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="order-1 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 min-w-0">
                     <Avatar
                         src={user.avatarUrl}
                         name={user.name}
@@ -207,31 +163,31 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                         size={64}
                     />
 
-                    <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-1">
-                            <h1 className="text-2xl font-bold text-gray-900">
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
                                 {user.name} {user.surname}
                             </h1>
                             <RoleBadge role={user.role} />
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <p className="text-gray-500 flex items-center gap-2">
-                                <i className="fa-duotone fa-envelope text-sm"></i>
-                                <span className="font-bold">{user.email}</span>
+                        <div className="flex flex-col gap-1 min-w-0">
+                            <p className="text-gray-500 flex items-center gap-2 text-sm sm:text-base min-w-0">
+                                <i className="fa-duotone fa-envelope text-sm shrink-0"></i>
+                                <span className="font-bold truncate break-all">{user.email}</span>
                             </p>
-                            <div className="flex items-center gap-4 mt-2 pt-2 border-t border-gray-100">
-                                <div className="flex items-center gap-1.5 text-xs text-gray-500" title="User ID">
-                                    <i className="fa-duotone fa-fingerprint text-primary/80"></i>
-                                    <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 font-semibold select-all">{user.id}</span>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 pt-2 border-t border-gray-100">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-500 min-w-0" title="User ID">
+                                    <i className="fa-duotone fa-fingerprint text-primary/80 shrink-0"></i>
+                                    <span className="font-mono bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 font-semibold select-all break-all">{user.id}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium" title="Data de Registo">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium shrink-0" title="Data de Registo">
                                     <i className="fa-duotone fa-calendar-clock text-primary/80"></i>
                                     {user.createdAt ? (
-                                        <div className="flex items-center gap-1.5 font-semibold text-gray-800">
+                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-semibold text-gray-800">
                                             <span>Membro desde {new Date(user.createdAt).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                             {user.gender && (
                                                 <>
-                                                    <span className="text-gray-300 mx-1 font-normal opacity-50">|</span>
+                                                    <span className="text-gray-300 mx-1 font-normal opacity-50 hidden sm:inline">|</span>
                                                     <div className="flex items-center gap-1">
                                                         <span className={`font-bold ${user.gender.toLowerCase() === 'feminino' || user.gender.toLowerCase() === 'f' ? 'text-pink-500' : 'text-blue-500'}`}>
                                                             {user.gender}
@@ -246,15 +202,15 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4 mt-2 pt-2 border-t border-gray-100">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-2 pt-2 border-t border-gray-100">
                                 <div className="flex items-center gap-1.5 text-xs text-gray-600 font-medium" title="Data de nascimento">
-                                    <i className="fa-duotone fa-calendar-day text-primary/80" />
+                                    <i className="fa-duotone fa-calendar-day text-primary/80 shrink-0" />
                                     {user.birth ? (
-                                        <div className="flex items-center gap-1.5 font-semibold text-gray-800">
+                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 font-semibold text-gray-800">
                                             <span>Data de nascimento: {new Date(user.birth).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                             {calculateAge(user.birth) != null && (
                                                 <>
-                                                    <span className="text-gray-300 mx-1 font-normal opacity-50">|</span>
+                                                    <span className="text-gray-300 mx-1 font-normal opacity-50 hidden sm:inline">|</span>
                                                     <span className="flex items-center gap-1">
                                                         <i className="fa-duotone fa-cake-candles text-primary/80 text-xs" />
                                                         <span>({calculateAge(user.birth)} anos)</span>
@@ -272,25 +228,25 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                 </div>
 
                 {/* Account Status Section */}
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-semibold text-gray-700">Estado atual da conta:</span>
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide ${statusConfig.badgeBg} ${statusConfig.badgeText}`}>
-                            <i className={`fa-duotone ${statusConfig.icon}`} />
+                <div className="order-3 mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2 items-start">
+                        <span className="text-xs sm:text-sm font-semibold text-gray-700">Estado atual da conta:</span>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide leading-tight whitespace-nowrap w-fit ${statusConfig.badgeBg} ${statusConfig.badgeText}`}>
+                            <i className={`fa-duotone ${statusConfig.icon} text-[10px] leading-none`} />
                             {statusConfig.badgeLabel}
                         </span>
                     </div>
                     <div className="space-y-2">
                         {user.status === 'ACTIVE' || !user.status ? (
                             <>
-                                <p className="text-xs text-gray-600 flex items-start gap-2">
+                                <p className="text-xs text-gray-600 flex items-start gap-2 break-words">
                                     <i className="fa-duotone fa-circle-info text-emerald-500 mt-0.5" />
                                     <span>A conta tem acesso ao dashboard, incluindo dados pessoais, gráficos, definições e outras funcionalidades.</span>
                                 </p>
                                 <p className="text-xs text-gray-500 flex items-center gap-1.5 flex-wrap">
-                                    <i className="fa-duotone fa-lightbulb text-amber-500" />
+                                    <i className="fa-duotone fa-lightbulb text-amber-500 shrink-0" />
                                     <span>Para suspender ou banir a conta, aceda à secção</span>
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded text-gray-700 font-semibold">
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded text-gray-700 font-semibold w-fit">
                                         <i className="fa-duotone fa-gear text-xs" />
                                         Definições
                                     </span>

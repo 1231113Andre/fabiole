@@ -105,7 +105,7 @@ export default function Home() {
             </p>
 
             {/* Badges Grid (Clean & Flexible) */}
-            <div className="mb-16 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="mb-16 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-3 mx-auto">
 
               {/* Badge 1 */}
               <div className="flex flex-col items-center text-center group p-4">
@@ -162,7 +162,7 @@ export default function Home() {
             </div>
 
             {/* Service Cards Grid */}
-            <div className="grid w-full gap-10 md:grid-cols-2 lg:max-w-4xl px-4 mr-auto">
+            <div className="grid w-full gap-10 md:grid-cols-2 lg:max-w-4xl px-4 mx-auto">
               {[
                 {
                   title: "Treinos Presenciais",
@@ -347,7 +347,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
               {
                 text: "O Fábio transformou completamente a minha abordagem ao fitness. Resultados incríveis em apenas 3 meses!",

@@ -37,13 +37,13 @@ export default function StaticNavbar({ initialUser }: StaticNavbarProps) {
   return (
     <header
       id="main-header"
-      className={`absolute top-0 left-0 w-full z-[1000] flex justify-center px-4 ui-flex-center transition-all duration-300 ${isTransparentBase
+      className={`absolute top-0 left-0 right-0 w-full z-[1000] flex justify-center items-center px-4 transition-all duration-300 ${isTransparentBase
         ? 'bg-transparent'
         : 'bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg'
         } mt-[19px]`}
       data-is-home={isTransparentBase}
     >
-      <div className="ui-container relative mx-auto flex h-[var(--navbar-height)] w-full max-w-7xl items-center justify-center px-4 sm:px-8 lg:px-12">
+      <div className="ui-container relative flex h-[var(--navbar-height)] w-full max-w-7xl items-center justify-center px-4 sm:px-8 lg:px-12 mx-auto">
         {/* Mobile Menu Button - positioned absolutely on mobile */}
         <button
           id="mobile-menu-btn"

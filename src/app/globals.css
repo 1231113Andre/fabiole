@@ -118,6 +118,13 @@
 
   /* Layout – used by Navbar/StaticNavbar */
   --navbar-height: 80px;
+
+  /* Breakpoints (Tailwind defaults – for custom media queries / reference) */
+  --bp-sm: 640px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --bp-2xl: 1536px;
 }
 
 /* Dark mode palette (if needed later) */
@@ -262,25 +269,6 @@ body::-webkit-scrollbar-thumb:hover {
   overscroll-behavior-x: contain; /* prevent pull-to-refresh / back when scrolling table */
 }
 
-/* Sticky first column for horizontal-scroll tables (mobile & desktop) – keeps "Data" visible when scrolling */
-.pesagens-table-sticky-th {
-  position: sticky;
-  left: 0;
-  z-index: 20;
-  background: #f9fafb; /* gray-50 */
-  box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.06);
-}
-.pesagens-table-sticky-td {
-  position: sticky;
-  left: 0;
-  z-index: 10;
-  background: #ffffff;
-  box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.06);
-}
-tr:hover .pesagens-table-sticky-td {
-  background: #f9fafb; /* match row hover */
-}
-
 /* References tab – centered, stretches with viewport; sizes in globals */
 .references-center {
   width: 100%;
@@ -408,14 +396,20 @@ tr:hover .pesagens-table-sticky-td {
   color: white !important;
 }
 
-/* Container utility – left-aligned, responsive padding */
+/* Container utility – responsive padding */
 .ui-container {
   width: 100%;
   max-width: 1280px;
-  margin-left: 0;
+  margin-left: auto;
   margin-right: auto;
   padding-left: clamp(1rem, 4vw, 2rem);
   padding-right: clamp(1rem, 4vw, 2rem);
+}
+
+/* Left-aligned container (dashboard, admin) */
+.ui-container-left {
+  margin-left: 0;
+  margin-right: auto;
 }
 
 @media (min-width: 640px) {
@@ -642,6 +636,23 @@ a:focus-visible {
 
   .ui-margin-xl {
     margin-top: 12rem;
+  }
+}
+
+/* Admin User Profile Card – mobile-first responsive layout */
+.user-profile-card {
+  width: 100%;
+  min-width: 0;
+  padding: 1rem;
+}
+@media (min-width: 640px) {
+  .user-profile-card {
+    padding: 1.25rem 1.5rem;
+  }
+}
+@media (min-width: 768px) {
+  .user-profile-card {
+    padding: 1.5rem 2rem;
   }
 }
 

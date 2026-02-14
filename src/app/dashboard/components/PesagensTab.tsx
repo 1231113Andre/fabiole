@@ -7,7 +7,6 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer,
 } from "recharts";
 import { Pesagem, ChartData } from "../types";
 import {
@@ -76,7 +75,7 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                 </colgroup>
                                 <thead>
                                     <tr className="bg-gray-50 border-b">
-                                        <th className="pesagens-table-sticky-th py-1.5 px-1.5 text-left font-semibold text-gray-700 text-[11px] sm:text-xs">Data</th>
+                                        <th className="py-1.5 px-1.5 text-left font-semibold text-gray-700 text-[11px] sm:text-xs">Data</th>
                                         <th className="py-1.5 px-1.5 text-center font-semibold text-gray-700 text-[11px] sm:text-xs">Peso</th>
                                         <th className="py-1.5 px-1.5 text-center font-semibold text-violet-700 text-[11px] sm:text-xs">
                                             <TooltipHeader label="Δ" description="Δ Peso. Diferença entre pesagens consecutivas." />
@@ -112,7 +111,7 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                 <tbody className="divide-none">
                                     {pesagens.map((pesagem, index) => (
                                         <tr key={index} className="group hover:bg-gray-50/50 transition-colors duration-200 border-t border-solid border-gray-300 first:border-none">
-                                            <td className="pesagens-table-sticky-td py-1.5 px-1.5 whitespace-nowrap font-medium text-gray-700 text-[11px] sm:text-xs">{pesagem.data}</td>
+                                            <td className="py-1.5 px-1.5 whitespace-nowrap font-medium text-gray-700 text-[11px] sm:text-xs">{pesagem.data}</td>
                                             <td className="py-1.5 px-1.5 text-center font-bold text-gray-900 whitespace-nowrap text-[11px] sm:text-xs">
                                                 {pesagem.peso ? (
                                                     <span className="inline-flex items-center justify-center gap-0.5">
@@ -242,8 +241,7 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                             </div>
                             <div className="p-3 sm:p-4 flex-1 min-h-0">
                                 <div className="h-[200px] sm:h-[240px] lg:h-[260px] w-full min-w-0 min-h-[180px]">
-                                    <ResponsiveContainer width="100%" height="100%" minHeight={180} minWidth={100}>
-                                        <AreaChart data={chartData}>
+                                    <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
                                             <defs>
                                                 <linearGradient id="colorPeso" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#e6915b" stopOpacity={0.3} />
@@ -264,7 +262,6 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                                 activeDot={{ r: 6, fill: '#e6915b', stroke: '#fff', strokeWidth: 2 }}
                                             />
                                         </AreaChart>
-                                    </ResponsiveContainer>
                                 </div>
                             </div>
                         </div>
@@ -281,8 +278,7 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                             </div>
                             <div className="p-3 sm:p-4 flex-1 min-h-0">
                                 <div className="h-[200px] sm:h-[240px] lg:h-[260px] w-full min-w-0 min-h-[180px]">
-                                    <ResponsiveContainer width="100%" height="100%" minHeight={180} minWidth={100}>
-                                        <AreaChart data={chartData}>
+                                    <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
                                             <defs>
                                                 <linearGradient id="colorMassaGorda" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
@@ -303,7 +299,6 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                                 activeDot={{ r: 6, fill: '#f43f5e', stroke: '#fff', strokeWidth: 2 }}
                                             />
                                         </AreaChart>
-                                    </ResponsiveContainer>
                                 </div>
                             </div>
                         </div>
@@ -320,8 +315,7 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                             </div>
                             <div className="p-3 sm:p-4 flex-1 min-h-0">
                                 <div className="h-[200px] sm:h-[240px] lg:h-[260px] w-full min-w-0 min-h-[180px]">
-                                    <ResponsiveContainer width="100%" height="100%" minHeight={180} minWidth={100}>
-                                        <AreaChart data={chartData}>
+                                    <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
                                             <defs>
                                                 <linearGradient id="colorMassaMuscular" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -342,7 +336,6 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                                 activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
                                             />
                                         </AreaChart>
-                                    </ResponsiveContainer>
                                 </div>
                             </div>
                         </div>
@@ -359,8 +352,7 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                             </div>
                             <div className="p-3 sm:p-4 flex-1 min-h-0">
                                 <div className="h-[200px] sm:h-[240px] lg:h-[260px] w-full min-w-0 min-h-[180px]">
-                                    <ResponsiveContainer width="100%" height="100%" minHeight={180} minWidth={100}>
-                                        <AreaChart data={chartData}>
+                                    <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
                                             <defs>
                                                 <linearGradient id="colorGorduraVisceral" x1="0" y1="0" x2="0" y2="1">
                                                     <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
@@ -381,7 +373,6 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                                 activeDot={{ r: 6, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
                                             />
                                         </AreaChart>
-                                    </ResponsiveContainer>
                                 </div>
                             </div>
                         </div>

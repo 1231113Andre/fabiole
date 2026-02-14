@@ -7,7 +7,6 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer,
 } from "recharts";
 import { PersonalInfo, DashboardStats, ChartData } from "../types";
 
@@ -26,7 +25,7 @@ const cardValueRow = "flex items-end justify-between gap-2 mt-4 pt-4 border-t bo
 export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps) {
     return (
         <div className="w-full min-w-0 space-y-6 sm:space-y-8">
-            {/* Stats cards – unified layout: icon + title + description, then value + badge */}
+            {/* Stats cards – 1 col mobile, 2 sm, 4 lg; no horizontal scroll */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 w-full min-w-0">
                 {/* Trainings Scheduled */}
                 <div className={cardBase}>
@@ -35,10 +34,10 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             <i className="fa-duotone fa-calendar-check text-lg sm:text-xl" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <h4 className={cardTitle}>Scheduled</h4>
-                            <p className={cardDesc} title="The number of training sessions currently scheduled.">
+                            <h4 className={cardTitle}>Agendados</h4>
+                            <p className={cardDesc} title="Número de sessões de treino atualmente agendadas.">
                                 <i className="fa-duotone fa-circle-info text-slate-400 mr-1" />
-                                The number of training sessions currently scheduled.
+                                Número de sessões de treino atualmente agendadas.
                             </p>
                         </div>
                     </div>
@@ -63,10 +62,10 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             <i className="fa-duotone fa-coins text-lg sm:text-xl" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <h4 className={cardTitle}>Training Credit</h4>
-                            <p className={cardDesc} title="Your remaining balance of prepaid training sessions.">
+                            <h4 className={cardTitle}>Crédito de Treinos</h4>
+                            <p className={cardDesc} title="Saldo restante de sessões de treino pré-pagas.">
                                 <i className="fa-duotone fa-circle-info text-slate-400 mr-1" />
-                                Your remaining balance of prepaid training sessions.
+                                Saldo restante de sessões de treino pré-pagas.
                             </p>
                         </div>
                     </div>
@@ -91,10 +90,10 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             <i className="fa-duotone fa-file-invoice-dollar text-lg sm:text-xl" />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <h4 className={cardTitle}>Debt Value</h4>
-                            <p className={cardDesc} title="Total amount currently outstanding on your account.">
+                            <h4 className={cardTitle}>Valor em Dívida</h4>
+                            <p className={cardDesc} title="Valor total em dívida na sua conta.">
                                 <i className="fa-duotone fa-circle-info text-slate-400 mr-1" />
-                                Total amount currently outstanding on your account.
+                                Valor total em dívida na sua conta.
                             </p>
                         </div>
                     </div>
@@ -119,10 +118,10 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             <i className={`fa-duotone ${(personalInfo?.paid?.toLowerCase() === "sim" || personalInfo?.paid?.toLowerCase() === "yes" || personalInfo?.paid?.toLowerCase() === "pago") ? "fa-shield-check" : (personalInfo?.paid?.toLowerCase() === "pendente") ? "fa-circle-exclamation" : "fa-hourglass-half"} text-lg sm:text-xl`} />
                         </div>
                         <div className="min-w-0 flex-1">
-                            <h4 className={cardTitle}>Status</h4>
-                            <p className={cardDesc} title="Current status of your account monthly payment.">
+                            <h4 className={cardTitle}>Estado</h4>
+                            <p className={cardDesc} title="Estado atual do pagamento mensal da sua conta.">
                                 <i className="fa-duotone fa-circle-info text-slate-400 mr-1" />
-                                Current status of your account monthly payment.
+                                Estado atual do pagamento mensal da sua conta.
                             </p>
                         </div>
                     </div>
@@ -152,9 +151,9 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                         <div className="min-w-0 flex-1">
                             <h4 className={cardTitle}>Pesagens</h4>
-                            <p className={cardDesc} title="Total count of weight measurements recorded.">
+                            <p className={cardDesc} title="Número total de pesagens registadas.">
                                 <i className="fa-duotone fa-circle-info text-slate-400 mr-1" />
-                                Total count of weight measurements recorded.
+                                Número total de pesagens registadas.
                             </p>
                         </div>
                     </div>
@@ -184,9 +183,9 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                         <div className="min-w-0 flex-1">
                             <h4 className={cardTitle}>Avaliações</h4>
-                            <p className={cardDesc} title="Total number of physical assessments completed.">
+                            <p className={cardDesc} title="Número total de avaliações físicas realizadas.">
                                 <i className="fa-duotone fa-circle-info text-slate-400 mr-1" />
-                                Total number of physical assessments completed.
+                                Número total de avaliações físicas realizadas.
                             </p>
                         </div>
                     </div>
@@ -212,9 +211,9 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                         <div className="min-w-0 flex-1">
                             <h4 className={cardTitle}>Perímetros</h4>
-                            <p className={cardDesc} title="Total number of body measurements recorded.">
+                            <p className={cardDesc} title="Número total de medições corporais registadas.">
                                 <i className="fa-duotone fa-circle-info text-slate-400 mr-1" />
-                                Total number of body measurements recorded.
+                                Número total de medições corporais registadas.
                             </p>
                         </div>
                     </div>
@@ -273,8 +272,7 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                             </div>
                         </div>
                         <div className="h-[220px] sm:h-[260px] lg:h-[280px] w-full min-h-[180px] flex-1">
-                            <ResponsiveContainer width="100%" height="100%" minHeight={180} minWidth={100}>
-                                <AreaChart data={chartData}>
+                            <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
                                     <defs>
                                         <linearGradient id="colorPeso" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#e6915b" stopOpacity={0.4} />
@@ -291,7 +289,6 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                                     />
                                     <Area type="monotone" dataKey="peso" stroke="#e6915b" strokeWidth={3} fillOpacity={1} fill="url(#colorPeso)" />
                                 </AreaChart>
-                            </ResponsiveContainer>
                         </div>
                     </div>
                 )}
