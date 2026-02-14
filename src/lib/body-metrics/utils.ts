@@ -5,7 +5,28 @@ import { BADGE_STYLES } from "./constants";
  */
 export function calculateAge(birthDate: Date | string | null | undefined): number | null {
     if (!birthDate) return null;
-    const birth = birthDate instanceof Date ? birthDate : new Date(birthDate);
+
+    let birth: Date;
+
+    if (birthDate instanceof Date) {
+        birth = birthDate;
+    } else {
+        // Try standard parsing first
+        birth = new Date(birthDate);
+
+        // If invalid or it looks like DD/MM/YYYY, try manual parsing
+        if (isNaN(birth.getTime()) && typeof birthDate === 'string') {
+            const parts = birthDate.split(/[./-]/);
+            // Check for DD/MM/YYYY or DD.MM.YYYY or DD-MM-YYYY
+            if (parts.length === 3) {
+                // Assuming DD/MM/YYYY if year is last
+                if (parts[2].length === 4) {
+                    birth = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                }
+            }
+        }
+    }
+
     if (isNaN(birth.getTime())) return null;
 
     const today = new Date();

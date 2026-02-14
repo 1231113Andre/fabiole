@@ -73,7 +73,10 @@ export function PersonalInfoTab({ personalInfo }: PersonalInfoTabProps) {
                             Idade
                         </span>
                         <span className="text-lg font-semibold text-black pl-6">
-                            {personalInfo.birthDate ? `${calculateAge(personalInfo.birthDate)} Anos` : 'N/A'}
+                            {(() => {
+                                const age = personalInfo.birthDate ? calculateAge(personalInfo.birthDate) : null;
+                                return age !== null ? `${age} Anos` : 'N/A';
+                            })()}
                         </span>
                     </div>
                 </div>
