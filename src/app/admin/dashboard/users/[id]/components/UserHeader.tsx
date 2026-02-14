@@ -83,8 +83,8 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                 variant="new_paid_rounded"
                                 onClick={() => handleStatusUpdate("PAGO")}
                                 disabled={user.paid === "PAGO" || updating !== null}
-                                icon={<i className="fa-duotone fa-check text-[10px] sm:text-sm shrink-0" />}
-                                className={`font-bold h-9 sm:h-10 px-2 sm:px-3 text-[10px] sm:text-sm min-w-0 flex-1 justify-center truncate ${user.paid === "PAGO" ? "!opacity-100 cursor-not-allowed !text-emerald-600 !bg-transparent !border-emerald-600 shadow-none hover:!bg-transparent" : ""}`}
+                                icon={<i className="fa-duotone fa-check text-[10px] sm:text-xs md:text-sm lg:text-base shrink-0" />}
+                                className={`font-bold h-8 sm:h-9 px-2 sm:px-4 md:px-0 text-[10px] sm:text-xs md:text-sm lg:text-base flex-1 md:flex-none md:w-36 lg:w-44 justify-center ${user.paid === "PAGO" ? "!opacity-100 cursor-not-allowed !text-emerald-600 !bg-transparent !border-emerald-600 shadow-none hover:!bg-transparent" : ""}`}
                             >
                                 {updating === "PAGO" ? <ButtonSpinner color="primary" /> : "PAGO"}
                             </NewButton>
@@ -92,8 +92,8 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                 variant="new_pendente_rounded"
                                 onClick={() => handleStatusUpdate("PENDENTE")}
                                 disabled={user.paid === "PENDENTE" || updating !== null}
-                                icon={<i className="fa-duotone fa-exclamation text-[10px] sm:text-sm shrink-0" />}
-                                className={`font-bold h-9 sm:h-10 px-2 sm:px-3 text-[10px] sm:text-sm min-w-0 flex-1 justify-center truncate ${user.paid === "PENDENTE" ? "!opacity-100 cursor-not-allowed !text-red-600 !bg-transparent !border-red-600 shadow-none hover:!bg-transparent" : ""}`}
+                                icon={<i className="fa-duotone fa-exclamation text-[10px] sm:text-xs md:text-sm lg:text-base shrink-0" />}
+                                className={`font-bold h-8 sm:h-9 px-2 sm:px-4 md:px-0 text-[10px] sm:text-xs md:text-sm lg:text-base flex-1 md:flex-none md:w-36 lg:w-44 justify-center ${user.paid === "PENDENTE" ? "!opacity-100 cursor-not-allowed !text-red-600 !bg-transparent !border-red-600 shadow-none hover:!bg-transparent" : ""}`}
                             >
                                 {updating === "PENDENTE" ? <ButtonSpinner color="primary" /> : "PENDENTE"}
                             </NewButton>
@@ -101,8 +101,8 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
                                 variant="new_analise_rounded"
                                 onClick={() => handleStatusUpdate("EM ANÁLISE")}
                                 disabled={user.paid === "EM ANÁLISE" || updating !== null}
-                                icon={<i className="fa-duotone fa-hourglass-half text-[10px] sm:text-sm shrink-0" />}
-                                className={`font-bold h-9 sm:h-10 px-2 sm:px-3 text-[10px] sm:text-sm min-w-0 flex-1 justify-center truncate ${user.paid === "EM ANÁLISE" ? "!opacity-100 cursor-not-allowed !text-amber-600 !bg-transparent !border-amber-500 shadow-none hover:!bg-transparent" : ""}`}
+                                icon={<i className="fa-duotone fa-hourglass-half text-[10px] sm:text-xs md:text-sm lg:text-base shrink-0" />}
+                                className={`font-bold h-8 sm:h-9 px-2 sm:px-4 md:px-0 text-[10px] sm:text-xs md:text-sm lg:text-base flex-1 md:flex-none md:w-36 lg:w-44 justify-center ${user.paid === "EM ANÁLISE" ? "!opacity-100 cursor-not-allowed !text-amber-600 !bg-transparent !border-amber-500 shadow-none hover:!bg-transparent" : ""}`}
                             >
                                 {updating === "EM ANÁLISE" ? <ButtonSpinner color="primary" /> : "EM ANÁLISE"}
                             </NewButton>

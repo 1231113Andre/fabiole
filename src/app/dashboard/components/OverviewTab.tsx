@@ -70,8 +70,8 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                     </div>
                     <div className={cardValueRow}>
-                        <span className="text-xl sm:text-2xl font-bold text-black truncate">{personalInfo?.trainingCredit && personalInfo.trainingCredit !== "0" ? personalInfo.trainingCredit : "0€"}</span>
-                        {Number(personalInfo?.trainingCredit || 0) > 0 ? (
+                        <span className="text-xl sm:text-2xl font-bold text-black truncate">{personalInfo?.trainingCredit ? personalInfo.trainingCredit.replace("€", "").trim() : "0"}</span>
+                        {Number(personalInfo?.trainingCredit?.replace("€", "") || 0) > 0 ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm shrink-0">
                                 <i className="fas fa-check-circle text-[10px]" /> Disponível
                             </span>
@@ -98,7 +98,9 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                     </div>
                     <div className={cardValueRow}>
-                        <span className="text-xl sm:text-2xl font-bold text-black truncate">{personalInfo?.debtValue || "0€"}</span>
+                        <span className="text-xl sm:text-2xl font-bold text-black truncate">
+                            {personalInfo?.debtValue ? (personalInfo.debtValue.includes("€") ? personalInfo.debtValue : `${personalInfo.debtValue}€`) : "0€"}
+                        </span>
                         {!personalInfo?.debtValue || personalInfo?.debtValue === "0€" || personalInfo?.debtValue === "0" ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm shrink-0">
                                 <i className="fas fa-check-circle text-[10px]" /> Sem Dívida
@@ -273,22 +275,22 @@ export function OverviewTab({ personalInfo, stats, chartData }: OverviewTabProps
                         </div>
                         <div className="h-[220px] sm:h-[260px] lg:h-[280px] w-full min-h-[180px] flex-1">
                             <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
-                                    <defs>
-                                        <linearGradient id="colorPeso" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#e6915b" stopOpacity={0.4} />
-                                            <stop offset="95%" stopColor="#e6915b" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
-                                    <XAxis dataKey="data" stroke="#94a3b8" tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#94a3b8" tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} axisLine={false} />
-                                    <Tooltip
-                                        contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", color: "#000", padding: "10px 12px" }}
-                                        itemStyle={{ color: "#000" }}
-                                        labelStyle={{ color: "#94a3b8", marginBottom: "4px" }}
-                                    />
-                                    <Area type="monotone" dataKey="peso" stroke="#e6915b" strokeWidth={3} fillOpacity={1} fill="url(#colorPeso)" />
-                                </AreaChart>
+                                <defs>
+                                    <linearGradient id="colorPeso" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#e6915b" stopOpacity={0.4} />
+                                        <stop offset="95%" stopColor="#e6915b" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                                <XAxis dataKey="data" stroke="#94a3b8" tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#94a3b8" tick={{ fill: "#94a3b8", fontSize: 11 }} tickLine={false} axisLine={false} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "8px", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)", color: "#000", padding: "10px 12px" }}
+                                    itemStyle={{ color: "#000" }}
+                                    labelStyle={{ color: "#94a3b8", marginBottom: "4px" }}
+                                />
+                                <Area type="monotone" dataKey="peso" stroke="#e6915b" strokeWidth={3} fillOpacity={1} fill="url(#colorPeso)" />
+                            </AreaChart>
                         </div>
                     </div>
                 )}
