@@ -18,7 +18,7 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = React.mem
                 </div>
                 <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Dados Pessoais</h4>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                     <label className={labelClasses}>
                         <i className="fa-duotone fa-signature text-primary/60 text-[10px]"></i>

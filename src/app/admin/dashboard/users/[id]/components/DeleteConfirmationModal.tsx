@@ -26,7 +26,7 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100"
+                className="bg-white rounded-2xl shadow-2xl w-[95%] sm:max-w-md p-6 transform transition-all scale-100"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex flex-col items-center text-center mb-6">

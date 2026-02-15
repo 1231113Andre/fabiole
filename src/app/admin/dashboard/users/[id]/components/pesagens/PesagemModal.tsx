@@ -2,7 +2,7 @@ import React from "react";
 import { Pesagem } from "../../types";
 import { formatDateForInput } from "../../utils";
 import NewButton from "@/app/components/newButton";
-import { classifySMI } from "@/lib/body-metrics";
+import { classifySMI, calculateSMIFromLimbs } from "@/lib/body-metrics";
 import { Modal } from "@/components/ui/Modal";
 
 // Inline spinner component
@@ -124,6 +124,27 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
     onClose,
     onClearOverride
 }) => {
+    // Auto-calculate SMI when limbs or height change
+    React.useEffect(() => {
+        if (manualOverrides.has('smi')) return;
+
+        const { msRight, msLeft, miRight, miLeft, height, mm } = formData;
+
+        // Try new formula (Attributes + Height)
+        const smiFromLimbs = calculateSMIFromLimbs(
+            msRight, msLeft, miRight, miLeft, height
+        );
+
+        if (smiFromLimbs !== null) {
+            onFieldChange('smi', smiFromLimbs);
+        } else if (mm && height && height > 0) {
+            // Fallback to old formula
+            const hM = height / 100;
+            const bmiSmi = mm / (hM * hM);
+            onFieldChange('smi', parseFloat(bmiSmi.toFixed(2)));
+        }
+    }, [formData.msRight, formData.msLeft, formData.miRight, formData.miLeft, formData.height, formData.mm, manualOverrides]);
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="6xl">
             <Modal.Header
@@ -342,7 +363,7 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                 step="0.01"
                                 isAutoField
                                 isManuallyOverridden={manualOverrides.has('smi')}
-                                canAutoCalculate={!!(formData.mm != null && formData.height != null)}
+                                canAutoCalculate={!!((formData.msRight && formData.msLeft && formData.miRight && formData.miLeft && formData.height) || (formData.mm && formData.height))}
                                 onClearOverride={() => onClearOverride?.('smi')}
                             />
                             <div className="space-y-1">

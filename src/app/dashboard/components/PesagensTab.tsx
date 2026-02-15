@@ -17,6 +17,7 @@ import {
     getDeltaPesoColor,
     getMileResultStyle,
     calculateSMI,
+    calculateSMIFromLimbs,
     classifySMI,
     classifyBMI,
     classifyBodyFat,
@@ -191,11 +192,18 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                             </td>
                                             <td className="py-1.5 px-1.5 text-center align-middle">
                                                 {(() => {
-                                                    const mm = pesagem.MM;
-                                                    const h = pesagem.height;
-                                                    const smiVal = (mm != null && mm > 0 && h != null && h > 0)
-                                                        ? calculateSMI(mm, h)
+                                                    const { msRight, msLeft, miRight, miLeft, height, MM } = pesagem;
+
+                                                    // Try new formula first
+                                                    let smiVal = (msRight && msLeft && miRight && miLeft && height && height > 0)
+                                                        ? calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height)
                                                         : null;
+
+                                                    // Fallback
+                                                    if (smiVal == null && MM != null && MM > 0 && height != null && height > 0) {
+                                                        smiVal = calculateSMI(MM, height);
+                                                    }
+
                                                     return smiVal != null ? (
                                                         <span className={`${BADGE_STYLES.PURPLE} inline-flex items-center justify-center whitespace-nowrap text-[11px] sm:text-xs`}>
                                                             {smiVal.toFixed(2).replace('.', ',')}
@@ -205,14 +213,22 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                             </td>
                                             <td className="py-1.5 px-1.5 text-center align-middle">
                                                 {(() => {
-                                                    const mm = pesagem.MM;
-                                                    const h = pesagem.height;
-                                                    const smiVal = (mm != null && mm > 0 && h != null && h > 0)
-                                                        ? calculateSMI(mm, h)
+                                                    const { msRight, msLeft, miRight, miLeft, height, MM } = pesagem;
+
+                                                    // Try new formula first: (Arms + Legs) / Height²
+                                                    let smiVal = (msRight && msLeft && miRight && miLeft && height && height > 0)
+                                                        ? calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height)
                                                         : null;
+
+                                                    // Fallback: MM / Height² (if limb data missing but Total MM exists)
+                                                    if (smiVal == null && MM != null && MM > 0 && height != null && height > 0) {
+                                                        smiVal = calculateSMI(MM, height);
+                                                    }
+
                                                     const smiRes = (smiVal != null && gender)
                                                         ? classifySMI(smiVal, gender)
                                                         : '';
+
                                                     return smiRes ? (
                                                         <span className={`${getMileResultStyle(smiRes)} inline-flex items-center justify-center whitespace-nowrap text-[11px] sm:text-xs`}>
                                                             {smiRes}
@@ -242,26 +258,26 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                             <div className="p-3 sm:p-4 flex-1 min-h-0">
                                 <div className="h-[200px] sm:h-[240px] lg:h-[260px] w-full min-w-0 min-h-[180px]">
                                     <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
-                                            <defs>
-                                                <linearGradient id="colorPeso" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#e6915b" stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor="#e6915b" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                            <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <Tooltip content={<CustomChartTooltip unit="kg" />} />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="peso"
-                                                stroke="#e6915b"
-                                                strokeWidth={3}
-                                                fill="url(#colorPeso)"
-                                                dot={{ fill: '#e6915b', stroke: '#fff', strokeWidth: 2, r: 4 }}
-                                                activeDot={{ r: 6, fill: '#e6915b', stroke: '#fff', strokeWidth: 2 }}
-                                            />
-                                        </AreaChart>
+                                        <defs>
+                                            <linearGradient id="colorPeso" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#e6915b" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#e6915b" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                        <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                        <Tooltip content={<CustomChartTooltip unit="kg" />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="peso"
+                                            stroke="#e6915b"
+                                            strokeWidth={3}
+                                            fill="url(#colorPeso)"
+                                            dot={{ fill: '#e6915b', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                            activeDot={{ r: 6, fill: '#e6915b', stroke: '#fff', strokeWidth: 2 }}
+                                        />
+                                    </AreaChart>
                                 </div>
                             </div>
                         </div>
@@ -279,26 +295,26 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                             <div className="p-3 sm:p-4 flex-1 min-h-0">
                                 <div className="h-[200px] sm:h-[240px] lg:h-[260px] w-full min-w-0 min-h-[180px]">
                                     <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
-                                            <defs>
-                                                <linearGradient id="colorMassaGorda" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                            <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <Tooltip content={<CustomChartTooltip unit="%" />} />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="massaGorda"
-                                                stroke="#f43f5e"
-                                                strokeWidth={3}
-                                                fill="url(#colorMassaGorda)"
-                                                dot={{ fill: '#f43f5e', stroke: '#fff', strokeWidth: 2, r: 4 }}
-                                                activeDot={{ r: 6, fill: '#f43f5e', stroke: '#fff', strokeWidth: 2 }}
-                                            />
-                                        </AreaChart>
+                                        <defs>
+                                            <linearGradient id="colorMassaGorda" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                        <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                        <Tooltip content={<CustomChartTooltip unit="%" />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="massaGorda"
+                                            stroke="#f43f5e"
+                                            strokeWidth={3}
+                                            fill="url(#colorMassaGorda)"
+                                            dot={{ fill: '#f43f5e', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                            activeDot={{ r: 6, fill: '#f43f5e', stroke: '#fff', strokeWidth: 2 }}
+                                        />
+                                    </AreaChart>
                                 </div>
                             </div>
                         </div>
@@ -316,26 +332,26 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                             <div className="p-3 sm:p-4 flex-1 min-h-0">
                                 <div className="h-[200px] sm:h-[240px] lg:h-[260px] w-full min-w-0 min-h-[180px]">
                                     <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
-                                            <defs>
-                                                <linearGradient id="colorMassaMuscular" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                            <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <Tooltip content={<CustomChartTooltip unit="kg" />} />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="massaMuscular"
-                                                stroke="#3b82f6"
-                                                strokeWidth={3}
-                                                fill="url(#colorMassaMuscular)"
-                                                dot={{ fill: '#3b82f6', stroke: '#fff', strokeWidth: 2, r: 4 }}
-                                                activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
-                                            />
-                                        </AreaChart>
+                                        <defs>
+                                            <linearGradient id="colorMassaMuscular" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                        <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                        <Tooltip content={<CustomChartTooltip unit="kg" />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="massaMuscular"
+                                            stroke="#3b82f6"
+                                            strokeWidth={3}
+                                            fill="url(#colorMassaMuscular)"
+                                            dot={{ fill: '#3b82f6', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                            activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
+                                        />
+                                    </AreaChart>
                                 </div>
                             </div>
                         </div>
@@ -353,26 +369,26 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                             <div className="p-3 sm:p-4 flex-1 min-h-0">
                                 <div className="h-[200px] sm:h-[240px] lg:h-[260px] w-full min-w-0 min-h-[180px]">
                                     <AreaChart data={chartData} responsive width="100%" height="100%" style={{ minHeight: 180, minWidth: 100 }}>
-                                            <defs>
-                                                <linearGradient id="colorGorduraVisceral" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                                            <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                            <Tooltip content={<CustomChartTooltip />} />
-                                            <Area
-                                                type="monotone"
-                                                dataKey="gorduraVisceral"
-                                                stroke="#a855f7"
-                                                strokeWidth={3}
-                                                fill="url(#colorGorduraVisceral)"
-                                                dot={{ fill: '#a855f7', stroke: '#fff', strokeWidth: 2, r: 4 }}
-                                                activeDot={{ r: 6, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
-                                            />
-                                        </AreaChart>
+                                        <defs>
+                                            <linearGradient id="colorGorduraVisceral" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3} />
+                                                <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                                        <XAxis dataKey="data" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                        <Tooltip content={<CustomChartTooltip />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="gorduraVisceral"
+                                            stroke="#a855f7"
+                                            strokeWidth={3}
+                                            fill="url(#colorGorduraVisceral)"
+                                            dot={{ fill: '#a855f7', stroke: '#fff', strokeWidth: 2, r: 4 }}
+                                            activeDot={{ r: 6, fill: '#a855f7', stroke: '#fff', strokeWidth: 2 }}
+                                        />
+                                    </AreaChart>
                                 </div>
                             </div>
                         </div>

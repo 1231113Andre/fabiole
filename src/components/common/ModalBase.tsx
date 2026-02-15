@@ -12,7 +12,7 @@ interface ModalBaseProps {
     children: React.ReactNode;
     title: React.ReactNode;
     titleId: string;
-    size?: 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
     zIndex?: string;
     className?: string;
 }
@@ -26,7 +26,20 @@ export const ModalBase = ({ isOpen, onClose, children, title, titleId, size = 'm
     const contentRef = useRef<HTMLDivElement>(null);
     const mouseDownTargetRef = useRef<EventTarget | null>(null);
 
-    const sizeClass = size === 'lg' ? 'max-w-lg' : 'max-w-md';
+    // Standard Tailwind Breakpoints:
+    // sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px
+    const sizeClasses = {
+        sm: "w-[95%] sm:max-w-sm",
+        md: "w-[95%] sm:max-w-md",
+        lg: "w-[95%] sm:max-w-lg",
+        xl: "w-[95%] sm:max-w-lg md:max-w-xl",
+        "2xl": "w-[95%] sm:max-w-xl md:max-w-2xl",
+        "3xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-3xl",
+        "4xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl",
+        "5xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl",
+    };
+
+    const currentSizeClass = sizeClasses[size] || sizeClasses.md;
 
     // Text animation for the modal content
     useTextAnimator(contentRef, [isOpen]);
@@ -112,7 +125,7 @@ export const ModalBase = ({ isOpen, onClose, children, title, titleId, size = 'm
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
-                className={`relative bg-[var(--background)] border-theme rounded-2xl shadow-2xl w-full m-4 ${sizeClass} ${className || ''} max-h-[90vh] overflow-y-auto custom-scrollbar font-montserrat text-[var(--foreground)] overscroll-contain`}
+                className={`relative bg-[var(--background)] border-theme rounded-2xl shadow-2xl ${currentSizeClass} m-4 ${className || ''} max-h-[90vh] overflow-y-auto custom-scrollbar font-montserrat text-[var(--foreground)] overscroll-contain`}
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => e.stopPropagation()}
                 style={{ opacity: 0, transform: 'scale(0.95)' }}

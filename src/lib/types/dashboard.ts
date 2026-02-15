@@ -37,6 +37,10 @@ export interface Pesagem {
     resultadoIMC: string;
     resultadoPercentualMG: string;
     notas: string;
+    msRight?: string;
+    msLeft?: string;
+    miRight?: string;
+    miLeft?: string;
 }
 
 export interface PerimetroCorporal {

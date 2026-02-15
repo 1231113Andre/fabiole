@@ -29,7 +29,7 @@ export const FinancialForm: React.FC<FinancialFormProps> = React.memo(({ data, o
                 </div>
                 <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Gestão de Contas</h4>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                     <label className={LABEL_CLASSES}>
                         <i className="fa-duotone fa-dumbbell text-emerald-500/70 text-[10px]"></i>

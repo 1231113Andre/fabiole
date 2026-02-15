@@ -63,6 +63,10 @@ export function transformPesagens(rawPesagens: SheetPesagem[]): Pesagem[] {
                 resultadoPercentualMG: p.resultadoPercentualMG || "",
                 notas: p.notas || "",
                 height: heightCm,
+                msRight: parseNumber(p.msRight),
+                msLeft: parseNumber(p.msLeft),
+                miRight: parseNumber(p.miRight),
+                miLeft: parseNumber(p.miLeft),
             } as Pesagem;
         })
         .filter((p) => p.peso > 0)

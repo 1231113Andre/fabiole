@@ -42,6 +42,10 @@ export interface Pesagem {
     height?: number;
     smi?: number | null;
     smiResult?: string | null;
+    msRight?: number;
+    msLeft?: number;
+    miRight?: number;
+    miLeft?: number;
 }
 
 export interface PerimetroCorporal {

@@ -165,7 +165,12 @@ export class UserService {
           height: p.height ? Number(p.height).toFixed(0) : '',
           resultadoIMC,
           resultadoPercentualMG,
-          notas: p.notas || ''
+
+          notas: p.notas || '',
+          msRight: p.msRight ? Number(p.msRight).toFixed(2).replace('.', ',') : '',
+          msLeft: p.msLeft ? Number(p.msLeft).toFixed(2).replace('.', ',') : '',
+          miRight: p.miRight ? Number(p.miRight).toFixed(2).replace('.', ',') : '',
+          miLeft: p.miLeft ? Number(p.miLeft).toFixed(2).replace('.', ',') : ''
         };
       });
 

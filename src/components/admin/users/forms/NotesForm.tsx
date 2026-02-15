@@ -22,7 +22,7 @@ export const NotesForm: React.FC<NotesFormProps> = React.memo(({ data, onChange 
                 </div>
                 <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wide">Notas & Objetivos</h4>
             </div>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label className={LABEL_CLASSES}>
                         <i className="fa-duotone fa-bullseye-arrow text-violet-500/70 text-[10px]"></i>

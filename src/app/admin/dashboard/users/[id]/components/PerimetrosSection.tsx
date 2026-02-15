@@ -57,14 +57,14 @@ export const PerimetrosSection: React.FC<PerimetrosSectionProps> = ({
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
                 <h3 className="text-lg font-semibold text-gray-900">Perímetros ({perimetros.length})</h3>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                     {onBulkSave && (
-                        <Link href={`/admin/dashboard/users/bulk/perimetros/${userId}`}>
+                        <Link href={`/admin/dashboard/users/bulk/perimetros/${userId}`} className="flex-1 sm:flex-none">
                             <NewButton
                                 variant="new_primary_no_bg_rounded"
-                                className="font-medium text-gray-700 hover:text-primary hover:bg-gray-50 border border-gray-200 hover:border-primary/30 transition-all shadow-sm"
+                                className="font-medium text-gray-700 hover:text-primary hover:bg-gray-50 border border-gray-200 hover:border-primary/30 transition-all shadow-sm w-full sm:w-auto justify-center"
                                 icon={<i className="fa-duotone fa-layer-plus"></i>}
                             >
                                 Adicionar em Massa
@@ -75,6 +75,7 @@ export const PerimetrosSection: React.FC<PerimetrosSectionProps> = ({
                         onClick={() => handleOpenModal()}
                         variant="new_primary_rounded"
                         icon={<i className="fa-duotone fa-plus"></i>}
+                        className="flex-1 sm:flex-none w-full sm:w-auto justify-center"
                     >
                         Novo Perímetro
                     </NewButton>

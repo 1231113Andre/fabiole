@@ -347,7 +347,7 @@ export function BulkAddModal({ isOpen, onClose, type, onSave, isSubmitting }: Bu
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-xl shadow-2xl w-full max-w-[98vw] max-h-[95vh] overflow-hidden animate-in fade-in zoom-in-95 duration-300 flex flex-col"
+                className="bg-white rounded-xl shadow-2xl w-[95%] sm:max-w-[95%] md:max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl 2xl:max-w-screen-2xl max-h-[95vh] overflow-hidden animate-in fade-in zoom-in-95 duration-300 flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

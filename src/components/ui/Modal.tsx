@@ -59,9 +59,9 @@ const Modal = ({ isOpen, onClose, children, size = "4xl", className = "" }: Moda
         xl: "w-[95%] sm:max-w-lg md:max-w-xl",
         "2xl": "w-[95%] sm:max-w-xl md:max-w-2xl",
         "3xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-3xl",
-        "4xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl", // Optimized for 1260px
-        "5xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl",
-        "6xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl",
+        "4xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl",
+        "5xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-6xl",
+        "6xl": "w-[95%] sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-7xl", // Extra large
     };
 
     const modalContent = (

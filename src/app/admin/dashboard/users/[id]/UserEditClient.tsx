@@ -134,7 +134,7 @@ export function UserEditClient({ initialUser }: UserEditClientProps) {
                 })}
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 overflow-hidden">
                 {activeTab === 'info' && (
                     <UserEditForm
                         user={user}

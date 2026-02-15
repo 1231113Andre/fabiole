@@ -1,6 +1,6 @@
 import React from "react";
 import { Pesagem } from "../../types";
-import { calculatePesagemMetrics, getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, calculateSMI, classifySMI, BADGE_STYLES } from "./pesagemMetrics";
+import { calculatePesagemMetrics, getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, calculateSMI, calculateSMIFromLimbs, classifySMI, BADGE_STYLES } from "./pesagemMetrics";
 
 interface PesagemRowProps {
     pesagem: Pesagem;
@@ -99,21 +99,58 @@ export const PesagemRow: React.FC<PesagemRowProps> = ({
                     <span>{isValidValue(p.resultadoPercentMG) ? p.resultadoPercentMG : (metrics.fatClass || '-')}</span>
                 </span>
             </td>
-            <td className="py-3 px-2 text-center">
+            <td className="py-3 px-2 text-center text-xs sm:text-sm">
                 {(() => {
-                    const mmVal = p.mm ?? metrics.mm;
-                    const h = p.height;
-                    const smiVal = p.smi != null ? p.smi : ((mmVal != null && mmVal > 0 && h != null && h > 0) ? calculateSMI(mmVal, h) : null);
-                    return smiVal != null ? (
-                        <span className={BADGE_STYLES.PURPLE}>{smiVal.toFixed(2).replace('.', ',')}</span>
+                    const { msRight, msLeft, miRight, miLeft, height, mm } = p;
+
+                    // Priority 1: Stored SMI value (from DB)
+                    if (p.smi != null) {
+                        return (
+                            <span className={BADGE_STYLES.PURPLE}>{p.smi.toFixed(2).replace('.', ',')}</span>
+                        );
+                    }
+
+                    // Priority 2: Calculate from limbs on the fly
+                    const smiFromLimbs = (msRight && msLeft && miRight && miLeft && height)
+                        ? calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height)
+                        : null;
+
+                    if (smiFromLimbs != null) {
+                        return (
+                            <span className={BADGE_STYLES.PURPLE}>{smiFromLimbs.toFixed(2).replace('.', ',')}</span>
+                        );
+                    }
+
+                    // Priority 3: Fallback to old MM formula
+                    const mmVal = mm ?? metrics.mm;
+                    const smiOld = (mmVal != null && mmVal > 0 && height != null && height > 0)
+                        ? calculateSMI(mmVal, height)
+                        : null;
+
+                    return smiOld != null ? (
+                        <span className={BADGE_STYLES.PURPLE}>{smiOld.toFixed(2).replace('.', ',')}</span>
                     ) : '-';
                 })()}
             </td>
-            <td className="py-3 px-2 text-center">
+            <td className="py-3 px-2 text-center text-xs sm:text-sm">
                 {(() => {
-                    const mmVal = p.mm ?? metrics.mm;
-                    const h = p.height;
-                    const smiVal = p.smi != null ? p.smi : ((mmVal != null && mmVal > 0 && h != null && h > 0) ? calculateSMI(mmVal, h) : null);
+                    const { msRight, msLeft, miRight, miLeft, height, mm, smi } = p;
+
+                    let smiVal = smi;
+
+                    if (smiVal == null) {
+                        smiVal = (msRight && msLeft && miRight && miLeft && height)
+                            ? calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height)
+                            : null;
+                    }
+
+                    if (smiVal == null) {
+                        const mmVal = mm ?? metrics.mm;
+                        if (mmVal != null && mmVal > 0 && height != null && height > 0) {
+                            smiVal = calculateSMI(mmVal, height);
+                        }
+                    }
+
                     const smiRes = (smiVal != null && gender) ? classifySMI(smiVal, gender) : '';
                     return smiRes ? (
                         <span className={getMileResultStyle(smiRes)}>{smiRes}</span>

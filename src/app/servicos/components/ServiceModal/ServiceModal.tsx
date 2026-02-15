@@ -50,7 +50,7 @@ export function ServiceModal({ serviceTitle, onClose, pricingConfig }: ServiceMo
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 animate-fade-in">
-            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 max-w-lg w-full shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto animate-modal-in">
+            <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 w-[95%] sm:max-w-lg shadow-2xl relative border border-gray-100 max-h-[90vh] overflow-y-auto animate-modal-in">
                 <button
                     onClick={onClose}
                     className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
