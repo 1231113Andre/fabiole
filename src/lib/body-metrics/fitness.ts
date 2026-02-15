@@ -262,3 +262,45 @@ export function classifySMI(
     if (smiValue >= ref.baixo.min!) return 'Baixo (Risco)';
     return 'Crítico';
 }
+
+/**
+ * Helper to calculate SMI with logic: 
+ * 1. If all 4 limbs + height present -> standard formula
+ * 2. If partial limbs + height present -> 0.00 (incomplete data)
+ * 3. If no limbs + height present -> fallback to MM formula
+ * 4. Else -> null
+ */
+export function calculateAutoSmi(
+    msR: any,
+    msL: any,
+    miR: any,
+    miL: any,
+    h: any,
+    mm: any = null
+): number | null {
+    const msRight = parseNumber(msR);
+    const msLeft = parseNumber(msL);
+    const miRight = parseNumber(miR);
+    const miLeft = parseNumber(miL);
+    const height = parseNumber(h);
+    const muscleMass = parseNumber(mm);
+
+    const limbs = [msRight, msLeft, miRight, miLeft];
+    const validLimbsCount = limbs.filter(l => l != null && !isNaN(l)).length;
+
+    if (height != null && height > 0) {
+        if (validLimbsCount === 4) {
+            return calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height);
+        } else if (validLimbsCount > 0) {
+            // Incomplete limb data
+            // Incomplete limb data
+            return null;
+        } else {
+            // No limb data, fallback to MM
+            if (muscleMass != null && muscleMass > 0) {
+                return calculateSMI(muscleMass, height);
+            }
+        }
+    }
+    return null;
+}

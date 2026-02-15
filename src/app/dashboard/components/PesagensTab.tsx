@@ -16,8 +16,7 @@ import {
     getFatIcon,
     getDeltaPesoColor,
     getMileResultStyle,
-    calculateSMI,
-    calculateSMIFromLimbs,
+    calculateAutoSmi,
     classifySMI,
     classifyBMI,
     classifyBodyFat,
@@ -192,17 +191,10 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                             </td>
                                             <td className="py-1.5 px-1.5 text-center align-middle">
                                                 {(() => {
-                                                    const { msRight, msLeft, miRight, miLeft, height, MM } = pesagem;
+                                                    const { msRight, msLeft, miRight, miLeft, height } = pesagem;
 
-                                                    // Try new formula first
-                                                    let smiVal = (msRight && msLeft && miRight && miLeft && height && height > 0)
-                                                        ? calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height)
-                                                        : null;
-
-                                                    // Fallback
-                                                    if (smiVal == null && MM != null && MM > 0 && height != null && height > 0) {
-                                                        smiVal = calculateSMI(MM, height);
-                                                    }
+                                                    // Calculate using standardized logic
+                                                    const smiVal = calculateAutoSmi(msRight, msLeft, miRight, miLeft, height, pesagem.MM);
 
                                                     return smiVal != null ? (
                                                         <span className={`${BADGE_STYLES.PURPLE} inline-flex items-center justify-center whitespace-nowrap text-[11px] sm:text-xs`}>
@@ -213,17 +205,10 @@ export function PesagensTab({ pesagens, chartData, gender, birth }: PesagensTabP
                                             </td>
                                             <td className="py-1.5 px-1.5 text-center align-middle">
                                                 {(() => {
-                                                    const { msRight, msLeft, miRight, miLeft, height, MM } = pesagem;
+                                                    const { msRight, msLeft, miRight, miLeft, height } = pesagem;
 
-                                                    // Try new formula first: (Arms + Legs) / Height²
-                                                    let smiVal = (msRight && msLeft && miRight && miLeft && height && height > 0)
-                                                        ? calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height)
-                                                        : null;
-
-                                                    // Fallback: MM / Height² (if limb data missing but Total MM exists)
-                                                    if (smiVal == null && MM != null && MM > 0 && height != null && height > 0) {
-                                                        smiVal = calculateSMI(MM, height);
-                                                    }
+                                                    // Calculate using standardized logic
+                                                    const smiVal = calculateAutoSmi(msRight, msLeft, miRight, miLeft, height, pesagem.MM);
 
                                                     const smiRes = (smiVal != null && gender)
                                                         ? classifySMI(smiVal, gender)

@@ -2,7 +2,7 @@ import React from "react";
 import { Pesagem } from "../../types";
 import { formatDateForInput } from "../../utils";
 import NewButton from "@/app/components/newButton";
-import { classifySMI, calculateSMIFromLimbs } from "@/lib/body-metrics";
+import { classifySMI, calculateSMIFromLimbs, calculateAutoSmi } from "@/lib/body-metrics";
 import { Modal } from "@/components/ui/Modal";
 
 // Inline spinner component
@@ -91,6 +91,12 @@ function FormInput({
                         )}
                     </span>
                 )}
+                {/* Warning Tooltip */}
+                {value === 0 && isAutoField && !isManuallyOverridden && (
+                    <span className="ml-auto pl-2 text-amber-500" title="Dados de membros incompletos. Preencha todos os campos para calcular o SMI.">
+                        <i className="fa-solid fa-triangle-exclamation text-[10px]"></i>
+                    </span>
+                )}
             </label>
             <input
                 type={type}
@@ -128,25 +134,27 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
     React.useEffect(() => {
         if (manualOverrides.has('smi')) return;
 
-        const { msRight, msLeft, miRight, miLeft, height, mm } = formData;
-
-        // Try new formula (Attributes + Height)
-        const smiFromLimbs = calculateSMIFromLimbs(
-            msRight, msLeft, miRight, miLeft, height
+        const smi = calculateAutoSmi(
+            formData.msRight,
+            formData.msLeft,
+            formData.miRight,
+            formData.miLeft,
+            formData.height
         );
 
-        if (smiFromLimbs !== null) {
-            onFieldChange('smi', smiFromLimbs);
-        } else if (mm && height && height > 0) {
-            // Fallback to old formula
-            const hM = height / 100;
-            const bmiSmi = mm / (hM * hM);
-            onFieldChange('smi', parseFloat(bmiSmi.toFixed(2)));
-        } else {
-            // Null reset: clear the SMI field if no valid data
-            onFieldChange('smi', null);
+        // Only update if value changed to avoid loops/redundancy
+        if (smi !== formData.smi) {
+            onFieldChange('smi', smi);
         }
-    }, [formData.msRight, formData.msLeft, formData.miRight, formData.miLeft, formData.height, formData.mm, manualOverrides]);
+    }, [formData.msRight, formData.msLeft, formData.miRight, formData.miLeft, formData.height, manualOverrides]);
+
+    // Check for incomplete limb data
+    const isLimbDataIncomplete = React.useMemo(() => {
+        const { msRight, msLeft, miRight, miLeft } = formData;
+        // If at least one is filled but not all
+        const filledCount = [msRight, msLeft, miRight, miLeft].filter(v => v != null && v > 0).length;
+        return filledCount > 0 && filledCount < 4;
+    }, [formData]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="6xl">
@@ -213,6 +221,17 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                     />
                                 </div>
                             </div>
+
+
+                            {/* Warning for incomplete limb data */}
+                            {isLimbDataIncomplete && (
+                                <div className="mt-2 text-[10px] text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2 flex items-start gap-2">
+                                    <i className="fa-solid fa-circle-exclamation mt-0.5 shrink-0"></i>
+                                    <span>
+                                        Para o cálculo correto do SMI, é necessário preencher <strong>todos</strong> os campos de massa muscular dos membros (Direito e Esquerdo).
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Entrada Manual */}
@@ -366,7 +385,10 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                                 step="0.01"
                                 isAutoField
                                 isManuallyOverridden={manualOverrides.has('smi')}
-                                canAutoCalculate={!!((formData.msRight && formData.msLeft && formData.miRight && formData.miLeft && formData.height) || (formData.mm && formData.height))}
+                                canAutoCalculate={!!(formData.height && (
+                                    (formData.msRight || formData.msLeft || formData.miRight || formData.miLeft) ||
+                                    formData.mm
+                                ))}
                                 onClearOverride={() => onClearOverride?.('smi')}
                             />
                             <div className="space-y-1">
@@ -422,6 +444,6 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
                     {isSubmitting ? 'A guardar...' : (editingRecord?.id ? 'Guardar Alterações' : 'Adicionar Pesagem')}
                 </NewButton>
             </Modal.Footer>
-        </Modal>
+        </Modal >
     );
 };

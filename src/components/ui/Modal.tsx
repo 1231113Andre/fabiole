@@ -66,7 +66,7 @@ const Modal = ({ isOpen, onClose, children, size = "4xl", className = "" }: Moda
 
     const modalContent = (
         <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 lg:p-8"
+            className="fixed inset-0 z-[1050] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 lg:p-8"
             role="presentation"
         >
             {/* Validated Backdrop with stronger blur for premium feel */}

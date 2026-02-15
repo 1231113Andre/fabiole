@@ -17,7 +17,7 @@ interface ModalBaseProps {
     className?: string;
 }
 
-export const ModalBase = ({ isOpen, onClose, children, title, titleId, size = 'md', zIndex = 'z-50', className }: ModalBaseProps) => {
+export const ModalBase = ({ isOpen, onClose, children, title, titleId, size = 'md', zIndex = 'z-[1050]', className }: ModalBaseProps) => {
     const [isMounted, setIsMounted] = useState(false);
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
     const backdropRef = useRef<HTMLDivElement>(null);

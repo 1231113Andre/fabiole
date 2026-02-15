@@ -85,7 +85,7 @@ export default function DashboardLayoutClient({
                 rafId = null;
                 if (width === lastWidth) return;
                 lastWidth = width;
-                const mobile = width < 1024;
+                const mobile = width < 768;
                 setIsMobile(mobile);
                 if (!mobile && width < 1400) {
                     setIsCollapsed(true);
@@ -163,11 +163,11 @@ export default function DashboardLayoutClient({
     // Memoize activeTab calculation
     const activeTab = useMemo(() => getActiveTabFromPath(pathname), [pathname]);
 
-    // Memoize sidebar margin calculation - Updated for compact design
-    const sidebarMargin = useMemo(() => {
-        if (isMobile) return "ml-0"; // No margin on mobile
-        return isCollapsed ? "lg:ml-[72px]" : "lg:ml-[260px]";
-    }, [isCollapsed, isMobile]);
+    // Sidebar margin is no longer needed as we use sticky positioning in a flex container
+    // but we might need it for transitions or if we kept it fixed. 
+    // Since we switched to sticky, we just need to ensure the main content grows.
+    // However, the header is still fixed and needs to know the offset.
+    // The main content should just flow next to the sidebar.
 
     // Set CSS variable for sidebar width dynamically - Updated for compact design
     useEffect(() => {
@@ -218,8 +218,8 @@ export default function DashboardLayoutClient({
                 isCollapsed={isCollapsed}
             />
 
-            {/* Main Content – same compact padding for all subpages, no horizontal overflow */}
-            <main className={`flex-1 transition-[margin-left] duration-300 ease-in-out ${sidebarMargin} mt-14 min-h-[calc(100vh-3.5rem)] bg-whiten overflow-x-hidden px-2 py-3 sm:px-3 sm:py-4 lg:px-4 lg:py-5`}>
+            {/* Main Content – flows naturally next to sticky sidebar on desktop */}
+            <main className={`flex-1 mt-14 min-h-[calc(100vh-3.5rem)] bg-whiten overflow-x-hidden px-2 py-3 sm:px-3 sm:py-4 lg:px-4 lg:py-5`}>
                 <div className={pathname === "/dashboard" || pathname?.includes("weighings") ? "w-full min-w-0 mr-auto" : "max-w-screen-xl w-full mr-auto"}>
                     {children}
                 </div>
@@ -228,7 +228,7 @@ export default function DashboardLayoutClient({
             {/* Mobile Overlay */}
             {sidebarOpen && isMobile && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden animate-in fade-in"
+                    className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm md:hidden animate-in fade-in"
                     onClick={handleCloseSidebar}
                     aria-hidden="true"
                 />

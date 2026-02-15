@@ -37,7 +37,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     const [showDropdown, setShowDropdown] = useState(false);
     const [isDesktop, setIsDesktop] = useState(() => {
         if (typeof window !== 'undefined') {
-            return window.innerWidth >= 1024;
+            return window.innerWidth >= 768;
         }
         return false;
     });
@@ -64,7 +64,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     // Track desktop/mobile breakpoint
     useEffect(() => {
         const checkDesktop = () => {
-            setIsDesktop(window.innerWidth >= 1024);
+            setIsDesktop(window.innerWidth >= 768);
         };
 
         window.addEventListener('resize', checkDesktop);
@@ -76,7 +76,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     useLayoutEffect(() => {
         if (!headerRef.current) return;
 
-        const isCurrentlyDesktop = typeof window !== 'undefined' && window.innerWidth >= 1024;
+        const isCurrentlyDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
 
         if (isCurrentlyDesktop) {
             if (isCollapsed !== undefined) {
@@ -102,7 +102,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             <div className="flex items-center gap-2 sm:gap-3">
                 {/* Mobile Menu Button - More compact */}
                 <button
-                    className="flex items-center justify-center w-9 h-9 border border-gray-200 bg-white rounded-lg text-gray-700 cursor-pointer transition-all duration-200 hover:bg-primary/5 hover:text-primary hover:border-primary/30 shadow-sm lg:hidden active:scale-95"
+                    className="flex items-center justify-center w-9 h-9 border border-gray-200 bg-white rounded-lg text-gray-700 cursor-pointer transition-all duration-200 hover:bg-primary/5 hover:text-primary hover:border-primary/30 shadow-sm md:hidden active:scale-95"
                     onClick={onMenuClick}
                     aria-label="Menu"
                 >

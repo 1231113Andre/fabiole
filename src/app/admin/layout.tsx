@@ -78,10 +78,7 @@ export default function AdminLayout({
     // Memoize activeTab calculation
     const activeTab = useMemo(() => getActiveTabFromPath(pathname), [pathname]);
 
-    // Memoize sidebar margin calculation - Updated for compact design
-    const sidebarMargin = useMemo(() => {
-        return isCollapsed ? "lg:ml-[72px]" : "lg:ml-[260px]";
-    }, [isCollapsed]);
+    // Sidebar margin is no longer needed as we use sticky positioning in a flex container
 
     // Set CSS variable for sidebar width dynamically - Updated for compact design
     useEffect(() => {
@@ -125,7 +122,7 @@ export default function AdminLayout({
             />
 
             {/* Main Content – left-aligned, responsive padding */}
-            <main className={`flex-1 ml-0 ${sidebarMargin} mt-14 min-h-[calc(100vh-3.5rem)] bg-gray-50 transition-[margin-left] duration-300 overflow-x-hidden px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6`}>
+            <main className={`flex-1 mt-14 min-h-[calc(100vh-3.5rem)] bg-gray-50 overflow-x-hidden px-3 py-4 sm:px-4 sm:py-5 lg:px-6 lg:py-6`}>
                 <div className="max-w-screen-2xl w-full mr-auto">
                     {children}
                 </div>

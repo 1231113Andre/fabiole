@@ -62,7 +62,7 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
 }) => {
 
     const handleNavigate = useCallback(() => {
-        if (typeof window !== "undefined" && window.innerWidth < 1024) {
+        if (typeof window !== "undefined" && window.innerWidth < 768) {
             onClose();
         }
     }, [onClose]);
@@ -100,7 +100,7 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
         <>
             {/* Mobile Overlay */}
             <div
-                className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[998] transition-all duration-300 lg:hidden ${isOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+                className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[998] transition-all duration-300 md:hidden ${isOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
                     }`}
                 onClick={onClose}
                 aria-hidden="true"
@@ -110,12 +110,13 @@ export const DashboardSidebar = memo<DashboardSidebarProps>(({
             {/* Sidebar Container - More compact */}
             <aside
                 className={`
-                    fixed top-0 left-0 h-screen z-[999] flex flex-col 
-                    transition-all duration-300 ease-[cubic-bezier(0.25,0.8,0.25,1)] 
+                    fixed md:sticky top-0 left-0 h-screen z-[999] md:z-auto flex flex-col 
+                    transition-transform duration-300 ease-in-out 
                     overflow-y-auto overflow-x-hidden
-                    bg-white/95 backdrop-blur-md border-r border-gray-100 shadow-lg
-                    ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-                    ${isCollapsed ? "w-[72px]" : "w-[260px]"}
+                    bg-white/95 backdrop-blur-md border-r border-gray-100 shadow-lg md:shadow-none
+                    ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+                    ${isCollapsed ? "md:w-[72px]" : "md:w-[260px]"}
+                    w-[260px]
                 `}
             >
                 {/* Brand */}

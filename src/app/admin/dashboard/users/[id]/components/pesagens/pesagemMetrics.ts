@@ -18,12 +18,13 @@ import {
     getBmiIcon,
     getFatIcon,
     getMileResultStyle,
-    BADGE_STYLES
+    BADGE_STYLES,
+    calculateAutoSmi
 } from "@/lib/body-metrics";
 import { Pesagem } from "../../types";
 
 // Re-export color functions for backward compatibility
-export { getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, calculateSMI, calculateSMIFromLimbs, classifySMI, BADGE_STYLES };
+export { getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, calculateSMI, calculateSMIFromLimbs, classifySMI, BADGE_STYLES, calculateAutoSmi };
 
 export interface PesagemMetrics {
     bmi: number | null;

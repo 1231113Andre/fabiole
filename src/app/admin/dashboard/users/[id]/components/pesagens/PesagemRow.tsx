@@ -1,6 +1,6 @@
 import React from "react";
 import { Pesagem } from "../../types";
-import { calculatePesagemMetrics, getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, calculateSMI, calculateSMIFromLimbs, classifySMI, BADGE_STYLES } from "./pesagemMetrics";
+import { calculatePesagemMetrics, getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, classifySMI, BADGE_STYLES, calculateAutoSmi } from "./pesagemMetrics";
 
 interface PesagemRowProps {
     pesagem: Pesagem;
@@ -101,7 +101,7 @@ export const PesagemRow: React.FC<PesagemRowProps> = ({
             </td>
             <td className="py-3 px-2 text-center text-xs sm:text-sm">
                 {(() => {
-                    const { msRight, msLeft, miRight, miLeft, height, mm } = p;
+                    const { msRight, msLeft, miRight, miLeft, height } = p;
 
                     // Priority 1: Stored SMI value (from DB)
                     if (p.smi != null) {
@@ -110,45 +110,28 @@ export const PesagemRow: React.FC<PesagemRowProps> = ({
                         );
                     }
 
-                    // Priority 2: Calculate from limbs on the fly
-                    const smiFromLimbs = (msRight && msLeft && miRight && miLeft && height)
-                        ? calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height)
-                        : null;
+                    // Priority 2 & 3: Calculate using shared logic (handles limbs & MM fallback & partial data)
+                    const smiVal = calculateAutoSmi(msRight, msLeft, miRight, miLeft, height);
 
-                    if (smiFromLimbs != null) {
+                    if (smiVal != null) {
                         return (
-                            <span className={BADGE_STYLES.PURPLE}>{smiFromLimbs.toFixed(2).replace('.', ',')}</span>
+                            <span className={BADGE_STYLES.PURPLE}>
+                                {smiVal.toFixed(2).replace('.', ',')}
+                            </span>
                         );
                     }
 
-                    // Priority 3: Fallback to old MM formula
-                    const mmVal = mm ?? metrics.mm;
-                    const smiOld = (mmVal != null && mmVal > 0 && height != null && height > 0)
-                        ? calculateSMI(mmVal, height)
-                        : null;
-
-                    return smiOld != null ? (
-                        <span className={BADGE_STYLES.PURPLE}>{smiOld.toFixed(2).replace('.', ',')}</span>
-                    ) : '-';
+                    return '-';
                 })()}
             </td>
             <td className="py-3 px-2 text-center text-xs sm:text-sm">
                 {(() => {
-                    const { msRight, msLeft, miRight, miLeft, height, mm, smi } = p;
+                    const { msRight, msLeft, miRight, miLeft, height, smi } = p;
 
                     let smiVal = smi;
 
                     if (smiVal == null) {
-                        smiVal = (msRight && msLeft && miRight && miLeft && height)
-                            ? calculateSMIFromLimbs(msRight, msLeft, miRight, miLeft, height)
-                            : null;
-                    }
-
-                    if (smiVal == null) {
-                        const mmVal = mm ?? metrics.mm;
-                        if (mmVal != null && mmVal > 0 && height != null && height > 0) {
-                            smiVal = calculateSMI(mmVal, height);
-                        }
+                        smiVal = calculateAutoSmi(msRight, msLeft, miRight, miLeft, height);
                     }
 
                     const smiRes = (smiVal != null && gender) ? classifySMI(smiVal, gender) : '';
