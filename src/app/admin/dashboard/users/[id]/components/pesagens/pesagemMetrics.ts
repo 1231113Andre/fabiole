@@ -10,6 +10,7 @@ import {
     calculateMM,
     calculateH2OFull,
     calculateSMI,
+    calculateSMIFromLimbs,
     classifySMI,
     getBmiClassColor,
     getFatClassColor,
@@ -22,7 +23,7 @@ import {
 import { Pesagem } from "../../types";
 
 // Re-export color functions for backward compatibility
-export { getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, calculateSMI, classifySMI, BADGE_STYLES };
+export { getBmiClassColor, getFatClassColor, getDeltaPesoColor, getBmiIcon, getFatIcon, getMileResultStyle, calculateSMI, calculateSMIFromLimbs, classifySMI, BADGE_STYLES };
 
 export interface PesagemMetrics {
     bmi: number | null;
