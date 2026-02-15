@@ -81,26 +81,26 @@ const Modal = ({ isOpen, onClose, children, size = "4xl", className = "" }: Moda
                     relative bg-white text-gray-900 
                     w-full ${sizeClasses[size]} 
                     
-                    /* Mobile: Bottom Sheet Styles */
-                    rounded-t-[32px] sm:rounded-2xl 
+                    /* Mobile: Full Screen */
+                    rounded-none sm:rounded-2xl 
                     
                     /* Shadows */
-                    shadow-[0_-8px_30px_rgba(0,0,0,0.15)] sm:shadow-2xl sm:shadow-black/20 
+                    shadow-none sm:shadow-2xl sm:shadow-black/20 
                     
                     /* Heights */
-                    max-h-[85dvh] h-auto sm:h-auto sm:max-h-[92vh] 
+                    h-[100dvh] sm:h-auto sm:max-h-[92vh] 
                     
                     /* Animation & Transitions */
                     animate-in duration-300
-                    slide-in-from-bottom-full sm:slide-in-from-bottom-8 sm:zoom-in-95 
+                    slide-in-from-bottom-5 sm:slide-in-from-bottom-8 sm:zoom-in-95 
                     fade-in
                     
                     /* Layout */
                     flex flex-col 
-                    border border-white/20 sm:border-gray-100 
+                    border-none sm:border border-gray-100 
                     
                     /* Mobile safe area spacing */
-                    pb-safe sm:pb-0
+                    pb-0 sm:pb-0
                     ${className}
                 `}
                 onClick={(e) => e.stopPropagation()}
@@ -171,7 +171,7 @@ const Body = ({ children, className = "" }: ModalBodyProps) => {
 // Modal Footer
 const Footer = ({ children, className = "" }: ModalFooterProps) => {
     return (
-        <div className={`mt-auto px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 bg-gray-50/50 backdrop-blur-sm flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sticky bottom-0 z-10 ${className}`}>
+        <div className={`mt-auto px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 bg-gray-50/50 backdrop-blur-sm flex flex-row items-center justify-end gap-3 sticky bottom-0 z-10 ${className}`}>
             {children}
         </div>
     );
