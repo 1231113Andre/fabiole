@@ -142,6 +142,9 @@ export const PesagemModal: React.FC<PesagemModalProps> = ({
             const hM = height / 100;
             const bmiSmi = mm / (hM * hM);
             onFieldChange('smi', parseFloat(bmiSmi.toFixed(2)));
+        } else {
+            // Null reset: clear the SMI field if no valid data
+            onFieldChange('smi', null);
         }
     }, [formData.msRight, formData.msLeft, formData.miRight, formData.miLeft, formData.height, formData.mm, manualOverrides]);
 

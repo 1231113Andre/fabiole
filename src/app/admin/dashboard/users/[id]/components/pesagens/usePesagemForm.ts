@@ -178,7 +178,9 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
                         newFormData.smi = smiFromLimbs;
                     } else if (h != null) {
                         const smi = calculateSMI(mm, h);
-                        if (smi != null) newFormData.smi = smi;
+                        newFormData.smi = smi; // Will be null if calculateSMI returns null
+                    } else {
+                        newFormData.smi = null;
                     }
                 }
             }
@@ -209,7 +211,7 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
                 } else {
                     const mm = field === 'mm' ? parseNumber(value) : parseNumber(newFormData.mm);
                     const smi = calculateSMI(mm, h);
-                    if (smi != null) newFormData.smi = smi;
+                    newFormData.smi = smi; // Will be null if calculateSMI returns null
                 }
             }
         }
@@ -261,7 +263,9 @@ export function usePesagemForm({ gender, userBirth, onSave }: UsePesagemFormProp
                 newFormData.smi = smiFromLimbs;
             } else if (formData.mm != null && formData.height != null) {
                 const smi = calculateSMI(parseNumber(formData.mm), parseNumber(formData.height));
-                if (smi != null) newFormData.smi = smi;
+                newFormData.smi = smi;
+            } else {
+                newFormData.smi = null;
             }
         }
         setFormData(newFormData);
