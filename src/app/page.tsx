@@ -312,7 +312,7 @@ export default function Home() {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-md mx-auto ring-1 ring-gray-200 group">
                 <Image
                   src="/images/bike.jpg"
-                  alt="Fábio Lé - Personal Trainer Certificado em Lisboa, Especialista em Treino Personalizado e Transformação Corporal"
+                  alt="Fábio Lé - Personal Trainer, Especialista em Treino Personalizado e Transformação Corporal"
                   width={400}
                   height={500}
                   className="w-full h-auto transition-transform duration-500 group-hover:scale-105"
@@ -321,13 +321,6 @@ export default function Home() {
                 />
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-
-                {/* Badge on image */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
-                    <i className="fa-duotone fa-award text-lg"></i>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
