@@ -126,7 +126,7 @@ export default function Home() {
                   <i className="fa-duotone fa-clipboard-list text-6xl text-orange-500 drop-shadow-sm"></i>
                 </div>
                 <h3 className="mb-3 text-xl font-bold text-gray-900 font-fugazone uppercase tracking-wide">
-                  Treino Adaptado
+                  Treino e Planos personalizados
                 </h3>
                 <p className="max-w-[280px] text-base font-medium text-gray-600 leading-relaxed">
                   Exercícios 100% ajustados à tua biomecânica e estilo de vida.
@@ -142,7 +142,7 @@ export default function Home() {
                   Acompanhamento 24/7
                 </h3>
                 <p className="max-w-[280px] text-base font-medium text-gray-600 leading-relaxed">
-                  Suporte contínuo via WhatsApp e ajustes semanais.
+                  Sempre disponível para ajudar e ajustes de treino.
                 </p>
               </div>
 
@@ -154,7 +154,7 @@ export default function Home() {
             {/* Transforme-se Connosco Header */}
             <div className="mb-14 flex flex-col items-center text-center">
               <h2 className="mb-6 text-center font-fugazone text-4xl uppercase text-gray-900 md:text-5xl lg:text-6xl">
-                Transforme-se <span className="ui-text-accent">Connosco</span>
+                Transforma-te <span className="ui-text-accent">Comigo!</span>
               </h2>
               <p className="max-w-3xl text-center text-xl font-medium text-gray-700 md:text-2xl">
                 Escolha o plano que melhor se adapta à sua rotina e objetivos
@@ -166,13 +166,13 @@ export default function Home() {
               {[
                 {
                   title: "Treinos Presenciais",
-                  desc: "Acompanhamento técnico presencial em Lisboa. Correção postural e intensidade máxima para resultados rápidos.",
+                  desc: "Acompanhamento técnico presencial. Correção postural e intensidade adaptada aos teus objetivos.",
                   icon: "fa-dumbbell",
                   href: "/servicos",
                 },
                 {
                   title: "Treinos Online",
-                  desc: "Consultoria de fitness à distância. Planos de treino 100% personalizados para o teu equipamento e horários.",
+                  desc: "Planos de treino 100% personalizados para o teu equipamento e horários.",
                   icon: "fa-laptop-code",
                   href: "/servicos",
                 }
@@ -230,7 +230,7 @@ export default function Home() {
               Fábio <span className="ui-text-accent">Lé</span>
             </h2>
             <p className="text-center text-xl font-medium text-gray-700 md:text-2xl">
-              Personal Trainer Certificado em Lisboa
+              Personal Trainer Certificado
             </p>
           </div>
 
@@ -245,7 +245,7 @@ export default function Home() {
                   Especializado em <strong className="text-gray-900">transformação corporal</strong>, ajudo-te a atingir os teus objetivos – seja <strong className="text-gray-900">perda de peso</strong>, <strong className="text-gray-900">hipertrofia muscular</strong> ou simplesmente melhorar a tua saúde e bem-estar.
                 </p>
                 <p className="text-base sm:text-lg text-gray-600 leading-relaxed font-montserrat">
-                  Com treinos presenciais em Lisboa e acompanhamento online para qualquer parte do mundo, ofereço planos 100% personalizados à tua rotina e objetivos.
+                  Com treinos presenciais e acompanhamento online para qualquer parte do mundo, ofereço planos 100% personalizados à tua rotina e objetivos.
                 </p>
               </div>
 
@@ -326,10 +326,6 @@ export default function Home() {
                 <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-lg">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
                     <i className="fa-duotone fa-award text-lg"></i>
-                  </div>
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">Certificado IPDJ</div>
-                    <div className="text-xs text-gray-500">Título Profissional de Treinador</div>
                   </div>
                 </div>
               </div>

@@ -48,7 +48,7 @@ const Footer = memo(function Footer() {
       </div>
       <div className="border-t border-primary/50">
         <div className="ui-container py-3 text-center">
-          <small className="text-white/70">© 2024 Fábio Lé. Todos os direitos reservados.</small>
+          <small className="text-white/70">© 2026 Fábio Lé. Todos os direitos reservados.</small>
         </div>
       </div>
     </footer>
