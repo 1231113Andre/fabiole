@@ -12,16 +12,16 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Fábio Lé — Personal Trainer em Lisboa | Treino Online",
+    default: "Fábio Lé — Personal Trainer em Gaia | Treino Online",
     template: "%s | Fábio Lé PT"
   },
-  description: "Transforma o teu corpo com um Personal Trainer especialista. Treinos personalizados presenciais em Lisboa ou online para perda de peso e hipertrofia. Avaliação gratuita.",
+  description: "Transforma o teu corpo com um Personal Trainer especialista. Treinos personalizados presenciais em Gaia ou online para perda de peso e hipertrofia. Avaliação gratuita.",
   openGraph: {
     type: 'website',
     locale: 'pt_PT',
     url: 'https://fabio-le-pt.com', // Placeholder URL, should be replaced with actual
     siteName: 'Fábio Lé Personal Trainer',
-    title: 'Fábio Lé — Personal Trainer em Lisboa | Treino Online',
+    title: 'Fábio Lé — Personal Trainer em Gaia | Treino Online',
     description: 'Especialista em transformação física, perda de peso e hipertrofia. Marca já a tua avaliação gratuita.',
     images: [
       {
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Fábio Lé — Personal Trainer em Lisboa',
+    title: 'Fábio Lé — Personal Trainer em Gaia',
     description: 'Treinos personalizados para resultados reais. Presencial e Online.',
     images: ['/images/fabiobanner.png'],
   },

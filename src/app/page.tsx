@@ -101,7 +101,7 @@ export default function Home() {
 
             {/* Subtitle */}
             <p className="mb-12 max-w-2xl text-center text-lg font-medium text-gray-700 md:text-xl">
-              Planos de Treino Personalizados para Perda de Peso e Hipertrofia
+              Treinos e Planos Personalizados
             </p>
 
             {/* Badges Grid (Clean & Flexible) */}
