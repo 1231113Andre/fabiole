@@ -6,8 +6,8 @@ import { Logger } from '../lib/utils/logger';
 
 ensureNotProduction();
 
-const EMAIL = 'kamszotlol@proton.me';
-const NEW_PASSWORD = '12345';
+const EMAIL = 'andrebalao26@gmail.com';
+const NEW_PASSWORD = 'A15fa11dd!';
 
 async function main() {
     Logger.info('Password', `Changing password for ${EMAIL}`);

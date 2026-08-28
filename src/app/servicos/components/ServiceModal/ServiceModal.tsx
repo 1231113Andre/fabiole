@@ -3,7 +3,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import NewButton from "@/app/components/newButton";
 import { TrainingDuration, TrainingType } from "../../types";
-import { calculatePrice } from "../../utils/priceCalculator";
+import { calculatePrice, calculatePricePerSession, calculateSavings } from "../../utils/priceCalculator";
 
 interface ServiceModalProps {
     serviceTitle: string | null;
@@ -14,8 +14,8 @@ interface ServiceModalProps {
 const DURATIONS: TrainingDuration[] = ["30 minutos", "45 minutos", "1 hora"];
 const TRAINING_TYPES: Array<{ value: TrainingType; label: string; desc: string }> = [
     { value: "individual", label: "Individual", desc: "Treino 1:1" },
-    { value: "dupla", label: "Dupla", desc: "+€2-5" },
-    { value: "trio", label: "Trio", desc: "+€4-8" }
+    { value: "dupla", label: "Dupla", desc: "A par" },
+    { value: "trio", label: "Trio", desc: "Grupo 3" }
 ];
 const FREQUENCIES = [1, 2, 3, 4, 5];
 
@@ -41,9 +41,25 @@ export function ServiceModal({ serviceTitle, onClose, pricingConfig }: ServiceMo
         router.push('/contacto');
     }, [serviceTitle, trainingFrequency, trainingDuration, trainingType, router]);
 
-    // Memoize price calculation to avoid recalculating on every render
+    // Price per individual session with discount applied
+    const pricePerSession = useMemo(() => {
+        return serviceTitle
+            ? calculatePricePerSession(serviceTitle, trainingFrequency, trainingDuration, trainingType, pricingConfig)
+            : 0;
+    }, [serviceTitle, trainingFrequency, trainingDuration, trainingType, pricingConfig]);
+
+    // Total weekly price
     const price = useMemo(() => {
-        return serviceTitle ? calculatePrice(serviceTitle, trainingFrequency, trainingDuration, trainingType, pricingConfig) : 0;
+        return serviceTitle
+            ? calculatePrice(serviceTitle, trainingFrequency, trainingDuration, trainingType, pricingConfig)
+            : 0;
+    }, [serviceTitle, trainingFrequency, trainingDuration, trainingType, pricingConfig]);
+
+    // Total weekly savings
+    const savings = useMemo(() => {
+        return serviceTitle
+            ? calculateSavings(serviceTitle, trainingFrequency, trainingDuration, trainingType, pricingConfig)
+            : 0;
     }, [serviceTitle, trainingFrequency, trainingDuration, trainingType, pricingConfig]);
 
     if (!serviceTitle) return null;
@@ -131,12 +147,25 @@ export function ServiceModal({ serviceTitle, onClose, pricingConfig }: ServiceMo
                     {/* Price Display */}
                     <div className="bg-gray-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 mt-3 sm:mt-4 border border-gray-100">
                         <div className="flex flex-col items-center">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 sm:mb-2 font-montserrat">
-                                Preço/Semana
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 font-montserrat">
+                                Preço / Semana
                             </p>
-                            <p className="text-3xl sm:text-5xl font-black text-gray-900 mb-4 sm:mb-6 tracking-tight font-montserrat">
+                            <p className="text-3xl sm:text-5xl font-black text-gray-900 mb-1 tracking-tight font-montserrat">
                                 €{price}
                             </p>
+
+                            {/* Price per session & Savings */}
+                            <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+                                <span className="text-xs font-semibold text-gray-500">
+                                    (€{pricePerSession} por treino)
+                                </span>
+                                {savings > 0 && (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 shadow-sm animate-fade-in">
+                                        <i className="fa-duotone fa-tag text-[10px]"></i>
+                                        Poupança €{savings}/sem
+                                    </span>
+                                )}
+                            </div>
 
                             <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 w-full">
                                 <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white border border-gray-200 text-[10px] sm:text-xs font-bold text-gray-700 shadow-sm">

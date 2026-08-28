@@ -39,13 +39,13 @@ export const SidebarFooter = memo(function SidebarFooter({
                         {footerTitle}
                     </p>
                     <div className="flex items-center text-[9px] text-gray-500 font-medium mt-1 truncate">
-                        <span className="italic opacity-80 mr-1">developed. by</span>
+                        <span className="italic opacity-80 mr-1">Last update by</span>
                         <a
-                            href="mailto:kamszotlol@proton.me"
+                            href="mailto:andrebalao26@gmail.com"
                             className="text-primary hover:text-primary-hover font-semibold transition-colors hover:underline truncate"
-                            title="Contact Developer"
+                            title="Contactar Programador"
                         >
-                            kamszotlol@proton.me
+                            andrebalao26@gmail.com
                         </a>
                     </div>
                 </div>

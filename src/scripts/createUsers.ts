@@ -12,7 +12,7 @@ const users = [
         "name": "kamil",
         "surname": "xawier",
         "email": "kamil@example.com",
-        "password": "12345",
+        "password": "xdxdxdxd",
         "birthDate": "2000-05-11",
         "uuid": "3529a8b6-9dee-43e0-a25c-f2914a2a7513"
     },
@@ -28,7 +28,7 @@ const users = [
         "name": "testowe",
         "surname": "testowe",
         "email": "develo123perxawierstudio@gmail.com",
-        "password": "gWp6QYpbHyuJKRltQklGPxdC",
+        "password": "gWp6QYaaaapbHyuJKRltQklGPxdC",
         "birthDate": "2025-12-16",
         "uuid": "85e62fb7-8b89-4579-863d-341b275310d4"
     },
@@ -76,7 +76,7 @@ const users = [
         "name": "Fabio",
         "surname": "Test",
         "email": "developerxawierstudio@gmail.com",
-        "password": "12345",
+        "password": "123aaaa45",
         "birthDate": "1990-01-01",
         "uuid": "0fb7eae7-fa56-481e-b740-b97cf6e1d2f0"
     },
@@ -84,7 +84,7 @@ const users = [
         "name": "Timer",
         "surname": "Test",
         "email": "developerxawierstudio1@gmail.com",
-        "password": "12345",
+        "password": "123aaaa45",
         "birthDate": "1990-01-01",
         "uuid": "8455c599-f711-4d63-975a-61c2b2dcae5f"
     },
@@ -100,7 +100,7 @@ const users = [
         "name": "test",
         "surname": "test",
         "email": "mushiskamszot@gmail.com",
-        "password": "l/jkec.VNZp.ByS31R9Dr4G8iY3",
+        "password": "axdxdxdxd",
         "birthDate": "2000-05-11",
         "uuid": "0c7479a9-82fb-4f88-8c59-515f7ccd921a"
     },

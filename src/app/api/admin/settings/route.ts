@@ -30,6 +30,7 @@ export const POST = withAdminAuth(async (req) => {
             'price_acompanhamento_mensal',
             'price_extra_dupla_30min', 'price_extra_dupla_45min', 'price_extra_dupla_1hora',
             'price_extra_trio_30min', 'price_extra_trio_45min', 'price_extra_trio_1hora',
+            'price_ginastica_laboral',
         ];
 
         // Update all provided keys

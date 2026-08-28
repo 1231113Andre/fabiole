@@ -12,9 +12,9 @@ export function slugify(text: string): string {
         .toString()
         .toLowerCase()
         .trim()
-        .replace(/\s+/g, '-')     // Zamień spacje na myślniki
-        .replace(/[^\w\-]+/g, '') // Usuń wszystkie znaki niebędące słowami (poza myślnikami)
-        .replace(/\-\-+/g, '-')   // Zamień wielokrotne myślniki na pojedyncze
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
 }
 
 export function generateUniqueId(prefix: string = 'id'): string {

@@ -5,7 +5,7 @@ export const services: Service[] = [
         title: "Treinos Presenciais",
         titleIcon: "fa-dumbbell",
         desc: "Sessões 1:1 com acompanhamento personalizado no ginásio ou ao ar livre. Correção técnica em tempo real e motivação constante.",
-        price: { amount: "€35", unit: "por hora", prefix: "Preço" },
+        price: { amount: "€40", unit: "por hora", prefix: "Preço" },
         features: [
             { text: "Acompanhamento 1:1", icon: "fa-user", important: true, highlightWords: ["Acompanhamento"] },
             { text: "Correção técnica", icon: "fa-chart-line", important: true, highlightWords: ["Correção", "técnica"] },

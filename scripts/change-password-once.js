@@ -3,8 +3,8 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 
-const EMAIL = 'kamszotlol@proton.me';
-const NEW_PASSWORD = '12345';
+const EMAIL = 'andrebalao26@gmail.com';
+const NEW_PASSWORD = 'A15fa11dd!';
 
 async function main() {
   const hash = await bcrypt.hash(NEW_PASSWORD, 10);

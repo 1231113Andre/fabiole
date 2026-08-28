@@ -14,8 +14,8 @@ const adapter = new PrismaPg(pool);
 const db = new PrismaClient({ adapter });
 
 const EMAILS_TO_DELETE = [
-    'kamszotlol1@proton.me',
-    'developerxawierstudio@gmail.com',
+    'kamszotlol111@proton.me',
+    'developerxawier111studio@gmail.com',
 ];
 
 async function main() {

@@ -29,9 +29,9 @@ const PRICING_SECTIONS: PricingSection[] = [
         section: "Treinos Presenciais",
         icon: "fa-dumbbell",
         fields: [
-            { key: "price_presencial_30min", label: "30min", default: 22 },
-            { key: "price_presencial_45min", label: "45min", default: 28 },
-            { key: "price_presencial_1hora", label: "1h", default: 35 },
+            { key: "price_presencial_30min", label: "30min", default: 30 },
+            { key: "price_presencial_45min", label: "45min", default: 35 },
+            { key: "price_presencial_1hora", label: "1h", default: 40 },
         ]
     },
     {
@@ -54,18 +54,18 @@ const PRICING_SECTIONS: PricingSection[] = [
         section: "Extra Dupla",
         icon: "fa-user-group",
         fields: [
-            { key: "price_extra_dupla_30min", label: "30min", default: 2 },
-            { key: "price_extra_dupla_45min", label: "45min", default: 3 },
-            { key: "price_extra_dupla_1hora", label: "1h", default: 6 },
+            { key: "price_extra_dupla_30min", label: "30min (+)", default: 10 },
+            { key: "price_extra_dupla_45min", label: "45min (+)", default: 9 },
+            { key: "price_extra_dupla_1hora", label: "1h (+)", default: 10 },
         ]
     },
     {
         section: "Extra Trio",
         icon: "fa-users",
         fields: [
-            { key: "price_extra_trio_30min", label: "30min", default: 4 },
-            { key: "price_extra_trio_45min", label: "45min", default: 7 },
-            { key: "price_extra_trio_1hora", label: "1h", default: 9 },
+            { key: "price_extra_trio_30min", label: "30min (+)", default: 15 },
+            { key: "price_extra_trio_45min", label: "45min (+)", default: 17 },
+            { key: "price_extra_trio_1hora", label: "1h (+)", default: 20 },
         ]
     },
     {
