@@ -12,10 +12,9 @@ const ServiceModal = lazy(() =>
     import("./components/ServiceModal").then(module => ({ default: module.ServiceModal }))
 );
 
-const SERVICES_WITHOUT_MODAL = new Set([
-    "Ginástica Laboral / Teambuilding para Empresas",
-    "Acompanhamento Online"
-]);
+const SERVICES_WITHOUT_MODAL = new Set(
+    services.filter(service => service.contactOnly).map(service => service.title)
+);
 
 interface ServicesClientProps {
     initialSettings?: Record<string, any>;
@@ -45,8 +44,8 @@ export function ServicesClient({ initialSettings = {} }: ServicesClientProps) {
                 const price = initialSettings['price_acompanhamento_mensal'];
                 if (price) updatedService.price.amount = `€${price}`;
             }
-        } else if (service.title === "Ginástica Laboral / Teambuilding para Empresas") {
-            const price = initialSettings['price_ginastica_laboral'];
+        } else if (service.priceSettingKey) {
+            const price = initialSettings[service.priceSettingKey];
             if (price) updatedService.price = price;
         }
 
@@ -54,7 +53,7 @@ export function ServicesClient({ initialSettings = {} }: ServicesClientProps) {
     });
 
     const handleServiceClick = useCallback((serviceTitle: string) => {
-        // For Ginástica Laboral and Acompanhamento Online, redirect directly to contact without showing pricing modal
+        // Contact-only services redirect directly to contact without showing pricing modal
         if (SERVICES_WITHOUT_MODAL.has(serviceTitle)) {
             const params = new URLSearchParams({
                 service: serviceTitle
@@ -79,14 +78,18 @@ export function ServicesClient({ initialSettings = {} }: ServicesClientProps) {
 
             {/* Main Content Grid */}
             <div className="ui-container ui-section">
-                <div className="grid w-full gap-10 md:grid-cols-2 lg:grid-cols-3 lg:max-w-screen-2xl mr-auto">
+                <div className="flex w-full flex-wrap justify-center gap-10 lg:max-w-screen-2xl mx-auto">
                     {dynamicServices.map((service, index) => (
-                        <ServiceCard
+                        <div
                             key={service.title}
-                            service={service}
-                            index={index}
-                            onSelect={handleServiceClick}
-                        />
+                            className="w-full md:w-[calc((100%-2.5rem)/2)] lg:w-[calc((100%-5rem)/3)]"
+                        >
+                            <ServiceCard
+                                service={service}
+                                index={index}
+                                onSelect={handleServiceClick}
+                            />
+                        </div>
                     ))}
                 </div>
             </div>

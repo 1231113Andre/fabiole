@@ -16,7 +16,7 @@ interface ServiceCardProps {
 function ServiceCardComponent({ service, index, onSelect }: ServiceCardProps) {
     return (
         <div
-            className={`group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-xl sm:rounded-[2rem] border border-gray-100 bg-white p-4 sm:p-8 text-center shadow-lg transition-all duration-300 hover:shadow-xl ${index === 3 ? 'lg:col-start-2 lg:col-span-1' : ''}`}
+            className={`group relative flex h-full flex-col items-center justify-between overflow-hidden rounded-xl sm:rounded-[2rem] border border-gray-100 bg-white p-4 sm:p-8 text-center shadow-lg transition-all duration-300 hover:shadow-xl`}
         >
             {service.popular && (
                 <span className="absolute top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1.5 rounded-full shadow-lg text-xs font-bold uppercase tracking-wide z-10">
@@ -63,19 +63,43 @@ function ServiceCardComponent({ service, index, onSelect }: ServiceCardProps) {
             {/* Features or PDF */}
             <ServiceFeatures service={service} />
 
-            {/* Button */}
-            <div className="w-full">
-                <NewButton
-                    variant="new_primary_rounded"
-                    className="w-full uppercase font-bold"
-                    icon={<i className="fa-duotone fa-arrow-right"></i>}
-                    iconPosition="right"
-                    onClick={() => onSelect(service.title)}
-                >
-                    {service.title === "Ginástica Laboral / Teambuilding para Empresas" || service.title === "Acompanhamento Online"
-                        ? "Contactar Para Informações"
-                        : "Escolher Plano"}
-                </NewButton>
+            {/* Buttons */}
+            <div className="flex w-full flex-col gap-3">
+                {service.pdf ? (
+                    <NewButton
+                        variant="new_primary_rounded"
+                        className="w-full uppercase font-bold"
+                        href={service.pdf.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        icon={<i className={`fa-duotone ${service.pdf.icon ?? "fa-file-pdf"}`}></i>}
+                        iconPosition="right"
+                    >
+                        {service.pdf.label}
+                    </NewButton>
+                ) : (
+                    <NewButton
+                        variant="new_primary_rounded"
+                        className="w-full uppercase font-bold"
+                        icon={<i className="fa-duotone fa-arrow-right"></i>}
+                        iconPosition="right"
+                        onClick={() => onSelect(service.title)}
+                    >
+                        {service.contactOnly ? "Contactar Para Informações" : "Escolher Plano"}
+                    </NewButton>
+                )}
+
+                {service.secondaryAction && (
+                    <NewButton
+                        variant="new_primary_no_bg_rounded"
+                        className="w-full uppercase font-bold"
+                        href={service.secondaryAction.href}
+                        icon={<i className={`fa-duotone ${service.secondaryAction.icon ?? "fa-arrow-right"}`}></i>}
+                        iconPosition="right"
+                    >
+                        {service.secondaryAction.label}
+                    </NewButton>
+                )}
             </div>
         </div>
     );

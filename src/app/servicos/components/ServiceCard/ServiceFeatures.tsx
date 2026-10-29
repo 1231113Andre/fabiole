@@ -33,22 +33,6 @@ const renderFeatureText = (featureText: string, highlightWords: string[] = []) =
 };
 
 function ServiceFeaturesComponent({ service }: ServiceFeaturesProps) {
-    if (service.pdf) {
-        return (
-            <div className="mb-6 text-center">
-                <a
-                    href={service.pdf}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-primary font-semibold hover:text-primary-hover transition-colors"
-                >
-                    <i className="fa-duotone fa-file-pdf text-lg"></i>
-                    Informação detalhada (PDF)
-                </a>
-            </div>
-        );
-    }
-
     if (!service.features) {
         return null;
     }
@@ -74,7 +58,7 @@ function ServiceFeaturesComponent({ service }: ServiceFeaturesProps) {
 // Memoize features component
 export const ServiceFeatures = memo(ServiceFeaturesComponent, (prevProps, nextProps) => {
     return prevProps.service.title === nextProps.service.title &&
-           prevProps.service.pdf === nextProps.service.pdf &&
+           prevProps.service.pdf?.href === nextProps.service.pdf?.href &&
            JSON.stringify(prevProps.service.features) === JSON.stringify(nextProps.service.features);
 });
 

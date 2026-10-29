@@ -50,17 +50,44 @@ export const services: Service[] = [
         ],
         icon: "/images/services/tracking-monitor.png",
         color: "from-purple-500 to-pink-600",
-        popular: false
+        popular: false,
+        contactOnly: true
     },
     {
-        title: "Ginástica Laboral / Teambuilding para Empresas",
+        title: "Movequi — Ginástica laboral para empresas",
         titleIcon: "fa-building",
-        desc: "Sessões de ginástica laboral e atividades de teambuilding para promover saúde, bem-estar e espírito de equipa nas empresas.",
+        desc: "Sessões orientadas de 15 minutos no local de trabalho, ajustadas às tarefas e aos horários da equipa. Porto, Gaia, Espinho, Ovar e Santa Maria da Feira.",
         price: "Sob consulta",
+        priceSettingKey: "price_ginastica_laboral",
         icon: "/images/coletivo.jpg",
         color: "from-green-500 to-emerald-600",
         popular: false,
-        pdf: "https://1b7dd9d4-91c7-449f-be0e-7e7479c5029f.filesusr.com/ugd/3342dc_0223ae79b6854f449c15e195b1428f49.pdf"
+        pdf: {
+            label: "Conhecer a Movequi · PDF",
+            href: "/docs/movequi-ginastica-laboral-empresas.pdf",
+            icon: "fa-file-pdf"
+        },
+        secondaryAction: {
+            label: "Pedir proposta para a empresa",
+            href:
+                "mailto:movequi.pt@gmail.com" +
+                "?subject=" + encodeURIComponent("Pedido de proposta — Ginástica laboral Movequi") +
+                "&body=" + encodeURIComponent(
+                    "Olá,\n\nGostaríamos de receber uma proposta de ginástica laboral para a nossa empresa.\n\n" +
+                    "Empresa:\nLocalidade:\nTarefas da equipa:\nNúmero de pessoas:\nTurnos:\n\nObrigado."
+                ),
+            icon: "fa-envelope"
+        }
+    },
+    {
+        title: "Teambuilding para Empresas",
+        titleIcon: "fa-users",
+        desc: "Atividades de teambuilding à medida para promover o espírito de equipa, a comunicação e o bem-estar dos colaboradores.",
+        price: "Sob consulta",
+        icon: "/images/grupo.png",
+        color: "from-teal-500 to-cyan-600",
+        popular: false,
+        contactOnly: true
     }
 ];
 
